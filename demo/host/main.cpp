@@ -1,5 +1,5 @@
 
-#include <feltplugin/exceptions.hpp>
+#include <feltplugin/errors.hpp>
 #include <feltplugin/host/plugin_factory.hpp>
 #include <iostream>
 

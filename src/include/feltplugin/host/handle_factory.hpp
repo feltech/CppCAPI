@@ -2,7 +2,7 @@
 
 #include "../pointers.hpp"
 #include "../handle_map.hpp"
-#include "../exceptions.hpp"
+#include "../errors.hpp"
 
 namespace feltplugin::host
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <feltplugin/handles.h>
-#include <feltplugin/exceptions.hpp>
+#include <feltplugin/errors.h>
+#include <feltplugin/errors.hpp>
 
 namespace feltplugin::plugin
 {
