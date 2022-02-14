@@ -1,35 +1,38 @@
 #pragma once
 
-#include <feltplugin/errors.h>
+#include <feltplugin/handles.h>
 #include <feltplugin/errors.hpp>
 
 namespace feltplugin::plugin
 {
 
-template <class Handle>
+template <class HandleTraits>
 struct HandleAdapter
 {
-	explicit HandleAdapter(Handle h) : handle{h} {}
+	using Handle = typename HandleTraits::Handle;
+	using Suite = typename HandleTraits::Suite;
+	using Class = typename HandleTraits::Class;
+	static constexpr auto get_suite = HandleTraits::get_suite;
+
+	explicit HandleAdapter() : handle_{nullptr}, suite_{get_suite()} {}
+	explicit HandleAdapter(Handle handle) : handle_{handle}, suite_{get_suite()} {}
 	HandleAdapter(HandleAdapter const &) = delete;
 	HandleAdapter(HandleAdapter &&) noexcept = default;
+	~HandleAdapter() = default;
 
 	explicit operator Handle() const
 	{
-		return handle;
+		return handle_;
 	}
 
-	Handle handle;
-
-	template <class... Args, class... Rest>
-	static Handle create(fp_ErrorCode (*fn)(fp_ErrorMessage, Handle *, Args...), Rest &&... args)
+	template <class... Args>
+	void create(Args &&... args)
 	{
-		Handle handle;
 		fp_ErrorCode code;
 		fp_ErrorMessage err;
 
-		code = fn(err, &handle, std::forward<Rest>(args)...);
+		code = suite_.create(err, &handle_, std::forward<Args>(args)...);
 		throw_on_error(code, err);
-		return handle;
 	}
 
 	template <class Ret, class... Args, class... Rest>
@@ -39,7 +42,7 @@ struct HandleAdapter
 		fp_ErrorCode code;
 		fp_ErrorMessage err;
 
-		code = fn(err, &ret, handle, std::forward<Rest>(args)...);
+		code = fn(err, &ret, handle_, std::forward<Rest>(args)...);
 		throw_on_error(code, err);
 		return ret;
 	}
@@ -50,8 +53,12 @@ struct HandleAdapter
 		fp_ErrorCode code;
 		fp_ErrorMessage err;
 
-		code = fn(err, handle, std::forward<Rest>(args)...);
+		code = fn(err, handle_, std::forward<Rest>(args)...);
 		throw_on_error(code, err);
 	}
+
+protected:
+	Handle handle_;
+	Suite const suite_;
 };
 }  // namespace feltplugin

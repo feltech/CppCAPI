@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#include <feltplugin/errors.h>
+#include <feltplugin/handles.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -11,40 +11,34 @@ extern "C"
 #endif
 	// String
 
-	typedef struct fp_String_t * fp_String;
+	typedef struct fp_String_t * fp_String_h;
 
-	fp_ErrorCode fp_String_create(fp_ErrorMessage err, fp_String * out, char const * str);
+	typedef struct
+	{
+		fp_ErrorCode (*create)(fp_ErrorMessage err, fp_String_h * out, char const * str);
+		void (*release)(fp_String_h handle);
+		char const * (*c_str)(fp_String_h handle);	// noexcept
+	} fp_String_s;
 
-	void fp_String_release(fp_String handle);
-
-	char const * fp_String_cstr(fp_String handle);	// noexcept
-
-	// StringView
-
-	typedef struct fp_StringView_t * fp_StringView;
-
-	fp_ErrorCode fp_StringView_create(
-		fp_ErrorMessage err, fp_StringView * out, char const * str, size_t size);
-
-	void fp_StringView_release(fp_StringView handle);
-
-	char const * fp_StringView_data(fp_StringView handle);	// noexcept
-
-	size_t fp_StringView_size(fp_StringView handle);		// noexcept
+	fp_String_s fp_String_suite();
 
 	// StringDict
 
-	typedef struct fp_StringDict_t * fp_StringDict;
+	typedef struct fp_StringDict_t * fp_StringDict_h;
 
-	fp_ErrorCode fp_StringDict_create(fp_ErrorMessage err, fp_StringDict * out);
+	typedef struct
+	{
+		fp_ErrorCode (*create)(fp_ErrorMessage, fp_StringDict_h *);
 
-	void fp_StringDict_release(fp_StringDict handle);
+		void (*release)(fp_StringDict_h);
 
-	fp_ErrorCode fp_StringDict_insert(
-		fp_ErrorMessage err, fp_StringDict handle, fp_String key, fp_String value);
+		fp_ErrorCode (*insert)(fp_ErrorMessage, fp_StringDict_h, fp_String_h, fp_String_h);
 
-	fp_ErrorCode fp_StringDict_at(
-		fp_ErrorMessage err, fp_String * out, fp_StringDict handle, fp_String key);
+		fp_ErrorCode (*at)(fp_ErrorMessage, fp_String_h *, fp_StringDict_h, fp_String_h);
+	} fp_StringDict_s;
+
+	fp_StringDict_s fp_StringDict_suite();
+
 #ifdef __cplusplus
 }
 #endif

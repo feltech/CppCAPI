@@ -7,7 +7,7 @@
 
 extern "C"
 {
-	FELTPLUGINDEMOPLUGIN_EXPORT fp_ErrorCode update_dict(fp_ErrorMessage err, fp_StringDict hdict)
+	FELTPLUGINDEMOPLUGIN_EXPORT fp_ErrorCode update_dict(fp_ErrorMessage err, fp_StringDict_h hdict)
 	{
 		using namespace feltplugindemoplugin;
 		return feltplugin::wrap_exception(

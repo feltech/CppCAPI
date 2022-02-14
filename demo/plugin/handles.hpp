@@ -9,16 +9,36 @@ namespace feltplugindemoplugin
 {
 // clang-format off
 using HandleMap = feltplugin::HandleMap<
-	fp_String,		struct String,
-	fp_StringView,	struct StringView,
-	fp_StringDict,	struct StringDict
+	fp_String_h,		struct String,
+	fp_StringDict_h,	struct StringDict
 >;
 // clang-format on
 
-struct String : private feltplugin::plugin::HandleAdapter<fp_String>
+
+template <class Handle>
+struct HandleTraits{};
+
+template <>
+struct HandleTraits<fp_String_h>
 {
-	using Handle = fp_String;
-	using Base = HandleAdapter<Handle>;
+	using Handle = fp_String_h;
+	using Suite = fp_String_s;
+	using Class = String;
+	static constexpr auto get_suite = &fp_String_suite;
+};
+
+template <>
+struct HandleTraits<fp_StringDict_h>
+{
+	using Handle = fp_StringDict_h;
+	using Suite = fp_StringDict_s;
+	using Class = StringDict;
+	static constexpr auto get_suite = &fp_StringDict_suite;
+};
+
+struct String : private feltplugin::plugin::HandleAdapter<HandleTraits<fp_String_h>>
+{
+	using Base = HandleAdapter<HandleTraits<fp_String_h>>;
 
 	using Base::HandleAdapter;
 	using Base::operator Handle;
@@ -33,30 +53,9 @@ struct String : private feltplugin::plugin::HandleAdapter<fp_String>
 	~String();
 };
 
-struct StringView : private feltplugin::plugin::HandleAdapter<fp_StringView>
+struct StringDict : private feltplugin::plugin::HandleAdapter<HandleTraits<fp_StringDict_h>>
 {
-	using Handle = fp_StringView;
-	using Base = HandleAdapter<Handle>;
-
-	using Base::HandleAdapter;
-	using Base::operator Handle;
-
-	explicit StringView(std::string_view const & local);
-
-	[[nodiscard]] char const * data() const;
-
-	[[nodiscard]] std::size_t size() const;
-
-	explicit operator std::string_view() const;
-
-	~StringView();
-};
-
-struct StringDict : private feltplugin::plugin::HandleAdapter<fp_StringDict>
-{
-	using Handle = fp_StringDict;
-	using Base = HandleAdapter<Handle>;
-
+	using Base = HandleAdapter<HandleTraits<fp_StringDict_h>>;
 	using Base::HandleAdapter;
 	using Base::operator Handle;
 

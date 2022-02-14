@@ -12,7 +12,7 @@ void execute()
 	feltplugin::host::Plugin plugin{"./libFeltPluginDemoPlugin.so"};
 
 	auto update_dict =
-		plugin.load_symbol<fp_ErrorCode (*)(fp_ErrorMessage, fp_StringDict)>("update_dict");
+		plugin.load_symbol<fp_ErrorCode (*)(fp_ErrorMessage, fp_StringDict_h)>("update_dict");
 
 	auto dict_ptr = feltplugin::make_shared<StringDict>(
 		StringDict{{String{"hostkey"}, String{"hostvalue"}}});

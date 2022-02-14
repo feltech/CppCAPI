@@ -3,7 +3,7 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "errors.h"
+#include "handles.h"
 
 namespace feltplugin
 {
