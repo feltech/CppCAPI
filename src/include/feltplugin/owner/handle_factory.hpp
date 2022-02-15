@@ -4,7 +4,7 @@
 #include "../handle_map.hpp"
 #include "../errors.hpp"
 
-namespace feltplugin::host
+namespace feltplugin::owner
 {
 
 template <class Class, class HandleMap>

@@ -3,7 +3,7 @@
 #include <feltplugin/handles.h>
 #include <feltplugin/errors.hpp>
 
-namespace feltplugin::plugin
+namespace feltplugin::receiver
 {
 
 template <class THandle, class TSuite, TSuite (*Tget_suite)(), class TClass>

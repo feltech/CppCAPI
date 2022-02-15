@@ -3,7 +3,7 @@
 
 #include <feltplugindemo/handles.h>
 #include <feltplugin/errors.hpp>
-#include <feltplugin/host/handle_factory.hpp>
+#include <feltplugin/owner/handle_factory.hpp>
 
 extern "C"
 {

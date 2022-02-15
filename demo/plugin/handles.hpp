@@ -1,7 +1,7 @@
 #pragma once
 
 #include <feltplugin/handle_map.hpp>
-#include <feltplugin/plugin/handle_adaptor.hpp>
+#include <feltplugin/receiver/handle_adaptor.hpp>
 
 #include <feltplugindemo/handles.h>
 
@@ -9,9 +9,9 @@ namespace feltplugindemoplugin
 {
 
 using StringTraits =
-	feltplugin::plugin::HandleTraits<fp_String_h, fp_String_s, &fp_String_suite, struct String>;
+	feltplugin::receiver::HandleTraits<fp_String_h, fp_String_s, &fp_String_suite, struct String>;
 
-struct String : feltplugin::plugin::HandleAdapter<StringTraits>
+struct String : feltplugin::receiver::HandleAdapter<StringTraits>
 {
 	using Base::HandleAdapter;
 
@@ -23,10 +23,10 @@ struct String : feltplugin::plugin::HandleAdapter<StringTraits>
 	explicit operator std::string() const;
 };
 
-using StringDictTraits = feltplugin::plugin::
+using StringDictTraits = feltplugin::receiver::
 	HandleTraits<fp_StringDict_h, fp_StringDict_s, &fp_StringDict_suite, struct StringDict>;
 
-struct StringDict : feltplugin::plugin::HandleAdapter<StringDictTraits>
+struct StringDict : feltplugin::receiver::HandleAdapter<StringDictTraits>
 {
 	using Base::HandleAdapter;
 

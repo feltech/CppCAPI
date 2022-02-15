@@ -1,6 +1,6 @@
 
 #include <feltplugin/errors.hpp>
-#include <feltplugin/host/plugin_factory.hpp>
+#include <feltplugin/owner/plugin_factory.hpp>
 #include <iostream>
 
 #include "handles.hpp"
@@ -9,7 +9,7 @@ namespace feltplugindemohost
 {
 void execute()
 {
-	feltplugin::host::Plugin plugin{"./libFeltPluginDemoPlugin.so"};
+	feltplugin::owner::Plugin plugin{"./libFeltPluginDemoPlugin.so"};
 
 	auto update_dict =
 		plugin.load_symbol<fp_ErrorCode (*)(fp_ErrorMessage, fp_StringDict_h)>("update_dict");

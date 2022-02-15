@@ -7,7 +7,7 @@
 #include <feltplugin/handle_map.hpp>
 
 #include <feltplugindemo/handles.h>
-#include "feltplugin/host/handle_factory.hpp"
+#include "feltplugin/owner/handle_factory.hpp"
 
 namespace feltplugindemohost
 {
@@ -23,5 +23,5 @@ using HandleMap = feltplugin::HandleMap<
 // clang-format on
 
 template <class Class>
-using HandleFactory = feltplugin::host::HandleFactory<Class, HandleMap>;
+using HandleFactory = feltplugin::owner::HandleFactory<Class, HandleMap>;
 }

@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <string>
 
-namespace feltplugin::host
+namespace feltplugin::owner
 {
 using PluginHandle = decltype(dlopen("", 0));
 using SymHandle = decltype(dlsym(nullptr, ""));
