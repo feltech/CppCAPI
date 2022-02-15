@@ -17,7 +17,7 @@ void execute()
 	auto dict_ptr = feltplugin::make_shared<StringDict>(
 		StringDict{{String{"hostkey"}, String{"hostvalue"}}});
 
-	auto dict_handle = HandleFactory<StringDict>::create(dict_ptr);
+	auto dict_handle = HandleFactory<fp_StringDict_h>::create(dict_ptr);
 
 	try
 	{

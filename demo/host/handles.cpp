@@ -17,11 +17,11 @@ extern "C"
 	{
 		return {
 			[](fp_ErrorMessage err, fp_String_h * out, char const * str)
-			{ return HandleFactory<String>::make(err, out, str); },
+			{ return HandleFactory<fp_String_h>::make(err, out, str); },
 
-			&HandleFactory<String>::release,
+			&HandleFactory<fp_String_h>::release,
 
-			[](fp_String_h handle) { return HandleFactory<String>::convert(handle)->c_str(); }};
+			[](fp_String_h handle) { return HandleFactory<fp_String_h>::convert(handle)->c_str(); }};
 	}
 
 	// StringDict
@@ -32,9 +32,9 @@ extern "C"
 	{
 		return {
 			[](fp_ErrorMessage err, fp_StringDict_h * out)
-			{ return HandleFactory<StringDict>::make(err, out); },
+			{ return HandleFactory<fp_StringDict_h>::make(err, out); },
 
-			&HandleFactory<StringDict>::release,
+			&HandleFactory<fp_StringDict_h>::release,
 
 			[](fp_ErrorMessage err, fp_StringDict_h handle, fp_String_h key, fp_String_h value)
 			{
@@ -43,9 +43,9 @@ extern "C"
 					err,
 					[handle, key, value]
 					{
-						String const & key_str = *HandleFactory<String>::convert(key);
-						String const & value_str = *HandleFactory<String>::convert(value);
-						StringDict & dict = *HandleFactory<StringDict>::convert(handle);
+						String const & key_str = *HandleFactory<fp_String_h>::convert(key);
+						String const & value_str = *HandleFactory<fp_String_h>::convert(value);
+						StringDict & dict = *HandleFactory<fp_StringDict_h>::convert(handle);
 
 						dict.insert({key_str, value_str});
 					});
@@ -58,12 +58,12 @@ extern "C"
 					err,
 					[out, handle, key]
 					{
-						String const & key_str = *HandleFactory<String>::convert(key);
-						StringDict const & dict = *HandleFactory<StringDict>::convert(handle);
+						String const & key_str = *HandleFactory<fp_String_h>::convert(key);
+						StringDict const & dict = *HandleFactory<fp_StringDict_h>::convert(handle);
 
 						std::string value = dict.at(key_str);
 
-						*out = HandleFactory<String>::make(std::move(value));
+						*out = HandleFactory<fp_String_h>::make(std::move(value));
 					});
 			}};
 	}

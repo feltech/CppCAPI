@@ -17,8 +17,8 @@ using StringDict = std::unordered_map<String, String>;
 
 // clang-format off
 using HandleMap = feltplugin::HandleMap<
-	fp_String_h,		feltplugin::UniquePtr<String>,
-	fp_StringDict_h,	feltplugin::SharedPtr<StringDict>
+	feltplugin::HandleTraits<fp_String_h, feltplugin::UniquePtr<String>, String>,
+	feltplugin::HandleTraits<fp_StringDict_h, feltplugin::SharedPtr<StringDict>, StringDict>
 >;
 // clang-format on
 

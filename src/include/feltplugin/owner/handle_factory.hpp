@@ -7,11 +7,11 @@
 namespace feltplugin::owner
 {
 
-template <class Class, class HandleMap>
+template <class Handle, class HandleMap>
 struct HandleFactory
 {
-	using Ptr = typename HandleMap::template ptr_from_class<Class>;
-	using Handle = typename HandleMap::template handle_from_ptr<Ptr>;
+	using Ptr = typename HandleMap::template ptr_from_handle<Handle>;
+	using Class = typename HandleMap::template class_from_handle<Handle>;
 
 	template <typename... Args>
 	static fp_ErrorCode make(fp_ErrorMessage err, Handle * out, Args &&... args)
