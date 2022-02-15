@@ -6,24 +6,42 @@
 namespace feltplugin::plugin
 {
 
-template <class HandleTraits>
+template <class THandle, class TSuite, TSuite (*Tget_suite)(), class TClass>
+struct HandleTraits
+{
+	using Handle = THandle;
+	using Suite = TSuite;
+	using Class = TClass;
+	static constexpr auto get_suite = Tget_suite;
+};
+
+template <class Traits>
 struct HandleAdapter
 {
-	using Handle = typename HandleTraits::Handle;
-	using Suite = typename HandleTraits::Suite;
-	using Class = typename HandleTraits::Class;
-	static constexpr auto get_suite = HandleTraits::get_suite;
+protected:
+	using Base = HandleAdapter<Traits>;
+	using Handle = typename Traits::Handle;
+	using Suite = typename Traits::Suite;
+	using Class = typename Traits::Class;
+	static constexpr auto get_suite = Traits::get_suite;
 
-	explicit HandleAdapter() : handle_{nullptr}, suite_{get_suite()} {}
+public:
 	explicit HandleAdapter(Handle handle) : handle_{handle}, suite_{get_suite()} {}
 	HandleAdapter(HandleAdapter const &) = delete;
 	HandleAdapter(HandleAdapter &&) noexcept = default;
-	~HandleAdapter() = default;
+
+	virtual ~HandleAdapter()
+	{
+		suite_.release(handle_);
+	}
 
 	explicit operator Handle() const
 	{
 		return handle_;
 	}
+
+protected:
+	HandleAdapter() : handle_{nullptr}, suite_{get_suite()} {}
 
 	template <class... Args>
 	void create(Args &&... args)
@@ -61,4 +79,4 @@ protected:
 	Handle handle_;
 	Suite const suite_;
 };
-}  // namespace feltplugin
+}  // namespace feltplugin::plugin
