@@ -3,7 +3,7 @@
 #include <feltplugin/owner/plugin_factory.hpp>
 #include <iostream>
 
-#include "handles.hpp"
+#include "sender.hpp"
 
 namespace feltplugindemohost
 {
@@ -12,12 +12,12 @@ void execute()
 	feltplugin::owner::Plugin plugin{"./libFeltPluginDemoPlugin.so"};
 
 	auto update_dict =
-		plugin.load_symbol<fp_ErrorCode (*)(fp_ErrorMessage, fp_StringDict_h)>("update_dict");
+		plugin.load_symbol<fp_ErrorCode (*)(fp_ErrorMessage, fpdemo_StringDict_h)>("update_dict");
 
 	auto dict_ptr = feltplugin::make_shared<StringDict>(
 		StringDict{{String{"hostkey"}, String{"hostvalue"}}});
 
-	auto dict_handle = HandleFactory<fp_StringDict_h>::create(dict_ptr);
+	auto dict_handle = HandleFactory<fpdemo_StringDict_h>::create(dict_ptr);
 
 	try
 	{

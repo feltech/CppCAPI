@@ -1,4 +1,4 @@
-#include "handles.hpp"
+#include "receiver.hpp"
 
 namespace feltplugindemoplugin
 {
@@ -21,12 +21,12 @@ String::operator std::string() const
 
 String StringDict::at(String const & key)
 {
-	return String{call(suite_.at, static_cast<fp_String_h>(key))};
+	return String{call(suite_.at, static_cast<fpdemo_String_h>(key))};
 }
 
 void StringDict::insert(String const & key, String const & value)
 {
-	call(suite_.insert, static_cast<fp_String_h>(key), static_cast<fp_String_h>(value));
+	call(suite_.insert, static_cast<fpdemo_String_h>(key), static_cast<fpdemo_String_h>(value));
 }
 
 }  // namespace feltplugindemoplugin

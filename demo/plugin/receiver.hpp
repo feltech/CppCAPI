@@ -3,7 +3,7 @@
 #include <feltplugin/receiver/handle_adaptor.hpp>
 #include <feltplugin/receiver/handle_map.hpp>
 
-#include <feltplugindemo/handles.h>
+#include <feltplugindemo/interface.h>
 
 namespace feltplugindemoplugin
 {
@@ -12,17 +12,17 @@ namespace feltplugindemoplugin
 using HandleMap = feltplugin::receiver::HandleMap<
     // String.
 	feltplugin::receiver::HandleTraits<
-	    fp_String_h, fp_String_s, &fp_String_suite, struct String>,
+	    fpdemo_String_h, fp_String_s, &fp_String_suite, struct String>,
 	// StringDict
 	feltplugin::receiver::HandleTraits<
-	    fp_StringDict_h, fp_StringDict_s, &fp_StringDict_suite, struct StringDict>
+	    fpdemo_StringDict_h, fp_StringDict_s, &fp_StringDict_suite, struct StringDict>
 >;
 // clang-format on
 
 template <class THandle>
 using HandleAdapter = feltplugin::receiver::HandleAdapter<THandle, HandleMap>;
 
-struct String : HandleAdapter<fp_String_h>
+struct String : HandleAdapter<fpdemo_String_h>
 {
 	using Base::HandleAdapter;
 
@@ -34,7 +34,7 @@ struct String : HandleAdapter<fp_String_h>
 	explicit operator std::string() const;
 };
 
-struct StringDict : HandleAdapter<fp_StringDict_h>
+struct StringDict : HandleAdapter<fpdemo_StringDict_h>
 {
 	using Base::HandleAdapter;
 

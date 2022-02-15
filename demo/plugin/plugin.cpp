@@ -3,11 +3,11 @@
 #include <iostream>
 
 #include "feltplugindemoplugin_export.h"
-#include "handles.hpp"
+#include "receiver.hpp"
 
 extern "C"
 {
-	FELTPLUGINDEMOPLUGIN_EXPORT fp_ErrorCode update_dict(fp_ErrorMessage err, fp_StringDict_h hdict)
+	FELTPLUGINDEMOPLUGIN_EXPORT fp_ErrorCode update_dict(fp_ErrorMessage err, fpdemo_StringDict_h hdict)
 	{
 		using namespace feltplugindemoplugin;
 		return feltplugin::wrap_exception(
