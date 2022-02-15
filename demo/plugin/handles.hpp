@@ -1,17 +1,28 @@
 #pragma once
 
-#include "feltplugin/owner/handle_map.hpp"
 #include <feltplugin/receiver/handle_adaptor.hpp>
+#include <feltplugin/receiver/handle_map.hpp>
 
 #include <feltplugindemo/handles.h>
 
 namespace feltplugindemoplugin
 {
 
-using StringTraits =
-	feltplugin::receiver::HandleTraits<fp_String_h, fp_String_s, &fp_String_suite, struct String>;
+// clang-format off
+using HandleMap = feltplugin::receiver::HandleMap<
+    // String.
+	feltplugin::receiver::HandleTraits<
+	    fp_String_h, fp_String_s, &fp_String_suite, struct String>,
+	// StringDict
+	feltplugin::receiver::HandleTraits<
+	    fp_StringDict_h, fp_StringDict_s, &fp_StringDict_suite, struct StringDict>
+>;
+// clang-format on
 
-struct String : feltplugin::receiver::HandleAdapter<StringTraits>
+template <class THandle>
+using HandleAdapter = feltplugin::receiver::HandleAdapter<THandle, HandleMap>;
+
+struct String : HandleAdapter<fp_String_h>
 {
 	using Base::HandleAdapter;
 
@@ -23,10 +34,7 @@ struct String : feltplugin::receiver::HandleAdapter<StringTraits>
 	explicit operator std::string() const;
 };
 
-using StringDictTraits = feltplugin::receiver::
-	HandleTraits<fp_StringDict_h, fp_StringDict_s, &fp_StringDict_suite, struct StringDict>;
-
-struct StringDict : feltplugin::receiver::HandleAdapter<StringDictTraits>
+struct StringDict : HandleAdapter<fp_StringDict_h>
 {
 	using Base::HandleAdapter;
 

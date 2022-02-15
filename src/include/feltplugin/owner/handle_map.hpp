@@ -14,13 +14,28 @@ struct HandleTraits
 	using Class = TClass;
 };
 
+
+/**
+ * Fallback default: assume if no match then must be C-native type, so pass-through.
+ * TODO: Use for auto-converting function arguments.
+ */
+struct DefaultHandlePtr
+{
+	template <class Other>
+	struct ptr_from_handle_t : std::true_type
+	{
+		using type = Other;
+	};
+};
+
 template <class Traits, class... Rest>
 struct HandleMap
 {
 	template <class HandleToLookup>
 	using ptr_from_handle_t = typename std::disjunction<
 		typename HandleMap<Traits>::template ptr_from_handle_t<HandleToLookup>,
-		typename HandleMap<Rest...>::template ptr_from_handle_t<HandleToLookup>>;
+		typename HandleMap<Rest...>::template ptr_from_handle_t<HandleToLookup>,
+		DefaultHandlePtr>;
 
 	template <class HandleToLookup>
 	using class_from_handle_t = typename std::disjunction<

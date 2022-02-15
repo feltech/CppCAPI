@@ -6,27 +6,17 @@
 namespace feltplugin::receiver
 {
 
-template <class THandle, class TSuite, TSuite (*Tget_suite)(), class TClass>
-struct HandleTraits
-{
-	using Handle = THandle;
-	using Suite = TSuite;
-	using Class = TClass;
-	static constexpr auto get_suite = Tget_suite;
-};
-
-template <class Traits>
+template <class THandle, class THandleMap>
 struct HandleAdapter
 {
 protected:
-	using Base = HandleAdapter<Traits>;
-	using Handle = typename Traits::Handle;
-	using Suite = typename Traits::Suite;
-	using Class = typename Traits::Class;
-	static constexpr auto get_suite = Traits::get_suite;
+	using Base = HandleAdapter<THandle, THandleMap>;
+	using Handle = THandle;
+	using Suite = typename THandleMap::template suite_from_handle<THandle>;
+	static constexpr auto suite_factory = THandleMap::template suite_factory_from_handle<THandle>();
 
 public:
-	explicit HandleAdapter(Handle handle) : handle_{handle}, suite_{get_suite()} {}
+	explicit HandleAdapter(Handle handle) : handle_{handle}, suite_{suite_factory()} {}
 	HandleAdapter(HandleAdapter const &) = delete;
 	HandleAdapter(HandleAdapter &&) noexcept = default;
 
@@ -41,7 +31,7 @@ public:
 	}
 
 protected:
-	HandleAdapter() : handle_{nullptr}, suite_{get_suite()} {}
+	HandleAdapter() : handle_{nullptr}, suite_{suite_factory()} {}
 
 	template <class... Args>
 	void create(Args &&... args)
@@ -79,4 +69,4 @@ protected:
 	Handle handle_;
 	Suite const suite_;
 };
-}  // namespace feltplugin::plugin
+}  // namespace feltplugin::receiver
