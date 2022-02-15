@@ -1,6 +1,6 @@
 #pragma once
 
-#include <feltplugin/handle_map.hpp>
+#include "feltplugin/owner/handle_map.hpp"
 #include <feltplugin/receiver/handle_adaptor.hpp>
 
 #include <feltplugindemo/handles.h>

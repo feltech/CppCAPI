@@ -2,11 +2,10 @@
 
 #include <type_traits>
 
-#include "pointers.hpp"
+#include "feltplugin/pointers.hpp"
 
-namespace feltplugin
+namespace feltplugin::owner
 {
-
 template <class THandle, class TPtr, class TClass>
 struct HandleTraits
 {

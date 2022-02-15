@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../pointers.hpp"
-#include "../handle_map.hpp"
+#include "handle_map.hpp"
 #include "../errors.hpp"
 
 namespace feltplugin::owner
