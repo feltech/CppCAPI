@@ -24,7 +24,12 @@ target_include_directories(
 # Demo executable
 
 #Llibrary mostly so we can use `generate_export_header`.
-add_library(FeltPluginDemoHostLib SHARED demo/host/sender.cpp)
+add_library(
+	FeltPluginDemoHostLib
+	SHARED
+	demo/host/sender.cpp
+	demo/host/receiver.cpp
+)
 set_target_properties(
 	FeltPluginDemoHostLib
 	PROPERTIES
@@ -64,7 +69,12 @@ set_target_properties(
 #------------------------------------------------------------
 # Demo plugin
 
-add_library(FeltPluginDemoPlugin MODULE demo/plugin/plugin.cpp demo/plugin/receiver.cpp)
+add_library(
+	FeltPluginDemoPlugin
+	MODULE
+	demo/plugin/receiver.cpp
+	demo/plugin/sender.cpp
+)
 target_include_directories(
 	FeltPluginDemoPlugin
 	PUBLIC

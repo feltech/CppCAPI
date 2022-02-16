@@ -5,17 +5,17 @@
 
 #include <feltplugindemo/interface.h>
 
-namespace feltplugindemoplugin
+namespace feltplugindemoplugin::receiver
 {
 
 // clang-format off
 using HandleMap = feltplugin::receiver::HandleMap<
     // String.
 	feltplugin::receiver::HandleTraits<
-	    fpdemo_String_h, fp_String_s, &fp_String_suite, struct String>,
+	    fpdemo_String_h, fp_String_s, &fpdemo_String_suite, struct String>,
 	// StringDict
 	feltplugin::receiver::HandleTraits<
-	    fpdemo_StringDict_h, fp_StringDict_s, &fp_StringDict_suite, struct StringDict>
+	    fpdemo_StringDict_h, fp_StringDict_s, &fpdemo_StringDict_suite, struct StringDict>
 >;
 // clang-format on
 

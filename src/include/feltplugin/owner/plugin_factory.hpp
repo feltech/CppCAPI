@@ -9,11 +9,11 @@ namespace feltplugin::owner
 using PluginHandle = decltype(dlopen("", 0));
 using SymHandle = decltype(dlsym(nullptr, ""));
 
-class Plugin
+class PluginLoader
 {
 public:
 	// TODO: dlmopen
-	explicit Plugin(char const * file_path, int mode = RTLD_LAZY)
+	explicit PluginLoader(char const * file_path, int mode = RTLD_LAZY)
 		: file_path_{file_path}, handle_{dlopen(file_path, mode)}
 	{
 		if (!handle_)

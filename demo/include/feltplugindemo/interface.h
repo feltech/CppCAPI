@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#include <feltplugin/handles.h>
+#include <feltplugin/interface.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -20,7 +20,7 @@ extern "C"
 		char const * (*c_str)(fpdemo_String_h handle);	// noexcept
 	} fp_String_s;
 
-	fp_String_s fp_String_suite();
+	fp_String_s fpdemo_String_suite();
 
 	// StringDict
 
@@ -39,7 +39,24 @@ extern "C"
 			fp_ErrorMessage, fpdemo_String_h *, fpdemo_StringDict_h, fpdemo_String_h);
 	} fp_StringDict_s;
 
-	fp_StringDict_s fp_StringDict_suite();
+	fp_StringDict_s fpdemo_StringDict_suite();
+
+	// Plugin
+
+	typedef struct fpdemo_Plugin_t * fpdemo_Plugin_h;
+
+	typedef struct
+	{
+		fp_ErrorCode (*create)(fp_ErrorMessage, fpdemo_Plugin_h *, fpdemo_StringDict_h);
+
+		void (*release)(fpdemo_Plugin_h);
+
+		fp_ErrorCode (*update_dict)(fp_ErrorMessage, fpdemo_Plugin_h, fpdemo_String_h);
+
+	} fpdemo_Plugin_s;
+
+	// Defined within plugin.
+//	fpdemo_Plugin_s fpdemo_Plugin_suite();
 
 #ifdef __cplusplus
 }

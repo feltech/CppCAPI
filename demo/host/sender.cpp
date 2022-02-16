@@ -7,13 +7,13 @@
 
 extern "C"
 {
-	using feltplugindemohost::HandleFactory;
+	using feltplugindemohost::sender::HandleFactory;
 
 	// String
 
-	using feltplugindemohost::String;
+	using feltplugindemohost::sender::String;
 
-	FELTPLUGINDEMOHOSTLIB_EXPORT fp_String_s fp_String_suite()
+	FELTPLUGINDEMOHOSTLIB_EXPORT fp_String_s fpdemo_String_suite()
 	{
 		return {
 			[](fp_ErrorMessage err, fpdemo_String_h * out, char const * str)
@@ -27,9 +27,9 @@ extern "C"
 
 	// StringDict
 
-	using feltplugindemohost::StringDict;
+	using feltplugindemohost::sender::StringDict;
 
-	FELTPLUGINDEMOHOSTLIB_EXPORT fp_StringDict_s fp_StringDict_suite()
+	FELTPLUGINDEMOHOSTLIB_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
 		return {
 			[](fp_ErrorMessage err, fpdemo_StringDict_h * out)

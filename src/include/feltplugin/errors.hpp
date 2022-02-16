@@ -3,7 +3,7 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "handles.h"
+#include "interface.h"
 
 namespace feltplugin
 {

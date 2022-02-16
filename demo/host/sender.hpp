@@ -9,7 +9,7 @@
 #include <feltplugindemo/interface.h>
 #include "feltplugin/owner/handle_factory.hpp"
 
-namespace feltplugindemohost
+namespace feltplugindemohost::sender
 {
 using String = std::string;
 using StringView = std::string_view;
@@ -22,6 +22,6 @@ using HandleMap = feltplugin::owner::HandleMap<
 >;
 // clang-format on
 
-template <class Class>
-using HandleFactory = feltplugin::owner::HandleFactory<Class, HandleMap>;
+template <class THandle>
+using HandleFactory = feltplugin::owner::HandleFactory<THandle, HandleMap>;
 }

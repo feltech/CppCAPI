@@ -1,6 +1,6 @@
 #pragma once
 
-#include <feltplugin/handles.h>
+#include <feltplugin/interface.h>
 #include <feltplugin/errors.hpp>
 
 namespace feltplugin::receiver
@@ -11,14 +11,34 @@ struct HandleAdapter
 {
 protected:
 	using Base = HandleAdapter<THandle, THandleMap>;
-	using Handle = THandle;
-	using Suite = typename THandleMap::template suite_from_handle<THandle>;
-	static constexpr auto suite_factory = THandleMap::template suite_factory_from_handle<THandle>();
 
 public:
-	explicit HandleAdapter(Handle handle) : handle_{handle}, suite_{suite_factory()} {}
+	using Handle = THandle;
+	using Suite = typename THandleMap::template suite_from_handle<THandle>;
+	using SuiteFactory = Suite (*)();
+
+protected:
+	static constexpr SuiteFactory ksuite_factory =
+		THandleMap::template suite_factory_from_handle<THandle>();
+
+public:
+	explicit HandleAdapter(Handle handle) : HandleAdapter{handle, ksuite_factory}
+	{
+		static_assert(ksuite_factory != nullptr, "Attempting to construct with null suite factory");
+	}
+
+	explicit HandleAdapter(SuiteFactory suite_factory) : HandleAdapter{nullptr, suite_factory} {}
+
+	explicit HandleAdapter(Handle handle, SuiteFactory suite_factory)
+		: handle_{handle}, suite_{suite_factory()}
+	{
+	}
+
 	HandleAdapter(HandleAdapter const &) = delete;
-	HandleAdapter(HandleAdapter &&) noexcept = default;
+	HandleAdapter(HandleAdapter && other) noexcept : handle_{other.handle_}, suite_{other.suite_}
+	{
+		other.handle_ = nullptr;
+	};
 
 	virtual ~HandleAdapter()
 	{
@@ -31,7 +51,7 @@ public:
 	}
 
 protected:
-	HandleAdapter() : handle_{nullptr}, suite_{suite_factory()} {}
+	HandleAdapter() : HandleAdapter{Handle{nullptr}} {}
 
 	template <class... Args>
 	void create(Args &&... args)
