@@ -2,22 +2,22 @@
 #include <feltplugin/owner/plugin_factory.hpp>
 #include <iostream>
 
-#include "receiver.hpp"
-#include "sender.hpp"
+#include "client.hpp"
+#include "owner.hpp"
 
 namespace feltplugindemohost
 {
 void execute()
 {
-	auto dict = feltplugin::make_shared<sender::StringDict>(
-		sender::StringDict{{"keyatconstruction", "valueatconstruction"}});
+	auto dict = feltplugin::make_shared<owner::StringDict>(
+		owner::StringDict{{"keyatconstruction", "valueatconstruction"}});
 
 	feltplugin::owner::PluginLoader plugin_loader{"./libFeltPluginDemoPlugin.so"};
 
 	auto const fpdemo_Plugin_suite =
-		plugin_loader.load_symbol<feltplugindemohost::receiver::Plugin::SuiteFactory>(
+		plugin_loader.load_symbol<feltplugindemohost::client::Plugin::SuiteFactory>(
 			"fpdemo_Plugin_suite");
-	feltplugindemohost::receiver::Plugin plugin{fpdemo_Plugin_suite, dict};
+	feltplugindemohost::client::Plugin plugin{fpdemo_Plugin_suite, dict};
 
 	plugin.update_dict("keyfromhost");
 

@@ -5,9 +5,9 @@
 
 #include <feltplugindemo/interface.h>
 
-#include "receiver.hpp"
+#include "client.hpp"
 
-namespace feltplugindemoplugin::sender
+namespace feltplugindemoplugin::owner
 {
 class Plugin;
 
@@ -24,12 +24,12 @@ using HandleFactory = feltplugin::owner::HandleFactory<Class, HandleMap>;
 class Plugin
 {
 public:
-	Plugin(receiver::StringDict dict);
+	explicit Plugin(client::StringDict dict);
 	~Plugin() = default;
 
-	void update_dict(receiver::String key);
+	void update_dict(client::String key);
 
 private:
-	receiver::StringDict dict_;
+	client::StringDict dict_;
 };
 }

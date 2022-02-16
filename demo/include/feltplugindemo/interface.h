@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#include <feltplugin/interface.h>
+#include <feltplugin/errors.h>
 
 #ifdef __cplusplus
 extern "C"

@@ -1,19 +1,19 @@
-#include "sender.hpp"
+#include "owner.hpp"
 
 #include "feltplugindemoplugin_export.h"
-#include "receiver.hpp"
+#include "client.hpp"
 
 #include <feltplugindemo/interface.h>
 #include <feltplugin/errors.hpp>
 #include <feltplugin/owner/handle_factory.hpp>
 #include "feltplugin/owner/handle_map.hpp"
 
-namespace feltplugindemoplugin::sender
+namespace feltplugindemoplugin::owner
 {
 
-Plugin::Plugin(receiver::StringDict dict) : dict_{std::move(dict)} {}
+Plugin::Plugin(client::StringDict dict) : dict_{std::move(dict)} {}
 
-void Plugin::update_dict(receiver::String key)
+void Plugin::update_dict(client::String key)
 {
 	dict_.insert(key, "valuefromplugin");
 }
@@ -21,9 +21,9 @@ void Plugin::update_dict(receiver::String key)
 
 extern "C"
 {
-	using feltplugindemoplugin::receiver::String;
-	using feltplugindemoplugin::receiver::StringDict;
-	using feltplugindemoplugin::sender::HandleFactory;
+	using feltplugindemoplugin::client::String;
+	using feltplugindemoplugin::client::StringDict;
+	using feltplugindemoplugin::owner::HandleFactory;
 
 	// Plugin
 

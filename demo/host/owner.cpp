@@ -1,4 +1,4 @@
-#include "sender.hpp"
+#include "owner.hpp"
 #include "feltplugindemohostlib_export.h"
 
 #include <feltplugindemo/interface.h>
@@ -7,11 +7,11 @@
 
 extern "C"
 {
-	using feltplugindemohost::sender::HandleFactory;
+	using feltplugindemohost::owner::HandleFactory;
 
 	// String
 
-	using feltplugindemohost::sender::String;
+	using feltplugindemohost::owner::String;
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fp_String_s fpdemo_String_suite()
 	{
@@ -27,7 +27,7 @@ extern "C"
 
 	// StringDict
 
-	using feltplugindemohost::sender::StringDict;
+	using feltplugindemohost::owner::StringDict;
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{

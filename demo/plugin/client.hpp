@@ -1,26 +1,26 @@
 #pragma once
 
-#include <feltplugin/receiver/handle_adaptor.hpp>
-#include <feltplugin/receiver/handle_map.hpp>
+#include <feltplugin/client/handle_adaptor.hpp>
+#include <feltplugin/client/handle_map.hpp>
 
 #include <feltplugindemo/interface.h>
 
-namespace feltplugindemoplugin::receiver
+namespace feltplugindemoplugin::client
 {
 
 // clang-format off
-using HandleMap = feltplugin::receiver::HandleMap<
+using HandleMap = feltplugin::client::HandleMap<
     // String.
-	feltplugin::receiver::HandleTraits<
+	feltplugin::client::HandleTraits<
 	    fpdemo_String_h, fp_String_s, &fpdemo_String_suite, struct String>,
 	// StringDict
-	feltplugin::receiver::HandleTraits<
+	feltplugin::client::HandleTraits<
 	    fpdemo_StringDict_h, fp_StringDict_s, &fpdemo_StringDict_suite, struct StringDict>
 >;
 // clang-format on
 
 template <class THandle>
-using HandleAdapter = feltplugin::receiver::HandleAdapter<THandle, HandleMap>;
+using HandleAdapter = feltplugin::client::HandleAdapter<THandle, HandleMap>;
 
 struct String : HandleAdapter<fpdemo_String_h>
 {

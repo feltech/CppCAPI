@@ -31,9 +31,13 @@ struct HandleFactory
 		{
 			return create(std::make_unique<Class>(std::forward<Args>(args)...));
 		}
-		else
+		else if constexpr (std::is_same_v<Ptr, RawPtr<Class>>)
 		{
 			return reinterpret_cast<Handle>(new Class{std::forward<Args>(args)...});
+		}
+		else
+		{
+			static_assert(always_false_t<Args...>::value, "Unrecognized holder type");
 		}
 	}
 

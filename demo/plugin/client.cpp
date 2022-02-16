@@ -1,6 +1,6 @@
-#include "receiver.hpp"
+#include "client.hpp"
 
-namespace feltplugindemoplugin::receiver
+namespace feltplugindemoplugin::client
 {
 String::String(std::string const & local) : String{local.c_str()} {}
 

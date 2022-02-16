@@ -3,7 +3,7 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "interface.h"
+#include "errors.h"
 
 namespace feltplugin
 {
@@ -32,4 +32,9 @@ inline void throw_on_error(fp_ErrorCode code, fp_ErrorMessage err)
 			break;
 	}
 }
+
+
+template <class...>
+struct always_false_t : std::false_type {};
+
 }  // namespace feltplugin

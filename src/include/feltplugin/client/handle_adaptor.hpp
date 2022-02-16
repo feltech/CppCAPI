@@ -1,9 +1,9 @@
 #pragma once
 
-#include <feltplugin/interface.h>
+#include <feltplugin/errors.h>
 #include <feltplugin/errors.hpp>
 
-namespace feltplugin::receiver
+namespace feltplugin::client
 {
 
 template <class THandle, class THandleMap>

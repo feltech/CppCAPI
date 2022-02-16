@@ -27,8 +27,8 @@ target_include_directories(
 add_library(
 	FeltPluginDemoHostLib
 	SHARED
-	demo/host/sender.cpp
-	demo/host/receiver.cpp
+	demo/host/owner.cpp
+	demo/host/client.cpp
 )
 set_target_properties(
 	FeltPluginDemoHostLib
@@ -72,8 +72,8 @@ set_target_properties(
 add_library(
 	FeltPluginDemoPlugin
 	MODULE
-	demo/plugin/receiver.cpp
-	demo/plugin/sender.cpp
+	demo/plugin/client.cpp
+	demo/plugin/owner.cpp
 )
 target_include_directories(
 	FeltPluginDemoPlugin

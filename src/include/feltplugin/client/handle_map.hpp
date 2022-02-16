@@ -4,7 +4,7 @@
 
 #include "feltplugin/pointers.hpp"
 
-namespace feltplugin::receiver
+namespace feltplugin::client
 {
 
 template <class THandle, class TSuite, TSuite (*Tsuite_factory)(), class TClass>
