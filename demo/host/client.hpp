@@ -13,18 +13,18 @@ namespace feltplugindemohost::client
 
 // clang-format off
 using HandleMap = feltplugin::client::HandleMap<
-	// Plugin
+	// Worker
 	feltplugin::client::HandleTraits<
-		fpdemo_Plugin_h , fpdemo_Plugin_s, nullptr, struct Plugin>
+		fpdemo_Worker_h , fpdemo_Worker_s, nullptr, struct Plugin>
 >;
 // clang-format on
 
 template <class THandle>
 using HandleAdapter = feltplugin::client::HandleAdapter<THandle, HandleMap>;
 
-struct FELTPLUGINDEMOHOSTLIB_EXPORT Plugin : HandleAdapter<fpdemo_Plugin_h>
+struct FELTPLUGINDEMOHOSTLIB_EXPORT Worker : HandleAdapter<fpdemo_Worker_h>
 {
-	Plugin(SuiteFactory suite_factory, feltplugin::SharedPtr<owner::StringDict> const & dict);
+	Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<owner::StringDict> const & dict);
 
 	void update_dict(const owner::String & key);
 };

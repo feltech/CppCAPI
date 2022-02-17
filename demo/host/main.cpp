@@ -15,9 +15,9 @@ void execute()
 	feltplugin::owner::PluginLoader plugin_loader{"./libFeltPluginDemoPlugin.so"};
 
 	auto const fpdemo_Plugin_suite =
-		plugin_loader.load_symbol<feltplugindemohost::client::Plugin::SuiteFactory>(
-			"fpdemo_Plugin_suite");
-	feltplugindemohost::client::Plugin plugin{fpdemo_Plugin_suite, dict};
+		plugin_loader.load_symbol<feltplugindemohost::client::Worker::SuiteFactory>(
+			"fpdemo_Worker_suite");
+	feltplugindemohost::client::Worker plugin{fpdemo_Plugin_suite, dict};
 
 	plugin.update_dict("keyfromhost");
 

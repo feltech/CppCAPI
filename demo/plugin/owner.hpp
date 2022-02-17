@@ -9,11 +9,11 @@
 
 namespace feltplugindemoplugin::owner
 {
-class Plugin;
+class Worker;
 
 // clang-format off
 using HandleMap = feltplugin::owner::HandleMap<
-	feltplugin::owner::HandleTraits<fpdemo_Plugin_h, feltplugin::UniquePtr<Plugin>, Plugin>
+	feltplugin::owner::HandleTraits<fpdemo_Worker_h, feltplugin::UniquePtr<Worker>, Worker>
 >;
 // clang-format on
 
@@ -21,11 +21,11 @@ template <class Class>
 using HandleFactory = feltplugin::owner::HandleFactory<Class, HandleMap>;
 
 
-class Plugin
+class Worker
 {
 public:
-	explicit Plugin(client::StringDict dict);
-	~Plugin() = default;
+	explicit Worker(client::StringDict dict);
+	~Worker() = default;
 
 	void update_dict(client::String key);
 

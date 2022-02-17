@@ -42,22 +42,22 @@ extern "C"
 
 	fp_StringDict_s fpdemo_StringDict_suite();
 
-	// Plugin
+	// Worker
 
-	typedef struct fpdemo_Plugin_t * fpdemo_Plugin_h;
+	typedef struct fpdemo_Worker_t * fpdemo_Worker_h;
 
 	typedef struct
 	{
-		fp_ErrorCode (*create)(fp_ErrorMessage, fpdemo_Plugin_h *, fpdemo_StringDict_h);
+		fp_ErrorCode (*create)(fp_ErrorMessage, fpdemo_Worker_h *, fpdemo_StringDict_h);
 
-		void (*release)(fpdemo_Plugin_h);
+		void (*release)(fpdemo_Worker_h);
 
-		fp_ErrorCode (*update_dict)(fp_ErrorMessage, fpdemo_Plugin_h, fpdemo_String_h);
+		fp_ErrorCode (*update_dict)(fp_ErrorMessage, fpdemo_Worker_h, fpdemo_String_h);
 
-	} fpdemo_Plugin_s;
+	} fpdemo_Worker_s;
 
 	// Defined within plugin.
-	//	fpdemo_Plugin_s fpdemo_Plugin_suite();
+	//	fpdemo_Worker_s fpdemo_Worker_suite();
 
 #ifdef __cplusplus
 }

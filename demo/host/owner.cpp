@@ -7,7 +7,6 @@
 
 extern "C"
 {
-	using feltplugindemohost::owner::HandleFactory;
 
 	// String
 
@@ -15,36 +14,37 @@ extern "C"
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
+		using HandleFactory = feltplugindemohost::owner::HandleFactory<fpdemo_String_h>;
 		return {
-			.create = &HandleFactory<fpdemo_String_h>::make,
+			.create = &HandleFactory::make,
 
-			.release = &HandleFactory<fpdemo_String_h>::release,
+			.release = &HandleFactory::release,
 
 			.c_str =
 				[](fpdemo_String_h handle)
 			{
-				return HandleFactory<fpdemo_String_h>::mem_fn(
+				return HandleFactory::mem_fn(
 					[](auto const & self) -> char const* { return self.c_str(); }, handle);
 			},
 
 			.at =
 				[](fp_ErrorMessage err, char * out, fpdemo_String_h handle, int n)
 			{
-				return HandleFactory<fpdemo_String_h>::mem_fn(
+				return HandleFactory::mem_fn(
 					[](auto & self, int n) { return self.at(n); }, err, out, handle, n);
 			}};
 	}
 
 	// StringDict
 
-	using feltplugindemohost::owner::StringDict;
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
+		using HandleFactory = feltplugindemohost::owner::HandleFactory<fpdemo_StringDict_h>;
 		return {
-			.create = &HandleFactory<fpdemo_StringDict_h>::make,
+			.create = &HandleFactory::make,
 
-			.release = &HandleFactory<fpdemo_StringDict_h>::release,
+			.release = &HandleFactory::release,
 
 			.insert =
 				[](fp_ErrorMessage err,
@@ -52,7 +52,7 @@ extern "C"
 				   fpdemo_String_h key,
 				   fpdemo_String_h value)
 			{
-				return HandleFactory<fpdemo_StringDict_h>::mem_fn(
+				return HandleFactory::mem_fn(
 					[](auto & self, auto const & key, auto const & value) {
 						return self.insert({key, value});
 					},
@@ -68,7 +68,7 @@ extern "C"
 				   fpdemo_StringDict_h handle,
 				   fpdemo_String_h key)
 			{
-				return HandleFactory<fpdemo_StringDict_h>::mem_fn(
+				return HandleFactory::mem_fn(
 					[](auto const & self, auto const & key) { return self.at(key); },
 					err,
 					out,

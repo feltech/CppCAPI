@@ -11,9 +11,9 @@
 namespace feltplugindemoplugin::owner
 {
 
-Plugin::Plugin(client::StringDict dict) : dict_{std::move(dict)} {}
+Worker::Worker(client::StringDict dict) : dict_{std::move(dict)} {}
 
-void Plugin::update_dict(client::String key)
+void Worker::update_dict(client::String key)
 {
 	dict_.insert(key, "valuefromplugin");
 }
@@ -27,16 +27,16 @@ extern "C"
 
 	// Plugin
 
-	FELTPLUGINDEMOPLUGIN_EXPORT fpdemo_Plugin_s fpdemo_Plugin_suite()
+	FELTPLUGINDEMOPLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
 		return {
-			.create = &HandleFactory<fpdemo_Plugin_h>::make,
+			.create = &HandleFactory<fpdemo_Worker_h>::make,
 
-			.release = &HandleFactory<fpdemo_Plugin_h>::release,
+			.release = &HandleFactory<fpdemo_Worker_h>::release,
 
-			.update_dict = [](fp_ErrorMessage err, fpdemo_Plugin_h handle, fpdemo_String_h hkey)
+			.update_dict = [](fp_ErrorMessage err, fpdemo_Worker_h handle, fpdemo_String_h hkey)
 			{
-				return HandleFactory<fpdemo_Plugin_h>::mem_fn(
+				return HandleFactory<fpdemo_Worker_h>::mem_fn(
 					[](auto & self, auto const& key) { self.update_dict(key); },
 					err,
 					handle,
