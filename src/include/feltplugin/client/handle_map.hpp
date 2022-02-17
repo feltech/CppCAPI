@@ -7,7 +7,7 @@
 namespace feltplugin::client
 {
 
-template <class THandle, class TSuite, TSuite (*Tsuite_factory)(), class TClass>
+template <class THandle, class TSuite, class TClass, TSuite (*Tsuite_factory)() = nullptr>
 struct HandleTraits
 {
 	using Handle = THandle;

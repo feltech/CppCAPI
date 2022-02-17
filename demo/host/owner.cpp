@@ -2,7 +2,6 @@
 #include "feltplugindemohostlib_export.h"
 
 #include <feltplugindemo/interface.h>
-#include <feltplugin/errors.hpp>
 #include <feltplugin/owner/handle_factory.hpp>
 
 extern "C"

@@ -15,7 +15,7 @@ namespace feltplugindemohost::client
 using HandleMap = feltplugin::client::HandleMap<
 	// Worker
 	feltplugin::client::HandleTraits<
-		fpdemo_Worker_h , fpdemo_Worker_s, nullptr, struct Plugin>
+		fpdemo_Worker_h , fpdemo_Worker_s, struct Plugin>
 >;
 // clang-format on
 
