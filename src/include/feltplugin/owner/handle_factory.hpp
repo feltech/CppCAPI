@@ -1,11 +1,35 @@
 #pragma once
 
-#include "../errors.hpp"
+#include <cstring>
+
+#include "../errors.h"
 #include "../pointers.hpp"
 #include "handle_map.hpp"
 
 namespace feltplugin::owner
 {
+namespace
+{
+template <class...>
+struct always_false_t : std::false_type
+{
+};
+}
+
+template <typename Fn>
+fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
+{
+	try
+	{
+		fn();
+	}
+	catch (std::exception & ex)
+	{
+		strncpy(err, ex.what(), sizeof(fp_ErrorMessage));
+		return fp_error;
+	}
+	return fp_ok;
+}
 
 template <class THandle, class THandleMap>
 struct HandleFactory

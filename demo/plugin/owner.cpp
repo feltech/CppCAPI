@@ -4,7 +4,6 @@
 #include "client.hpp"
 
 #include <feltplugindemo/interface.h>
-#include <feltplugin/errors.hpp>
 #include <feltplugin/owner/handle_factory.hpp>
 #include "feltplugindemoplugin_export.h"
 

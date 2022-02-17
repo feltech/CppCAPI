@@ -1,10 +1,21 @@
 #pragma once
 
+#include <stdexcept>
+
 #include <feltplugin/errors.h>
-#include <feltplugin/errors.hpp>
 
 namespace feltplugin::client
 {
+inline void throw_on_error(fp_ErrorCode code, fp_ErrorMessage err)
+{
+	switch (code)
+	{
+		case fp_ErrorCode::fp_error:
+			throw std::runtime_error{err};
+		case fp_ErrorCode::fp_ok:
+			break;
+	}
+}
 
 template <class THandle, class THandleMap>
 struct HandleAdapter
@@ -89,4 +100,4 @@ protected:
 	Handle handle_;
 	Suite const suite_;
 };
-}  // namespace feltplugin::receiver
+}  // namespace feltplugin::client
