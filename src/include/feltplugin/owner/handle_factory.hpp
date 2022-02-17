@@ -14,7 +14,6 @@ template <class...>
 struct always_false_t : std::false_type
 {
 };
-}
 
 template <typename Fn>
 fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
@@ -30,13 +29,18 @@ fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 	}
 	return fp_ok;
 }
+}  // namespace
 
 template <class THandle, class THandleMap>
 struct HandleFactory
 {
 	using Handle = THandle;
-	using Ptr = typename THandleMap::template ptr_from_handle<Handle>;
 	using Class = typename THandleMap::template class_from_handle<Handle>;
+
+	static constexpr HandlePtrTag ptr_type_tag = THandleMap::template ptr_tag_from_handle<Handle>();
+
+	using PtrRef =
+		std::conditional_t<ptr_type_tag == HandlePtrTag::Shared, SharedPtr<Class> &, Class *>;
 
 	template <typename... Args>
 	static fp_ErrorCode make(char * err, Handle * out, Args... args)
@@ -47,59 +51,72 @@ struct HandleFactory
 	template <typename... Args>
 	static Handle make(Args &&... args)
 	{
-		if constexpr (std::is_same_v<Ptr, SharedPtr<Class>>)
+		if constexpr (ptr_type_tag == HandlePtrTag::Shared)
 		{
 			return create(std::make_shared<Class>(std::forward<Args>(args)...));
 		}
-		else if constexpr (std::is_same_v<Ptr, UniquePtr<Class>>)
-		{
-			return create(std::make_unique<Class>(std::forward<Args>(args)...));
-		}
-		else if constexpr (std::is_same_v<Ptr, RawPtr<Class>>)
+		else if constexpr (ptr_type_tag == HandlePtrTag::OwnedByClient)
 		{
 			return reinterpret_cast<Handle>(new Class{std::forward<Args>(args)...});
 		}
 		// C-native type.
-		else if constexpr (std::is_same_v<Class, Handle>)
+		else if constexpr (ptr_type_tag == HandlePtrTag::Temporary)
 		{
 			return Class{std::forward<Args>(args)...};
 		}
-		else
-		{
-			static_assert(always_false_t<Args...>::value, "Unrecognized holder type");
-		}
-	}
-
-	static Handle create(UniquePtr<Class> && ptr)
-	{
-		return reinterpret_cast<Handle>(new Ptr{std::move(ptr)});
 	}
 
 	static Handle create(SharedPtr<Class> const & ptr)
 	{
-		return reinterpret_cast<Handle>(new Ptr{ptr});
+		static_assert(
+			ptr_type_tag == HandlePtrTag::Shared,
+			"Cannot create a shared handle for a non-shared type");
+		return reinterpret_cast<Handle>(new SharedPtr<Class>{ptr});
 	}
 
 	static Handle create(SharedPtr<Class> && ptr)
 	{
-		return reinterpret_cast<Handle>(new Ptr{ptr});
+		static_assert(
+			ptr_type_tag == HandlePtrTag::Shared,
+			"Cannot create a shared handle for a non-shared type");
+		return reinterpret_cast<Handle>(new SharedPtr<Class>{ptr});
 	}
 
 	static void release(Handle handle)
 	{
-		delete reinterpret_cast<Ptr *>(handle);
+		static_assert(
+			ptr_type_tag != HandlePtrTag::OwnedByOwner,
+			"Cannot release a handle not owned by client");
+		static_assert(
+			ptr_type_tag != HandlePtrTag::Temporary, "Cannot release a handle wrapping a temporary");
+
+		if constexpr (ptr_type_tag == HandlePtrTag::Shared)
+		{
+			delete reinterpret_cast<SharedPtr<Class> *>(handle);
+		}
+		else if constexpr (ptr_type_tag == HandlePtrTag::OwnedByClient)
+		{
+			delete reinterpret_cast<Class *>(handle);
+		}
 	}
 
-	template <class Handle, std::enable_if_t<!std::is_same_v<Class, Handle>, bool> = true>
-	static Ptr & convert(Handle handle)
+	template <class Handle>
+	static PtrRef convert(Handle && handle)
 	{
-		return *reinterpret_cast<Ptr *>(handle);
-	}
-
-	template <class Handle, std::enable_if_t<std::is_same_v<Class, Handle>, bool> = true>
-	static Ptr convert(Handle && handle)
-	{
-		return &handle;
+		if constexpr (
+			ptr_type_tag == HandlePtrTag::OwnedByClient ||
+			ptr_type_tag == HandlePtrTag::OwnedByOwner)
+		{
+			return reinterpret_cast<Class *>(handle);
+		}
+		else if constexpr (ptr_type_tag == HandlePtrTag::Temporary)
+		{
+			return &handle;
+		}
+		else if constexpr (ptr_type_tag == HandlePtrTag::Shared)
+		{
+			return *reinterpret_cast<SharedPtr<Class> *>(handle);
+		}
 	}
 
 	template <class Ret, class Fn, class... Args>

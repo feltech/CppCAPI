@@ -15,15 +15,17 @@ using String = std::string;
 using StringView = std::string_view;
 using StringDict = std::unordered_map<String, String>;
 
+using feltplugin::owner::HandlePtrTag;
+
 // clang-format off
 using HandleMap = feltplugin::owner::HandleMap<
 	feltplugin::owner::HandleTraits<
-	    fpdemo_String_h, feltplugin::UniquePtr<String>, String>,
+	    fpdemo_String_h, String, HandlePtrTag::OwnedByClient>,
 	feltplugin::owner::HandleTraits<
-	    fpdemo_StringDict_h, feltplugin::SharedPtr<StringDict>, StringDict>
+	    fpdemo_StringDict_h, StringDict, HandlePtrTag::Shared>
 >;
 // clang-format on
 
 template <class THandle>
 using HandleFactory = feltplugin::owner::HandleFactory<THandle, HandleMap>;
-}  // namespace feltplugindemohost::sender
+}  // namespace feltplugindemohost::owner
