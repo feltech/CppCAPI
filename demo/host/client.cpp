@@ -3,10 +3,10 @@
 namespace feltplugindemohost::client
 {
 
-Worker::Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<owner::StringDict> const & dict)
+Worker::Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<owner::StringDict> dict)
 	: Base{suite_factory}
 {
-	auto hdict = owner::HandleFactory<fpdemo_StringDict_h>::create(dict);
+	auto hdict = owner::HandleFactory<fpdemo_StringDict_h>::create(std::move(dict));
 	create(hdict);
 }
 

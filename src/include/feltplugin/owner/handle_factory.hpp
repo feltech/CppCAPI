@@ -56,6 +56,11 @@ struct HandleFactory
 		return reinterpret_cast<Handle>(new Ptr{ptr});
 	}
 
+	static Handle create(SharedPtr<Class> && ptr)
+	{
+		return reinterpret_cast<Handle>(new Ptr{ptr});
+	}
+
 	static void release(Handle handle)
 	{
 		delete reinterpret_cast<Ptr *>(handle);
