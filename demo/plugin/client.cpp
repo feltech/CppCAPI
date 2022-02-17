@@ -9,9 +9,14 @@ String::String(char const * local)
 	Base::create(local);
 }
 
-[[nodiscard]] char const * String::c_str() const
+char const * String::c_str() const
 {
 	return suite_.c_str(handle_);
+}
+
+char String::at(int n) const
+{
+	return call(suite_.at, n);
 }
 
 String::operator std::string() const
@@ -28,5 +33,4 @@ void StringDict::insert(String const & key, String const & value)
 {
 	call(suite_.insert, static_cast<fpdemo_String_h>(key), static_cast<fpdemo_String_h>(value));
 }
-
 }  // namespace feltplugindemoplugin

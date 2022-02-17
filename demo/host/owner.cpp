@@ -13,16 +13,26 @@ extern "C"
 
 	using feltplugindemohost::owner::String;
 
-	FELTPLUGINDEMOHOSTLIB_EXPORT fp_String_s fpdemo_String_suite()
+	FELTPLUGINDEMOHOSTLIB_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
 		return {
-			[](fp_ErrorMessage err, fpdemo_String_h * out, char const * str)
-			{ return HandleFactory<fpdemo_String_h>::make(err, out, str); },
+			.create = &HandleFactory<fpdemo_String_h>::make,
 
-			&HandleFactory<fpdemo_String_h>::release,
+			.release = &HandleFactory<fpdemo_String_h>::release,
 
-			[](fpdemo_String_h handle)
-			{ return HandleFactory<fpdemo_String_h>::convert(handle)->c_str(); }};
+			.c_str =
+				[](fpdemo_String_h handle)
+			{
+				return HandleFactory<fpdemo_String_h>::mem_fn(
+					[](auto const & self) -> char const* { return self.c_str(); }, handle);
+			},
+
+			.at =
+				[](fp_ErrorMessage err, char * out, fpdemo_String_h handle, int n)
+			{
+				return HandleFactory<fpdemo_String_h>::mem_fn(
+					[](auto & self, int n) { return self.at(n); }, err, out, handle, n);
+			}};
 	}
 
 	// StringDict
@@ -32,47 +42,38 @@ extern "C"
 	FELTPLUGINDEMOHOSTLIB_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
 		return {
-			[](fp_ErrorMessage err, fpdemo_StringDict_h * out)
-			{ return HandleFactory<fpdemo_StringDict_h>::make(err, out); },
+			.create = &HandleFactory<fpdemo_StringDict_h>::make,
 
-			&HandleFactory<fpdemo_StringDict_h>::release,
+			.release = &HandleFactory<fpdemo_StringDict_h>::release,
 
-			[](fp_ErrorMessage err,
-			   fpdemo_StringDict_h handle,
-			   fpdemo_String_h key,
-			   fpdemo_String_h value)
+			.insert =
+				[](fp_ErrorMessage err,
+				   fpdemo_StringDict_h handle,
+				   fpdemo_String_h key,
+				   fpdemo_String_h value)
 			{
-				using feltplugin::wrap_exception;
-				return wrap_exception(
+				return HandleFactory<fpdemo_StringDict_h>::mem_fn(
+					[](auto & self, auto const & key, auto const & value) {
+						return self.insert({key, value});
+					},
 					err,
-					[handle, key, value]
-					{
-						String const & key_str = *HandleFactory<fpdemo_String_h>::convert(key);
-						String const & value_str = *HandleFactory<fpdemo_String_h>::convert(value);
-						StringDict & dict = *HandleFactory<fpdemo_StringDict_h>::convert(handle);
-
-						dict.insert({key_str, value_str});
-					});
+					handle,
+					key,
+					value);
 			},
 
-			[](fp_ErrorMessage err,
-			   fpdemo_String_h * out,
-			   fpdemo_StringDict_h handle,
-			   fpdemo_String_h key)
+			.at =
+				[](fp_ErrorMessage err,
+				   fpdemo_String_h * out,
+				   fpdemo_StringDict_h handle,
+				   fpdemo_String_h key)
 			{
-				using feltplugin::wrap_exception;
-				return wrap_exception(
+				return HandleFactory<fpdemo_StringDict_h>::mem_fn(
+					[](auto const & self, auto const & key) { return self.at(key); },
 					err,
-					[out, handle, key]
-					{
-						String const & key_str = *HandleFactory<fpdemo_String_h>::convert(key);
-						StringDict const & dict =
-							*HandleFactory<fpdemo_StringDict_h>::convert(handle);
-
-						std::string value = dict.at(key_str);
-
-						*out = HandleFactory<fpdemo_String_h>::make(std::move(value));
-					});
+					out,
+					handle,
+					key);
 			}};
 	}
 }

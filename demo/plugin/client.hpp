@@ -12,7 +12,7 @@ namespace feltplugindemoplugin::client
 using HandleMap = feltplugin::client::HandleMap<
     // String.
 	feltplugin::client::HandleTraits<
-	    fpdemo_String_h, fp_String_s, &fpdemo_String_suite, struct String>,
+	    fpdemo_String_h, fpdemo_String_s, &fpdemo_String_suite, struct String>,
 	// StringDict
 	feltplugin::client::HandleTraits<
 	    fpdemo_StringDict_h, fp_StringDict_s, &fpdemo_StringDict_suite, struct StringDict>
@@ -30,6 +30,7 @@ struct String : HandleAdapter<fpdemo_String_h>
 	String(char const * local);
 
 	[[nodiscard]] char const * c_str() const;
+	[[nodiscard]] char at(int n ) const;
 
 	explicit operator std::string() const;
 };

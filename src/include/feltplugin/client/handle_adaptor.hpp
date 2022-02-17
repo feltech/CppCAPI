@@ -22,7 +22,7 @@ protected:
 		THandleMap::template suite_factory_from_handle<THandle>();
 
 public:
-	explicit HandleAdapter(Handle handle) : HandleAdapter{handle, ksuite_factory}
+	HandleAdapter(Handle handle) : HandleAdapter{handle, ksuite_factory}
 	{
 		static_assert(ksuite_factory != nullptr, "Attempting to construct with null suite factory");
 	}
@@ -64,7 +64,7 @@ protected:
 	}
 
 	template <class Ret, class... Args, class... Rest>
-	Ret call(fp_ErrorCode (*fn)(fp_ErrorMessage, Ret *, Handle, Args...), Rest &&... args)
+	Ret call(fp_ErrorCode (*fn)(fp_ErrorMessage, Ret *, Handle, Args...), Rest &&... args) const
 	{
 		Ret ret;
 		fp_ErrorCode code;
@@ -76,7 +76,7 @@ protected:
 	}
 
 	template <class... Args, class... Rest>
-	void call(fp_ErrorCode (*fn)(fp_ErrorMessage, Handle, Args...), Rest &&... args)
+	void call(fp_ErrorCode (*fn)(fp_ErrorMessage, Handle, Args...), Rest &&... args) const
 	{
 		fp_ErrorCode code;
 		fp_ErrorMessage err;

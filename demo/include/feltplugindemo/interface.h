@@ -18,9 +18,10 @@ extern "C"
 		fp_ErrorCode (*create)(fp_ErrorMessage err, fpdemo_String_h * out, char const * str);
 		void (*release)(fpdemo_String_h handle);
 		char const * (*c_str)(fpdemo_String_h handle);	// noexcept
-	} fp_String_s;
+		fp_ErrorCode (*at)(fp_ErrorMessage, char *, fpdemo_String_h, int);
+	} fpdemo_String_s;
 
-	fp_String_s fpdemo_String_suite();
+	fpdemo_String_s fpdemo_String_suite();
 
 	// StringDict
 
@@ -56,7 +57,7 @@ extern "C"
 	} fpdemo_Plugin_s;
 
 	// Defined within plugin.
-//	fpdemo_Plugin_s fpdemo_Plugin_suite();
+	//	fpdemo_Plugin_s fpdemo_Plugin_suite();
 
 #ifdef __cplusplus
 }
