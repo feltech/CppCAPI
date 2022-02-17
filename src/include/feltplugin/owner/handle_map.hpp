@@ -19,13 +19,13 @@ struct HandleTraits
  * TODO: Use for auto-converting function arguments.
  */
 template <class HandleToLookup>
-struct DefaultHandleClass : std::false_type
+struct assume_c_native_class_t : std::false_type
 {
 	using type = HandleToLookup;
 };
 
 template <class HandleToLookup>
-struct DefaultHandlePtr : std::false_type
+struct assume_c_native_ptr_t : std::false_type
 {
 	using type = HandleToLookup *;
 };
@@ -71,11 +71,12 @@ struct HandleMap<Traits>
 
 	template <class HandleToLookup>
 	using ptr_from_handle_t = typename std::
-		disjunction<this_ptr_from_handle_t<HandleToLookup>, DefaultHandlePtr<HandleToLookup>>;
+		disjunction<this_ptr_from_handle_t<HandleToLookup>, assume_c_native_ptr_t<HandleToLookup>>;
 
 	template <class HandleToLookup>
-	using class_from_handle_t = typename std::
-		disjunction<this_class_from_handle_t<HandleToLookup>, DefaultHandleClass<HandleToLookup>>;
+	using class_from_handle_t = typename std::disjunction<
+		this_class_from_handle_t<HandleToLookup>,
+		assume_c_native_class_t<HandleToLookup>>;
 
 	template <class Arg>
 	using ptr_from_handle = typename ptr_from_handle_t<Arg>::type;
