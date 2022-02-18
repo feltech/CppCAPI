@@ -1,5 +1,7 @@
 #include "client.hpp"
 
+#include <string>
+
 namespace feltplugindemoplugin::client
 {
 
@@ -13,6 +15,12 @@ String::String(char const * cstr)
 {
 	Base::create();
 	call(suite_.assign_cstr, cstr);
+}
+
+String::String(std::string const& str)
+{
+	Base::create();
+	call(suite_.assign_cstr, str.c_str());
 }
 
 char const * String::c_str() const

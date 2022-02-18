@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 #include <feltplugin/client/handle_adaptor.hpp>
 #include <feltplugin/client/handle_map.hpp>

@@ -26,7 +26,9 @@ extern "C"
 				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr)
 			{
 				return HandleFactory::mem_fn(
-					[](String & self, char const * str) { self = str; }, err, hself, cstr);
+					[](String & self, char const * str) {
+						self = str;
+					}, err, hself, cstr);
 			},
 
 			.assign_StringView =

@@ -85,7 +85,6 @@ target_link_libraries(
 	FeltPluginDemoPlugin
 	PRIVATE
 	FeltPluginSystem
-	FeltPluginDemoHostLib
 )
 generate_export_header(FeltPluginDemoPlugin)
 set_target_properties(

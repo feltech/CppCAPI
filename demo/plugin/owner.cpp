@@ -14,14 +14,25 @@ Worker::Worker(client::StringDict dict) : dict_{std::move(dict)} {}
 
 void Worker::update_dict(client::String const& key)
 {
-	dict_.insert(key, "valuefromplugin");
+	try
+	{
+		auto const& value = dict_.at("expectedtoexist");
+		dict_.insert(key, std::string{value} + " ok");
+	}
+	catch (std::exception const& ex)
+	{
+		std::cerr << "Error from host caught in plugin: " << ex.what() << "\n";
+		dict_.insert(key, "error");
+		throw std::runtime_error{"Couldn't find key expectedtoexist"};
+	}
 }
 }  // namespace feltplugindemoplugin::owner
 
 extern "C"
 {
 using feltplugindemoplugin::owner::Worker;
-	using feltplugindemoplugin::client::String;
+	using feltplugindemoplugin::client::StringView;
+using feltplugindemoplugin::client::String;
 	using feltplugindemoplugin::owner::HandleFactory;
 
 	// Plugin
@@ -36,7 +47,7 @@ using feltplugindemoplugin::owner::Worker;
 			.update_dict = [](fp_ErrorMessage err, fpdemo_Worker_h handle, fpdemo_StringView_h hkey)
 			{
 				return HandleFactory<fpdemo_Worker_h>::mem_fn(
-					[](Worker & self, String const& key) { self.update_dict(key); },
+					[](Worker & self, StringView const& key) { self.update_dict(key); },
 					err,
 					handle,
 					hkey);

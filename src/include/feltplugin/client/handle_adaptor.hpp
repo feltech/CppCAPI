@@ -54,7 +54,16 @@ public:
 
 	virtual ~HandleAdapter()
 	{
-		release(suite_, handle_);
+		if (handle_ == nullptr)
+			return;	 // Assume moved out
+
+		// E.g. a handle to a temporary shouldn't have a `release` function in its suite (though
+		// technically it could but should be a no-op, and certainly not try to free memory pointed
+		// to by the handle)
+		if constexpr (has_release_t<Suite>::value)
+			suite_.release(handle_);
+
+		handle_ = nullptr;
 	}
 
 	explicit operator Handle() const
@@ -102,14 +111,14 @@ protected:
 	Suite const suite_;
 
 private:
-	/// For suites that support release().
-	template <class Suite>
-	std::invoke_result_t<typename Suite::release, Handle> release(
-		Suite const & suite, Handle handle)
+	template <typename T, typename = void>
+	struct has_release_t : std::false_type
 	{
-		suite.release(handle);
-	}
-	/// For suites that do not support release().
-	void release(Suite const &, Handle) {}
+	};
+
+	template <typename T>
+	struct has_release_t<T, decltype(T::release, void())> : std::true_type
+	{
+	};
 };
 }  // namespace feltplugin::client

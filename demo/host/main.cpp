@@ -19,6 +19,21 @@ void execute()
 			"fpdemo_Worker_suite");
 	feltplugindemohost::client::Worker plugin{fpdemo_Plugin_suite, dict};
 
+	try
+	{
+		plugin.update_dict("keyfromhost");
+	} catch (std::exception const& ex)
+	{
+		std::cerr << "Error from plugin caught in host: " << ex.what() << "\n";
+	}
+	std::cerr << std::flush;
+
+	for (auto [k, v] : *dict) std::cout << k << " = " << v << std::endl;
+
+	std::cout << "Try again:" << std::endl;
+
+	dict->insert({"expectedtoexist", "valuefromhost"});
+
 	plugin.update_dict("keyfromhost");
 
 	for (auto [k, v] : *dict) std::cout << k << " = " << v << std::endl;
