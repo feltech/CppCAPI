@@ -6,11 +6,9 @@
 
 extern "C"
 {
-
 	// String
 
 	using feltplugindemohost::owner::String;
-
 	FELTPLUGINDEMOHOSTLIB_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
 		using HandleFactory = feltplugindemohost::owner::HandleFactory<fpdemo_String_h>;
@@ -19,12 +17,25 @@ extern "C"
 
 			.release = &HandleFactory::release,
 
-			.c_str =
-				[](fpdemo_String_h handle)
+			.assign_cstr =
+				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr)
 			{
 				return HandleFactory::mem_fn(
-					[](auto const & self) -> char const* { return self.c_str(); }, handle);
+					[](auto & self, auto const & str) { self = str; }, err, hself, cstr);
 			},
+
+			.assign_StringView =
+				[](fp_ErrorMessage err, fpdemo_String_h hself, fpdemo_StringView_h hstr)
+			{
+				return HandleFactory::mem_fn(
+					[](auto & self, auto const & str) { self = str; }, err, hself, hstr);
+			},
+
+			.c_str =
+				[](fpdemo_String_h handle) {
+					return HandleFactory::mem_fn(
+						[](auto const & self) { return self.c_str(); }, handle);
+				},
 
 			.at =
 				[](fp_ErrorMessage err, char * out, fpdemo_String_h handle, int n)
@@ -34,8 +45,28 @@ extern "C"
 			}};
 	}
 
-	// StringDict
+	// StringView
 
+	using feltplugindemohost::owner::StringView;
+
+	FELTPLUGINDEMOHOSTLIB_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
+	{
+		using HandleFactory = feltplugindemohost::owner::HandleFactory<fpdemo_StringView_h>;
+		return {
+			.data =
+				[](fpdemo_StringView_h handle) {
+					return HandleFactory::mem_fn(
+						[](StringView const & self) { return self.data(); }, handle);
+				},
+
+			.size =
+				[](fpdemo_StringView_h handle) {
+					return HandleFactory::mem_fn(
+						[](StringView const & self) { return self.size(); }, handle);
+				}};
+	}
+
+	// StringDict
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{

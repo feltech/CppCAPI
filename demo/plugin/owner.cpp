@@ -22,6 +22,7 @@ extern "C"
 {
 	using feltplugindemoplugin::client::String;
 	using feltplugindemoplugin::client::StringDict;
+	using feltplugindemoplugin::client::StringView;
 	using feltplugindemoplugin::owner::HandleFactory;
 
 	// Plugin
@@ -33,10 +34,10 @@ extern "C"
 
 			.release = &HandleFactory<fpdemo_Worker_h>::release,
 
-			.update_dict = [](fp_ErrorMessage err, fpdemo_Worker_h handle, fpdemo_String_h hkey)
+			.update_dict = [](fp_ErrorMessage err, fpdemo_Worker_h handle, fpdemo_StringView_h hkey)
 			{
 				return HandleFactory<fpdemo_Worker_h>::mem_fn(
-					[](auto & self, auto const& key) { self.update_dict(key); },
+					[](auto & self, auto const & key) { self.update_dict(StringView{key}); },
 					err,
 					handle,
 					hkey);

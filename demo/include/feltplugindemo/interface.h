@@ -9,15 +9,31 @@
 extern "C"
 {
 #endif
+	// TODO: Add const to handles where appropriate
+
+	// StringView
+
+	typedef struct fpdemo_StringView_t * fpdemo_StringView_h;
+
+	typedef struct
+	{
+		char const * (*data)(fpdemo_StringView_h);	// noexcept
+		size_t (*size)(fpdemo_StringView_h);	// noexcept
+	} fpdemo_StringView_s;
+
+	fpdemo_StringView_s fpdemo_StringView_suite();
+
 	// String
 
 	typedef struct fpdemo_String_t * fpdemo_String_h;
 
 	typedef struct
 	{
-		fp_ErrorCode (*create)(fp_ErrorMessage err, fpdemo_String_h * out, char const * str);
-		void (*release)(fpdemo_String_h handle);
-		char const * (*c_str)(fpdemo_String_h handle);	// noexcept
+		fp_ErrorCode (*create)(fp_ErrorMessage, fpdemo_String_h *);
+		void (*release)(fpdemo_String_h);
+		fp_ErrorCode (*assign_cstr)(fp_ErrorMessage, fpdemo_String_h, char const *);
+		fp_ErrorCode (*assign_StringView)(fp_ErrorMessage, fpdemo_String_h, fpdemo_StringView_h);
+		char const * (*c_str)(fpdemo_String_h);	 // noexcept
 		fp_ErrorCode (*at)(fp_ErrorMessage, char *, fpdemo_String_h, int);
 	} fpdemo_String_s;
 
@@ -52,7 +68,7 @@ extern "C"
 
 		void (*release)(fpdemo_Worker_h);
 
-		fp_ErrorCode (*update_dict)(fp_ErrorMessage, fpdemo_Worker_h, fpdemo_String_h);
+		fp_ErrorCode (*update_dict)(fp_ErrorMessage, fpdemo_Worker_h, fpdemo_StringView_h);
 
 	} fpdemo_Worker_s;
 

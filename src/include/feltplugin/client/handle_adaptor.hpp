@@ -33,7 +33,8 @@ protected:
 		THandleMap::template suite_factory_from_handle<THandle>();
 
 public:
-	HandleAdapter(Handle handle) : HandleAdapter{handle, ksuite_factory}
+	HandleAdapter(Handle handle)  // NOLINT(google-explicit-constructor)
+		: HandleAdapter{handle, ksuite_factory}
 	{
 		static_assert(ksuite_factory != nullptr, "Attempting to construct with null suite factory");
 	}
@@ -53,7 +54,7 @@ public:
 
 	virtual ~HandleAdapter()
 	{
-		suite_.release(handle_);
+		release(suite_, handle_);
 	}
 
 	explicit operator Handle() const
@@ -99,5 +100,16 @@ protected:
 protected:
 	Handle handle_;
 	Suite const suite_;
+
+private:
+	/// For suites that support release().
+	template <class Suite>
+	std::invoke_result_t<typename Suite::release, Handle> release(
+		Suite const & suite, Handle handle)
+	{
+		suite.release(handle);
+	}
+	/// For suites that do not support release().
+	void release(Suite const &, Handle) {}
 };
 }  // namespace feltplugin::client

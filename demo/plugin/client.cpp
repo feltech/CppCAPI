@@ -2,11 +2,17 @@
 
 namespace feltplugindemoplugin::client
 {
-String::String(std::string const & local) : String{local.c_str()} {}
 
-String::String(char const * local)
+String::String(StringView const& str)
 {
-	Base::create(local);
+	Base::create();
+	call(suite_.assign_StringView, static_cast<fpdemo_StringView_h>(str));
+}
+
+String::String(char const * cstr)
+{
+	Base::create();
+	call(suite_.assign_cstr, cstr);
 }
 
 char const * String::c_str() const
@@ -22,6 +28,21 @@ char String::at(int n) const
 String::operator std::string() const
 {
 	return std::string{c_str()};
+}
+
+char const * StringView::data() const
+{
+	return suite_.data(handle_);
+}
+
+size_t StringView::size() const
+{
+	return suite_.size(handle_);
+}
+
+StringView::operator std::string_view() const
+{
+	return std::string_view{data(), size()};
 }
 
 String StringDict::at(String const & key)

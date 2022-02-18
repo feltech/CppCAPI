@@ -51,6 +51,10 @@ struct HandleFactory
 	template <typename... Args>
 	static Handle make(Args &&... args)
 	{
+		static_assert(
+			ptr_type_tag != HandlePtrTag::OwnedByOwner,
+			"Cannot make a handle to a new instance for non-shared non-transferred types");
+
 		if constexpr (ptr_type_tag == HandlePtrTag::Shared)
 		{
 			return create(std::make_shared<Class>(std::forward<Args>(args)...));
@@ -64,6 +68,14 @@ struct HandleFactory
 		{
 			return Class{std::forward<Args>(args)...};
 		}
+	}
+
+	static Handle create(Class & obj)
+	{
+		static_assert(
+			ptr_type_tag == HandlePtrTag::OwnedByOwner,
+			"Cannot create a non-shared non-transferred handle for shared / transferred types");
+		return reinterpret_cast<Handle>(&obj);
 	}
 
 	static Handle create(SharedPtr<Class> const & ptr)
@@ -88,7 +100,8 @@ struct HandleFactory
 			ptr_type_tag != HandlePtrTag::OwnedByOwner,
 			"Cannot release a handle not owned by client");
 		static_assert(
-			ptr_type_tag != HandlePtrTag::Temporary, "Cannot release a handle wrapping a temporary");
+			ptr_type_tag != HandlePtrTag::Temporary,
+			"Cannot release a handle aliasing a temporary");
 
 		if constexpr (ptr_type_tag == HandlePtrTag::Shared)
 		{
@@ -146,7 +159,7 @@ struct HandleFactory
 
 	template <class Fn, class... Args>
 	static auto mem_fn(Fn && fn, Handle handle, Args... args)
-		-> std::invoke_result_t<Fn, Handle, Args...>
+		-> std::invoke_result_t<Fn, Class, Args...>
 	{
 		return fn(
 			*convert(handle),

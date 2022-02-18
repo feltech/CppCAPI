@@ -10,9 +10,9 @@ Worker::Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<owner::StringDi
 	create(hdict);
 }
 
-void Worker::update_dict(const owner::String & key)
+void Worker::update_dict(owner::StringView key)
 {
-	auto hkey = owner::HandleFactory<fpdemo_String_h>::make(key);
+	auto hkey = owner::HandleFactory<fpdemo_StringView_h>::create(key);
 	call(suite_.update_dict, hkey);
 }
 }  // namespace feltplugindemohost::receiver

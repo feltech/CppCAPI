@@ -20,6 +20,8 @@ using feltplugin::owner::HandlePtrTag;
 // clang-format off
 using HandleMap = feltplugin::owner::HandleMap<
 	feltplugin::owner::HandleTraits<
+		fpdemo_StringView_h, StringView, HandlePtrTag::OwnedByOwner>,
+	feltplugin::owner::HandleTraits<
 	    fpdemo_String_h, String, HandlePtrTag::OwnedByClient>,
 	feltplugin::owner::HandleTraits<
 	    fpdemo_StringDict_h, StringDict, HandlePtrTag::Shared>
