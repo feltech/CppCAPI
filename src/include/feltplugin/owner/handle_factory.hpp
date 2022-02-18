@@ -31,16 +31,22 @@ fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 }
 }  // namespace
 
-template <class THandle, class THandleMap>
+template <class THandle, class TOwnerHandleMap, class TClientHandleMap>
 struct HandleFactory
 {
+	template <class Handle>
+	using OtherHandleFactory = HandleFactory<Handle, TOwnerHandleMap, TClientHandleMap>;
+
 	using Handle = THandle;
-	using Class = typename THandleMap::template class_from_handle<Handle>;
+	using Class = typename TOwnerHandleMap::template class_from_handle<Handle>;
+	using Wrapper = typename TClientHandleMap::template class_from_handle<Handle>;
 
-	static constexpr HandlePtrTag ptr_type_tag = THandleMap::template ptr_tag_from_handle<Handle>();
+	static_assert(
+		std::is_same_v<Handle, Class> || std::is_same_v<Wrapper, std::false_type>,
+		"Cannot have a handle that is both a native type and a client wrapper");
 
-	using PtrRef =
-		std::conditional_t<ptr_type_tag == HandlePtrTag::Shared, SharedPtr<Class> &, Class *>;
+	static constexpr HandlePtrTag ptr_type_tag =
+		TOwnerHandleMap::template ptr_tag_from_handle<Handle>();
 
 	template <typename... Args>
 	static fp_ErrorCode make(char * err, Handle * out, Args... args)
@@ -63,9 +69,12 @@ struct HandleFactory
 		{
 			return reinterpret_cast<Handle>(new Class{std::forward<Args>(args)...});
 		}
-		// C-native type.
-		else if constexpr (ptr_type_tag == HandlePtrTag::Temporary)
+		// Native type.
+		else if constexpr (ptr_type_tag == HandlePtrTag::Unrecognized)
 		{
+			static_assert(
+				std::is_same_v<Wrapper, std::false_type>,
+				"Reconstructing a handle when it should be wrapped.");
 			return Class{std::forward<Args>(args)...};
 		}
 	}
@@ -100,7 +109,7 @@ struct HandleFactory
 			ptr_type_tag != HandlePtrTag::OwnedByOwner,
 			"Cannot release a handle not owned by client");
 		static_assert(
-			ptr_type_tag != HandlePtrTag::Temporary,
+			ptr_type_tag != HandlePtrTag::Unrecognized,
 			"Cannot release a handle aliasing a temporary");
 
 		if constexpr (ptr_type_tag == HandlePtrTag::Shared)
@@ -114,7 +123,7 @@ struct HandleFactory
 	}
 
 	template <class Handle>
-	static PtrRef convert(Handle && handle)
+	static decltype(auto) convert(Handle && handle)
 	{
 		if constexpr (
 			ptr_type_tag == HandlePtrTag::OwnedByClient ||
@@ -122,14 +131,24 @@ struct HandleFactory
 		{
 			return reinterpret_cast<Class *>(handle);
 		}
-		else if constexpr (ptr_type_tag == HandlePtrTag::Temporary)
-		{
-			return &handle;
-		}
 		else if constexpr (ptr_type_tag == HandlePtrTag::Shared)
 		{
 			return *reinterpret_cast<SharedPtr<Class> *>(handle);
 		}
+		else if constexpr (ptr_type_tag == HandlePtrTag::Unrecognized)
+		{
+			if constexpr (std::is_same_v<Wrapper, std::false_type>)
+			{
+				// Native C type.
+				return &handle;
+			}
+			else
+			{
+				// Client handle type.
+				return Dereferenceable<Wrapper>{Wrapper{handle}};
+			}
+		}
+
 	}
 
 	template <class Ret, class Fn, class... Args>
@@ -140,9 +159,9 @@ struct HandleFactory
 			err,
 			[handle, &out, &fn, &args...]
 			{
-				*out = HandleFactory<Ret, THandleMap>::make(
+				*out = OtherHandleFactory<Ret>::make(
 					fn(*convert(handle),
-					   *HandleFactory<Args, THandleMap>::convert(std::forward<Args>(args))...));
+					   *OtherHandleFactory<Args>::convert(std::forward<Args>(args))...));
 			});
 	}
 
@@ -153,7 +172,7 @@ struct HandleFactory
 			err,
 			[&fn, handle, &args...] {
 				fn(*convert(handle),
-				   *HandleFactory<Args, THandleMap>::convert(std::forward<Args>(args))...);
+				   *OtherHandleFactory<Args>::convert(std::forward<Args>(args))...);
 			});
 	}
 
@@ -162,9 +181,20 @@ struct HandleFactory
 		-> std::invoke_result_t<Fn, Class, Args...>
 	{
 		return fn(
-			*convert(handle),
-			*HandleFactory<Args, THandleMap>::convert(std::forward<Args>(args))...);
+			*convert(handle), *OtherHandleFactory<Args>::convert(std::forward<Args>(args))...);
 	}
+
+private:
+	template <class T>
+	struct Dereferenceable
+	{
+		Dereferenceable(Dereferenceable const &) = delete;
+		T t;
+		T operator*() &&
+		{
+			return std::move(t);
+		}
+	};
 };
 
 }  // namespace feltplugin::owner

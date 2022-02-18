@@ -12,7 +12,7 @@ namespace feltplugindemoplugin::owner
 
 Worker::Worker(client::StringDict dict) : dict_{std::move(dict)} {}
 
-void Worker::update_dict(client::String key)
+void Worker::update_dict(client::String const& key)
 {
 	dict_.insert(key, "valuefromplugin");
 }
@@ -20,9 +20,8 @@ void Worker::update_dict(client::String key)
 
 extern "C"
 {
+using feltplugindemoplugin::owner::Worker;
 	using feltplugindemoplugin::client::String;
-	using feltplugindemoplugin::client::StringDict;
-	using feltplugindemoplugin::client::StringView;
 	using feltplugindemoplugin::owner::HandleFactory;
 
 	// Plugin
@@ -37,7 +36,7 @@ extern "C"
 			.update_dict = [](fp_ErrorMessage err, fpdemo_Worker_h handle, fpdemo_StringView_h hkey)
 			{
 				return HandleFactory<fpdemo_Worker_h>::mem_fn(
-					[](auto & self, auto const & key) { self.update_dict(StringView{key}); },
+					[](Worker & self, String const& key) { self.update_dict(key); },
 					err,
 					handle,
 					hkey);

@@ -4,30 +4,32 @@
 #include <string_view>
 #include <unordered_map>
 
-#include "feltplugin/owner/handle_map.hpp"
+namespace feltplugindemohost::owner
+{
+struct String : std::string
+{
+	using std::string::string;
+	using std::string::operator=;
+};
+}  // namespace feltplugindemohost::owner
 
-#include <feltplugindemo/interface.h>
-#include "feltplugin/owner/handle_factory.hpp"
+template <>
+struct std::hash<feltplugindemohost::owner::String> : std::hash<std::string>
+{
+};
 
 namespace feltplugindemohost::owner
 {
-using String = std::string;
-using StringView = std::string_view;
-using StringDict = std::unordered_map<String, String>;
+struct StringView : std::string_view
+{
+	using std::string_view::basic_string_view;
+	using std::string_view::operator=;
+};
 
-using feltplugin::owner::HandlePtrTag;
-
-// clang-format off
-using HandleMap = feltplugin::owner::HandleMap<
-	feltplugin::owner::HandleTraits<
-		fpdemo_StringView_h, StringView, HandlePtrTag::OwnedByOwner>,
-	feltplugin::owner::HandleTraits<
-	    fpdemo_String_h, String, HandlePtrTag::OwnedByClient>,
-	feltplugin::owner::HandleTraits<
-	    fpdemo_StringDict_h, StringDict, HandlePtrTag::Shared>
->;
-// clang-format on
-
-template <class THandle>
-using HandleFactory = feltplugin::owner::HandleFactory<THandle, HandleMap>;
+struct StringDict : std::unordered_map<String, String>
+{
+	using Base = std::unordered_map<String, String>;
+	using Base::unordered_map;
+	using Base::operator=;
+};
 }  // namespace feltplugindemohost::owner

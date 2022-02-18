@@ -12,7 +12,7 @@ enum class HandlePtrTag
 	Shared,
 	OwnedByClient,
 	OwnedByOwner,
-	Temporary
+	Unrecognized
 };
 
 template <class THandle, class TClass, HandlePtrTag Tptr_type_tag>
@@ -36,7 +36,7 @@ struct fallback_class_t : std::false_type
 template <class HandleToLookup>
 struct fallback_ptr_tag_t : std::false_type
 {
-	static constexpr auto type = HandlePtrTag::Temporary;
+	static constexpr auto type = HandlePtrTag::Unrecognized;
 };
 
 template <class Traits, class... Rest>

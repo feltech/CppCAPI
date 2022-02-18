@@ -5,32 +5,10 @@
 
 #include <feltplugindemo/interface.h>
 
+#include "handle_map.hpp"
+
 namespace feltplugindemoplugin::client
 {
-using feltplugin::client::HandleTraits;
-
-using HandleMap = feltplugin::client::HandleMap<
-	// String.
-	HandleTraits<fpdemo_String_h, fpdemo_String_s, struct String, &fpdemo_String_suite>,
-
-	// StringView.
-	HandleTraits<
-		fpdemo_StringView_h,
-		fpdemo_StringView_s,
-		struct StringView,
-		&fpdemo_StringView_suite>,
-
-	// StringDict
-	HandleTraits<
-		fpdemo_StringDict_h,
-		fp_StringDict_s,
-		struct StringDict,
-		&fpdemo_StringDict_suite>>;
-
-template <class THandle>
-using HandleAdapter = feltplugin::client::HandleAdapter<THandle, HandleMap>;
-
-
 struct StringView : HandleAdapter<fpdemo_StringView_h>
 {
 	using Base::HandleAdapter;

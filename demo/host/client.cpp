@@ -1,4 +1,5 @@
 #include "client.hpp"
+#include "owner.hpp"
 
 namespace feltplugindemohost::client
 {

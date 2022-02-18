@@ -2,10 +2,15 @@
 #include "feltplugindemohostlib_export.h"
 
 #include <feltplugindemo/interface.h>
-#include <feltplugin/owner/handle_factory.hpp>
+
+#include "handle_map.hpp"
 
 extern "C"
 {
+	using String = feltplugindemohost::owner::String;
+	using StringView = feltplugindemohost::owner::StringView;
+	using StringDict = feltplugindemohost::owner::StringDict;
+
 	// String
 
 	using feltplugindemohost::owner::String;
@@ -21,27 +26,27 @@ extern "C"
 				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr)
 			{
 				return HandleFactory::mem_fn(
-					[](auto & self, auto const & str) { self = str; }, err, hself, cstr);
+					[](String & self, char const * str) { self = str; }, err, hself, cstr);
 			},
 
 			.assign_StringView =
 				[](fp_ErrorMessage err, fpdemo_String_h hself, fpdemo_StringView_h hstr)
 			{
 				return HandleFactory::mem_fn(
-					[](auto & self, auto const & str) { self = str; }, err, hself, hstr);
+					[](String & self, StringView const & str) { self = str; }, err, hself, hstr);
 			},
 
 			.c_str =
 				[](fpdemo_String_h handle) {
 					return HandleFactory::mem_fn(
-						[](auto const & self) { return self.c_str(); }, handle);
+						[](String const & self) { return self.c_str(); }, handle);
 				},
 
 			.at =
 				[](fp_ErrorMessage err, char * out, fpdemo_String_h handle, int n)
 			{
 				return HandleFactory::mem_fn(
-					[](auto & self, int n) { return self.at(n); }, err, out, handle, n);
+					[](String const & self, int n) { return self.at(n); }, err, out, handle, n);
 			}};
 	}
 
@@ -83,8 +88,8 @@ extern "C"
 				   fpdemo_String_h value)
 			{
 				return HandleFactory::mem_fn(
-					[](auto & self, auto const & key, auto const & value) {
-						return self.insert({key, value});
+					[](StringDict & self, String key, String value) {
+						return self.insert({std::move(key), std::move(value)});
 					},
 					err,
 					handle,
@@ -99,7 +104,7 @@ extern "C"
 				   fpdemo_String_h key)
 			{
 				return HandleFactory::mem_fn(
-					[](auto const & self, auto const & key) { return self.at(key); },
+					[](StringDict const & self, String const & key) { return self.at(key); },
 					err,
 					out,
 					handle,
