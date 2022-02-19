@@ -3,10 +3,11 @@
 
 #include <feltplugindemo/interface.h>
 
-#include "handle_map.hpp"
+#include "handle_wrapper.hpp"
 
 extern "C"
 {
+	using HandleWrapper = feltplugindemohost::HandleWrapper;
 	using String = feltplugindemohost::service::String;
 	using StringView = feltplugindemohost::service::StringView;
 	using StringDict = feltplugindemohost::service::StringDict;
@@ -16,36 +17,32 @@ extern "C"
 	using feltplugindemohost::service::String;
 	FELTPLUGINDEMOHOSTLIB_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
-		using HandleFactory = feltplugindemohost::service::HandleFactory<fpdemo_String_h>;
+		using Factory = HandleWrapper::Factory<fpdemo_String_h>;
 		return {
-			.create = &HandleFactory::make,
+			.create = &Factory::make,
 
-			.release = &HandleFactory::release,
+			.release = &Factory::release,
 
 			.assign_cstr =
-				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr)
-			{
-				return HandleFactory::mem_fn(
-					[](String & self, char const * str) { self = str; }, err, hself, cstr);
-			},
+				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr) {
+					return Factory::mem_fn(
+						[](String & self, char const * str) { self = str; }, err, hself, cstr);
+				},
 
 			.assign_StringView =
 				[](fp_ErrorMessage err, fpdemo_String_h hself, fpdemo_StringView_h hstr)
 			{
-				return HandleFactory::mem_fn(
+				return Factory::mem_fn(
 					[](String & self, StringView const & str) { self = str; }, err, hself, hstr);
 			},
 
-			.c_str =
-				[](fpdemo_String_h handle) {
-					return HandleFactory::mem_fn(
-						[](String const & self) { return self.c_str(); }, handle);
-				},
+			.c_str = [](fpdemo_String_h handle)
+			{ return Factory::mem_fn([](String const & self) { return self.c_str(); }, handle); },
 
 			.at =
 				[](fp_ErrorMessage err, char * out, fpdemo_String_h handle, int n)
 			{
-				return HandleFactory::mem_fn(
+				return Factory::mem_fn(
 					[](String const & self, int n) { return self.at(n); }, err, out, handle, n);
 			}};
 	}
@@ -56,30 +53,30 @@ extern "C"
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
 	{
-		using HandleFactory = feltplugindemohost::service::HandleFactory<fpdemo_StringView_h>;
+		using Factory = HandleWrapper::Factory<fpdemo_StringView_h>;
 		return {
 			.data =
-				[](fpdemo_StringView_h handle) {
-					return HandleFactory::mem_fn(
-						[](StringView const & self) { return self.data(); }, handle);
-				},
+				[](fpdemo_StringView_h handle)
+			{
+				return Factory::mem_fn([](StringView const & self) { return self.data(); }, handle);
+			},
 
 			.size =
-				[](fpdemo_StringView_h handle) {
-					return HandleFactory::mem_fn(
-						[](StringView const & self) { return self.size(); }, handle);
-				}};
+				[](fpdemo_StringView_h handle)
+			{
+				return Factory::mem_fn([](StringView const & self) { return self.size(); }, handle);
+			}};
 	}
 
 	// StringDict
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
-		using HandleFactory = feltplugindemohost::service::HandleFactory<fpdemo_StringDict_h>;
+		using Factory = HandleWrapper::Factory<fpdemo_StringDict_h>;
 		return {
-			.create = &HandleFactory::make,
+			.create = &Factory::make,
 
-			.release = &HandleFactory::release,
+			.release = &Factory::release,
 
 			.insert =
 				[](fp_ErrorMessage err,
@@ -87,7 +84,7 @@ extern "C"
 				   fpdemo_String_h key,
 				   fpdemo_String_h value)
 			{
-				return HandleFactory::mem_fn(
+				return Factory::mem_fn(
 					[](StringDict & self, String key, String value)
 					{ return self.insert_or_assign(std::move(key), std::move(value)); },
 					err,
@@ -102,7 +99,7 @@ extern "C"
 				   fpdemo_StringDict_h handle,
 				   fpdemo_String_h key)
 			{
-				return HandleFactory::mem_fn(
+				return Factory::mem_fn(
 					[](StringDict const & self, String const & key) { return self.at(key); },
 					err,
 					out,

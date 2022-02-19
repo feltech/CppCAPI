@@ -1,11 +1,11 @@
 #pragma once
 
 #include "feltplugindemohostlib_export.h"
-#include "handle_map.hpp"
+#include "handle_wrapper.hpp"
 
 namespace feltplugindemohost::client
 {
-struct FELTPLUGINDEMOHOSTLIB_EXPORT Worker : HandleAdapter<fpdemo_Worker_h>
+struct FELTPLUGINDEMOHOSTLIB_EXPORT Worker : HandleWrapper::Adapter<fpdemo_Worker_h>
 {
 	Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<service::StringDict> dict);
 

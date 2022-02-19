@@ -1,6 +1,7 @@
 
-#include "feltplugin/service/plugin_factory.hpp"
 #include <iostream>
+
+#include <feltplugin/service/plugin_factory.hpp>
 
 #include "../host/client.hpp"
 #include "../host/service.hpp"

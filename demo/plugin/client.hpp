@@ -6,11 +6,11 @@
 
 #include <feltplugindemo/interface.h>
 
-#include "handle_map.hpp"
+#include "handle_wrapper.hpp"
 
 namespace feltplugindemoplugin::client
 {
-struct StringView : HandleAdapter<fpdemo_StringView_h>
+struct StringView : HandleWrapper::Adapter<fpdemo_StringView_h>
 {
 	using Base::HandleAdapter;
 
@@ -20,13 +20,13 @@ struct StringView : HandleAdapter<fpdemo_StringView_h>
 	explicit operator std::string_view() const;
 };
 
-struct String : HandleAdapter<fpdemo_String_h>
+struct String : HandleWrapper::Adapter<fpdemo_String_h>
 {
 	using Base::HandleAdapter;
 
-	String(StringView const & str);
-	String(std::string const & str);
-	String(char const * local);
+	explicit String(StringView const & str);
+	explicit String(std::string const & str);
+	explicit String(char const * local);
 
 	[[nodiscard]] char const * c_str() const;
 	[[nodiscard]] char at(int n) const;
@@ -34,7 +34,7 @@ struct String : HandleAdapter<fpdemo_String_h>
 	explicit operator std::string() const;
 };
 
-struct StringDict : HandleAdapter<fpdemo_StringDict_h>
+struct StringDict : HandleWrapper::Adapter<fpdemo_StringDict_h>
 {
 	using Base::HandleAdapter;
 
