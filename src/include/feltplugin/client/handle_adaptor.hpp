@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include <feltplugin/errors.h>
+#include <feltplugin/interface.h>
 
 namespace feltplugin::client
 {

@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-#include "../errors.h"
+#include "../interface.h"
 #include "../pointers.hpp"
 #include "handle_map.hpp"
 

@@ -21,7 +21,7 @@ target_include_directories(
 )
 
 #------------------------------------------------------------
-# Demo executable
+# Host library
 
 #Llibrary mostly so we can use `generate_export_header`.
 add_library(
@@ -52,6 +52,8 @@ target_link_libraries(
 )
 generate_export_header(FeltPluginDemoHostLib)
 
+#------------------------------------------------------------
+# Host executable
 
 add_executable(FeltPluginDemoHost demo/app/main.cpp)
 target_link_libraries(FeltPluginDemoHost PRIVATE FeltPluginDemoHostLib)
