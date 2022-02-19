@@ -1,11 +1,11 @@
 #pragma once
 #include <stdexcept>
 
-#include "feltpluginsystem/handle_wrapper.hpp"
+#include <feltpluginsystem/handle_wrapper.hpp>
 
 #include <feltpluginsystem-demo-string_map/interface.h>
 
-namespace feltplugindemohost
+namespace feltpluginsystemdemohost
 {
 namespace client
 {
@@ -53,4 +53,4 @@ using HandleWrapper = feltplugin::HandleWrapper<
 		// Invalid argument.
 		feltplugin::ErrorTraits<std::invalid_argument, 101>>>;
 
-}  // namespace feltplugindemohost
+}  // namespace feltpluginsystemdemohost

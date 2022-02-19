@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace feltplugindemoplugin::client
+namespace feltpluginsystemdemoplugin::client
 {
 
 String::String(StringView const & str)
@@ -62,4 +62,4 @@ void StringDict::insert(String const & key, String const & value)
 {
 	call(suite_.insert, static_cast<fpdemo_String_h>(key), static_cast<fpdemo_String_h>(value));
 }
-}  // namespace feltplugindemoplugin::client
+}  // namespace feltpluginsystemdemoplugin::client

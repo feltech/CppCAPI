@@ -7,7 +7,7 @@
 
 #include "client.hpp"
 
-namespace feltplugindemoplugin::service
+namespace feltpluginsystemdemoplugin::service
 {
 class Worker
 {
@@ -20,4 +20,4 @@ public:
 private:
 	client::StringDict dict_;
 };
-}  // namespace feltplugindemoplugin::service
+}  // namespace feltpluginsystemdemoplugin::service

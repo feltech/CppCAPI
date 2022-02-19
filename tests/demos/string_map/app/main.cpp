@@ -1,12 +1,12 @@
 
 #include <iostream>
 
-#include "feltpluginsystem/service/plugin_factory.hpp"
+#include "feltpluginsystem/plugin_factory.hpp"
 
 #include "../host/client.hpp"
 #include "../host/service.hpp"
 
-namespace feltplugindemohost
+namespace feltpluginsystemdemohost
 {
 void execute()
 {
@@ -14,10 +14,10 @@ void execute()
 		service::StringDict{{"key at construction", "value at construction"}});
 
 	feltplugin::service::Plugin plugin{
-		FELTPLUGINSYSTEM_PLUGIN_PATH "/libfeltpluginsystem-demo-string_map-plugin.so"};
+		FELTPLUGINSYSTEM_PLUGIN_PATH "libfeltpluginsystem-demo-string_map-plugin.so"};
 
 	auto worker =
-		plugin.load_adapter<feltplugindemohost::client::Worker>("fpdemo_Worker_suite", dict);
+		plugin.load_adapter<feltpluginsystemdemohost::client::Worker>("fpdemo_Worker_suite", dict);
 
 	try
 	{
@@ -43,11 +43,11 @@ void execute()
 
 	for (auto [k, v] : *dict) std::cout << k << " = " << v << std::endl;
 }
-}  // namespace feltplugindemohost
+}  // namespace feltpluginsystemdemohost
 
 int main()
 {
-	feltplugindemohost::execute();
+	feltpluginsystemdemohost::execute();
 
 	return 0;
 }

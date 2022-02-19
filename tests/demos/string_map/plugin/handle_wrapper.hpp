@@ -1,11 +1,11 @@
 #pragma once
 #include <stdexcept>
 
-#include "feltpluginsystem/handle_wrapper.hpp"
+#include <feltpluginsystem/handle_wrapper.hpp>
 
 #include <feltpluginsystem-demo-string_map/interface.h>
 
-namespace feltplugindemoplugin
+namespace feltpluginsystemdemoplugin
 {
 namespace service
 {
@@ -25,7 +25,7 @@ using HandleWrapper = feltplugin::HandleWrapper<
 		// Worker
 		feltplugin::service::HandleTraits<
 			fpdemo_Worker_h,
-			feltplugindemoplugin::service::Worker,
+			feltpluginsystemdemoplugin::service::Worker,
 			feltplugin::service::HandlePtrTag::OwnedByClient>>,
 
 	// Client
@@ -34,21 +34,21 @@ using HandleWrapper = feltplugin::HandleWrapper<
 		feltplugin::client::HandleTraits<
 			fpdemo_String_h,
 			fpdemo_String_s,
-			feltplugindemoplugin::client::String,
+			feltpluginsystemdemoplugin::client::String,
 			&fpdemo_String_suite>,
 
 		// StringView.
 		feltplugin::client::HandleTraits<
 			fpdemo_StringView_h,
 			fpdemo_StringView_s,
-			feltplugindemoplugin::client::StringView,
+			feltpluginsystemdemoplugin::client::StringView,
 			&fpdemo_StringView_suite>,
 
 		// StringDict
 		feltplugin::client::HandleTraits<
 			fpdemo_StringDict_h,
 			fp_StringDict_s,
-			feltplugindemoplugin::client::StringDict,
+			feltpluginsystemdemoplugin::client::StringDict,
 			&fpdemo_StringDict_suite>>,
 
 	// Errors
@@ -58,4 +58,4 @@ using HandleWrapper = feltplugin::HandleWrapper<
 
 		// Invalid argument.
 		feltplugin::ErrorTraits<std::invalid_argument, 101>>>;
-}  // namespace feltplugindemoplugin
+}  // namespace feltpluginsystemdemoplugin

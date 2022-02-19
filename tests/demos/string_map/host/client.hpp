@@ -3,7 +3,7 @@
 #include "handle_wrapper.hpp"
 #include "host_export.h"
 
-namespace feltplugindemohost::client
+namespace feltpluginsystemdemohost::client
 {
 struct FELTPLUGINSYSTEM_DEMO_HOST_EXPORT Worker
 	: HandleWrapper::Adapter<fpdemo_Worker_h>
@@ -13,4 +13,4 @@ struct FELTPLUGINSYSTEM_DEMO_HOST_EXPORT Worker
 	void update_dict(service::StringView key);
 };
 
-}  // namespace feltplugindemohost::client
+}  // namespace feltpluginsystemdemohost::client

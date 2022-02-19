@@ -1,7 +1,7 @@
 #include "client.hpp"
 #include "service.hpp"
 
-namespace feltplugindemohost::client
+namespace feltpluginsystemdemohost::client
 {
 
 Worker::Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<service::StringDict> dict)
@@ -16,4 +16,4 @@ void Worker::update_dict(service::StringView key)
 	auto hkey = HandleWrapper::Factory<fpdemo_StringView_h>::create(key);
 	call(suite_.update_dict, hkey);
 }
-}  // namespace feltplugindemohost::client
+}  // namespace feltpluginsystemdemohost::client

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <functional>
 
 #include "../error_map.hpp"
 #include "../interface.h"
@@ -164,7 +165,6 @@ struct HandleFactory
 
 	template <class Fn, class... Args>
 	static auto mem_fn(Fn && fn, Handle handle, Args... args)
-		-> std::invoke_result_t<Fn, Class, Args...>
 	{
 		return fn(
 			*convert(handle), *OtherHandleFactory<Args>::convert(std::forward<Args>(args))...);

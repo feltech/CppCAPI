@@ -22,6 +22,13 @@ option(FELTPLUGIN_ENABLE_TESTS "Build/install tests and demos" OFF)
 #------------------------------------------------------------
 # Targets
 
+# Convenience install target.
+
+add_custom_target(
+	feltpluginsystem.install
+	COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR}
+)
+
 # Plugin system
 
 add_subdirectory(src)

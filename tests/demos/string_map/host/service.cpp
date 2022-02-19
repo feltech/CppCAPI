@@ -2,19 +2,19 @@
 
 #include <feltpluginsystem-demo-string_map/interface.h>
 
-#include "host_export.h"
 #include "handle_wrapper.hpp"
+#include "host_export.h"
 
 extern "C"
 {
-	using HandleWrapper = feltplugindemohost::HandleWrapper;
-	using String = feltplugindemohost::service::String;
-	using StringView = feltplugindemohost::service::StringView;
-	using StringDict = feltplugindemohost::service::StringDict;
+	using HandleWrapper = feltpluginsystemdemohost::HandleWrapper;
+	using String = feltpluginsystemdemohost::service::String;
+	using StringView = feltpluginsystemdemohost::service::StringView;
+	using StringDict = feltpluginsystemdemohost::service::StringDict;
 
 	// String
 
-	using feltplugindemohost::service::String;
+	using feltpluginsystemdemohost::service::String;
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
 		using Factory = HandleWrapper::Factory<fpdemo_String_h>;
@@ -49,7 +49,7 @@ extern "C"
 
 	// StringView
 
-	using feltplugindemohost::service::StringView;
+	using feltpluginsystemdemohost::service::StringView;
 
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
 	{

@@ -9,7 +9,7 @@
 #include "plugin_export.h"
 #include "client.hpp"
 
-namespace feltplugindemoplugin::service
+namespace feltpluginsystemdemoplugin::service
 {
 
 Worker::Worker(client::StringDict dict) : dict_{std::move(dict)} {}
@@ -33,14 +33,14 @@ void Worker::update_dict(client::String const & key)
 		throw;
 	}
 }
-}  // namespace feltplugindemoplugin::service
+}  // namespace feltpluginsystemdemoplugin::service
 
 extern "C"
 {
-	using feltplugindemoplugin::HandleWrapper;
-	using feltplugindemoplugin::client::String;
-	using feltplugindemoplugin::client::StringView;
-	using feltplugindemoplugin::service::Worker;
+	using feltpluginsystemdemoplugin::HandleWrapper;
+	using feltpluginsystemdemoplugin::client::String;
+	using feltpluginsystemdemoplugin::client::StringView;
+	using feltpluginsystemdemoplugin::service::Worker;
 
 	// Plugin
 

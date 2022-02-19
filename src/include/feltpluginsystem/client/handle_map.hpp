@@ -71,7 +71,7 @@ struct HandleMap<Traits>
 	using Handle = typename Traits::Handle;
 	using Class = typename Traits::Class;
 	using Suite = typename Traits::Suite;
-	static constexpr auto get_suite = Traits::suite_factory;
+	static constexpr auto suite_factory = Traits::suite_factory;
 
 	template <class HandleToLookup>
 	struct this_suite_from_handle_t : std::is_same<Handle, HandleToLookup>
@@ -88,7 +88,7 @@ struct HandleMap<Traits>
 	template <class HandleToLookup>
 	struct this_suite_factory_from_handle_t : std::is_same<Handle, HandleToLookup>
 	{
-		static constexpr auto type = get_suite;
+		static constexpr auto type = suite_factory;
 	};
 
 	template <class HandleToLookup>
@@ -120,10 +120,10 @@ template <>
 struct HandleMap<>
 {
 	template <class HandleToLookup>
-	using class_from_handle = fallback_class_t;
+	using class_from_handle = fallback_class_t::type;
 
 	template <class HandleToLookup>
-	using suite_from_handle = fallback_suite_t;
+	using suite_from_handle = fallback_suite_t::type;
 
 	template <class HandleToLookup>
 	static constexpr auto suite_factory_from_handle()

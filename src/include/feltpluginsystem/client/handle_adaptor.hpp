@@ -97,6 +97,17 @@ protected:
 		throw_on_error(code, err);
 	}
 
+	template <class... Args, class... Rest>
+	void call(void (*fn)(Handle, Args...), Rest &&... args) const
+	{
+		fn(handle_, std::forward<Rest>(args)...);
+	}
+
+	void call(void (*fn)(Handle)) const
+	{
+		fn(handle_);
+	}
+
 	static void throw_on_error(fp_ErrorCode const code, fp_ErrorMessage const & err)
 	{
 		if (code == fp_ok)

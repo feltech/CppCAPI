@@ -8,7 +8,7 @@
 
 #include "handle_wrapper.hpp"
 
-namespace feltplugindemoplugin::client
+namespace feltpluginsystemdemoplugin::client
 {
 struct StringView : HandleWrapper::Adapter<fpdemo_StringView_h>
 {
@@ -42,4 +42,4 @@ struct StringDict : HandleWrapper::Adapter<fpdemo_StringDict_h>
 
 	void insert(String const & key, String const & value);
 };
-}  // namespace feltplugindemoplugin::client
+}  // namespace feltpluginsystemdemoplugin::client
