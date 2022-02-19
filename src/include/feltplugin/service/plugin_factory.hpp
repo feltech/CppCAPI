@@ -9,17 +9,24 @@ namespace feltplugin::service
 using PluginHandle = decltype(dlopen("", 0));
 using SymHandle = decltype(dlsym(nullptr, ""));
 
-class PluginLoader
+class Plugin
 {
 public:
 	// TODO: dlmopen
-	explicit PluginLoader(char const * file_path, int mode = RTLD_LAZY)
+	explicit Plugin(char const * file_path, int mode = RTLD_LAZY)
 		: file_path_{file_path}, handle_{dlopen(file_path, mode)}
 	{
 		if (!handle_)
 			throw std::filesystem::filesystem_error{
 				std::string{"Failed to load '"} + file_path + "': " + dlerror(),
 				std::make_error_code(std::errc::io_error)};
+	}
+
+	~Plugin()
+	{
+		if (handle_)
+			dlclose(handle_);
+		handle_ = nullptr;
 	}
 
 	template <typename Symbol>

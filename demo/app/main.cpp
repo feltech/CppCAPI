@@ -13,10 +13,10 @@ void execute()
 	auto dict = feltplugin::make_shared<service::StringDict>(
 		service::StringDict{{"key at construction", "value at construction"}});
 
-	feltplugin::service::PluginLoader plugin_loader{"./libFeltPluginDemoPlugin.so"};
+	feltplugin::service::Plugin plugin{"./libFeltPluginDemoPlugin.so"};
 
 	auto worker =
-		plugin_loader.load_adapter<feltplugindemohost::client::Worker>("fpdemo_Worker_suite", dict);
+		plugin.load_adapter<feltplugindemohost::client::Worker>("fpdemo_Worker_suite", dict);
 
 	try
 	{
