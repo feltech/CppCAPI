@@ -1,9 +1,9 @@
 
-#include <feltplugin/service/plugin_factory.hpp>
+#include "feltplugin/service/plugin_factory.hpp"
 #include <iostream>
 
-#include "client.hpp"
-#include "service.hpp"
+#include "../host/client.hpp"
+#include "../host/service.hpp"
 
 namespace feltplugindemohost
 {

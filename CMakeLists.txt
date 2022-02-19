@@ -53,7 +53,7 @@ target_link_libraries(
 generate_export_header(FeltPluginDemoHostLib)
 
 
-add_executable(FeltPluginDemoHost demo/host/main.cpp)
+add_executable(FeltPluginDemoHost demo/app/main.cpp)
 target_link_libraries(FeltPluginDemoHost PRIVATE FeltPluginDemoHostLib)
 set_target_properties(
 	FeltPluginDemoHost
