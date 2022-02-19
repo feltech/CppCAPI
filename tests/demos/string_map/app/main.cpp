@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include <feltpluginsystem/service/plugin_factory.hpp>
+#include "feltpluginsystem/service/plugin_factory.hpp"
 
 #include "../host/client.hpp"
 #include "../host/service.hpp"
@@ -14,7 +14,7 @@ void execute()
 		service::StringDict{{"key at construction", "value at construction"}});
 
 	feltplugin::service::Plugin plugin{
-		FELTPLUGINSYSTEM_PLUGIN_PATH "/libfeltpluginsystemdemoplugin.so"};
+		FELTPLUGINSYSTEM_PLUGIN_PATH "/libfeltpluginsystem-demo-string_map-plugin.so"};
 
 	auto worker =
 		plugin.load_adapter<feltplugindemohost::client::Worker>("fpdemo_Worker_suite", dict);

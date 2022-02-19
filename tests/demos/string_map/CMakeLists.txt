@@ -43,7 +43,7 @@ endfunction()
 
 install(
 	DIRECTORY
-	${CMAKE_CURRENT_LIST_DIR}/include/feltpluginsystemdemo
+	include/feltpluginsystem-demo-string_map
 	DESTINATION
 	${CMAKE_INSTALL_INCLUDEDIR}
 )
@@ -54,41 +54,42 @@ install(
 
 # Use library rather than just executable mostly so we can use `generate_export_header`.
 add_library(
-	feltpluginsystem.demo.host.lib
+	feltpluginsystem.demo.string_map.host.lib
 	SHARED
 	host/service.cpp
 	host/client.cpp
 )
-set_default_target_properties(feltpluginsystem.demo.host.lib)
+set_default_target_properties(feltpluginsystem.demo.string_map.host.lib)
 set_target_properties(
-	feltpluginsystem.demo.host.lib
+	feltpluginsystem.demo.string_map.host.lib
 	PROPERTIES
-	OUTPUT_NAME feltpluginsystemdemohost
+	OUTPUT_NAME feltpluginsystem-demo-string_map-host
 )
 target_include_directories(
-	feltpluginsystem.demo.host.lib
+	feltpluginsystem.demo.string_map.host.lib
 	PUBLIC
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/demo/include>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 target_link_libraries(
-	feltpluginsystem.demo.host.lib
+	feltpluginsystem.demo.string_map.host.lib
 	PUBLIC
 	feltpluginsystem
 )
 set(plugin_path ${CMAKE_INSTALL_PREFIX}/)
 target_compile_definitions(
-	feltpluginsystem.demo.host.lib
+	feltpluginsystem.demo.string_map.host.lib
 	PUBLIC
 	$<BUILD_INTERFACE:FELTPLUGINSYSTEM_PLUGIN_PATH=\"${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}\">
 	$<INSTALL_INTERFACE:FELTPLUGINSYSTEM_PLUGIN_PATH=\"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}\">
 )
 generate_export_header(
-	feltpluginsystem.demo.host.lib
-	EXPORT_FILE_NAME feltpluginsystemdemohost_export.h
+	feltpluginsystem.demo.string_map.host.lib
+	BASE_NAME FELTPLUGINSYSTEM_DEMO_HOST
+	EXPORT_FILE_NAME host_export.h
 )
 install(
-	TARGETS feltpluginsystem.demo.host.lib
+	TARGETS feltpluginsystem.demo.string_map.host.lib
 	EXPORT ${PROJECT_NAME}_EXPORTED_TARGETS
 )
 
@@ -97,26 +98,26 @@ install(
 # Host executable
 
 add_executable(
-	feltpluginsystem.demo.host
+	feltpluginsystem.demo.string_map.host
 	app/main.cpp
 )
-set_default_target_properties(feltpluginsystem.demo.host)
+set_default_target_properties(feltpluginsystem.demo.string_map.host)
 set_target_properties(
-	feltpluginsystem.demo.host
+	feltpluginsystem.demo.string_map.host
 	PROPERTIES
-	OUTPUT_NAME feltpluginsystemdemo
+	OUTPUT_NAME feltpluginsystem-demo-string_map
 )
 target_link_libraries(
-	feltpluginsystem.demo.host
+	feltpluginsystem.demo.string_map.host
 	PRIVATE
-	feltpluginsystem.demo.host.lib
+	feltpluginsystem.demo.string_map.host.lib
 )
 add_dependencies(
-	feltpluginsystem.demo.host
-	feltpluginsystem.demo.plugin
+	feltpluginsystem.demo.string_map.host
+	feltpluginsystem.demo.string_map.plugin
 )
 install(
-	TARGETS feltpluginsystem.demo.host
+	TARGETS feltpluginsystem.demo.string_map.host
 	EXPORT ${PROJECT_NAME}_EXPORTED_TARGETS
 )
 
@@ -125,35 +126,36 @@ install(
 # Plugin library
 
 add_library(
-	feltpluginsystem.demo.plugin
+	feltpluginsystem.demo.string_map.plugin
 	MODULE
 	plugin/client.cpp
 	plugin/service.cpp
 )
-set_default_target_properties(feltpluginsystem.demo.plugin)
+set_default_target_properties(feltpluginsystem.demo.string_map.plugin)
 set_target_properties(
-	feltpluginsystem.demo.plugin
+	feltpluginsystem.demo.string_map.plugin
 	PROPERTIES
-	OUTPUT_NAME feltpluginsystemdemoplugin
+	OUTPUT_NAME feltpluginsystem-demo-string_map-plugin
 	LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
 )
 target_include_directories(
-	feltpluginsystem.demo.plugin
+	feltpluginsystem.demo.string_map.plugin
 	PUBLIC
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/demo/include>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 target_link_libraries(
-	feltpluginsystem.demo.plugin
+	feltpluginsystem.demo.string_map.plugin
 	PRIVATE
 	feltpluginsystem
 )
 generate_export_header(
-	feltpluginsystem.demo.plugin
-	EXPORT_FILE_NAME feltpluginsystemdemoplugin_export.h
+	feltpluginsystem.demo.string_map.plugin
+	BASE_NAME FELTPLUGINSYSTEM_DEMO_PLUGIN
+	EXPORT_FILE_NAME plugin_export.h
 )
 install(
-	TARGETS feltpluginsystem.demo.plugin
+	TARGETS feltpluginsystem.demo.string_map.plugin
 	EXPORT ${PROJECT_NAME}_EXPORTED_TARGETS
 	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
 )
@@ -163,17 +165,17 @@ install(
 # CTest target
 
 add_custom_target(
-	feltpluginsystem.demo.install
+	feltpluginsystem.demo.string_map.install
 	COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR}
 )
 
 add_custom_target(
-	feltpluginsystem.demo.test
-	COMMAND ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/feltpluginsystemdemo
+	feltpluginsystem.demo.string_map.test
+	COMMAND ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/feltpluginsystem-demo-string_map
 )
-add_dependencies(feltpluginsystem.demo.test feltpluginsystem.demo.install)
+add_dependencies(feltpluginsystem.demo.string_map.test feltpluginsystem.demo.string_map.install)
 
 add_test(
 	NAME FeltPluginDemo
-	COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target feltpluginsystem.demo.test)
+	COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target feltpluginsystem.demo.string_map.test)
 

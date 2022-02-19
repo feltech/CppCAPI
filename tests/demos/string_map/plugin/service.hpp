@@ -3,7 +3,7 @@
 #include <feltpluginsystem/service/handle_factory.hpp>
 #include <feltpluginsystem/service/handle_map.hpp>
 
-#include <feltpluginsystemdemo/interface.h>
+#include <feltpluginsystem-demo-string_map/interface.h>
 
 #include "client.hpp"
 

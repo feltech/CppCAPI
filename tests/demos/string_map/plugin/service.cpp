@@ -1,11 +1,13 @@
 #include "service.hpp"
 
 #include <iostream>
-#include "client.hpp"
 
-#include <feltpluginsystemdemo/interface.h>
+#include <feltpluginsystem-demo-string_map/interface.h>
+
 #include <feltpluginsystem/service/handle_factory.hpp>
-#include "feltpluginsystemdemoplugin_export.h"
+
+#include "plugin_export.h"
+#include "client.hpp"
 
 namespace feltplugindemoplugin::service
 {

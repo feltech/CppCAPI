@@ -1,16 +1,17 @@
 cmake_minimum_required(VERSION 3.21)
 project(FeltPluginSystem VERSION 1.0.0)
 
-# For `generate_export_header`
+# For `generate_export_header`.
 include(GenerateExportHeader)
 # For `write_basic_package_version_file` et al.
 include(CMakePackageConfigHelpers)
-# For default install directories, e.g. CMAKE_INSTALL_LIBDIR
+# For default install directories, e.g. CMAKE_INSTALL_LIBDIR.
 include(GNUInstallDirs)
 # Default to less spammy install status messages.
 if (NOT DEFINED CMAKE_INSTALL_MESSAGE)
 	set(CMAKE_INSTALL_MESSAGE LAZY)
 endif ()
+
 
 #------------------------------------------------------------
 # Options
@@ -34,8 +35,11 @@ if (FELTPLUGIN_ENABLE_TESTS)
 		set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/dist"
 			CACHE PATH "Installation location" FORCE)
 	endif ()
+
+	# Enable CTest target support (`add_test()`).
 	enable_testing()
-	add_subdirectory(demo)
+
+	add_subdirectory(tests/demos)
 endif ()
 
 

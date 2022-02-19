@@ -1,8 +1,8 @@
 #include "service.hpp"
-#include "feltpluginsystemdemohost_export.h"
 
-#include <feltpluginsystemdemo/interface.h>
+#include <feltpluginsystem-demo-string_map/interface.h>
 
+#include "host_export.h"
 #include "handle_wrapper.hpp"
 
 extern "C"
@@ -15,7 +15,7 @@ extern "C"
 	// String
 
 	using feltplugindemohost::service::String;
-	FELTPLUGINSYSTEM_DEMO_HOST_LIB_EXPORT fpdemo_String_s fpdemo_String_suite()
+	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
 		using Factory = HandleWrapper::Factory<fpdemo_String_h>;
 		return {
@@ -51,7 +51,7 @@ extern "C"
 
 	using feltplugindemohost::service::StringView;
 
-	FELTPLUGINSYSTEM_DEMO_HOST_LIB_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
+	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
 	{
 		using Factory = HandleWrapper::Factory<fpdemo_StringView_h>;
 		return {
@@ -70,7 +70,7 @@ extern "C"
 
 	// StringDict
 
-	FELTPLUGINSYSTEM_DEMO_HOST_LIB_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
+	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
 		using Factory = HandleWrapper::Factory<fpdemo_StringDict_h>;
 		return {
