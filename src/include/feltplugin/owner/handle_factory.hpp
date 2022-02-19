@@ -10,10 +10,6 @@ namespace feltplugin::owner
 {
 namespace
 {
-template <class...>
-struct always_false_t : std::false_type
-{
-};
 
 template <typename Fn>
 fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
@@ -63,7 +59,7 @@ struct HandleFactory
 
 		if constexpr (ptr_type_tag == HandlePtrTag::Shared)
 		{
-			return create(std::make_shared<Class>(std::forward<Args>(args)...));
+			return create(feltplugin::make_shared<Class>(std::forward<Args>(args)...));
 		}
 		else if constexpr (ptr_type_tag == HandlePtrTag::OwnedByClient)
 		{
@@ -148,7 +144,6 @@ struct HandleFactory
 				return Dereferenceable<Wrapper>{Wrapper{handle}};
 			}
 		}
-
 	}
 
 	template <class Ret, class Fn, class... Args>

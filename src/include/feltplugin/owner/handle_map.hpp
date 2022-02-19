@@ -1,9 +1,5 @@
 #pragma once
 
-#include <type_traits>
-
-#include "feltplugin/pointers.hpp"
-
 namespace feltplugin::owner
 {
 

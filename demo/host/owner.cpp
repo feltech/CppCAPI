@@ -91,7 +91,7 @@ extern "C"
 			{
 				return HandleFactory::mem_fn(
 					[](StringDict & self, String key, String value) {
-						return self.insert({std::move(key), std::move(value)});
+						return self.insert_or_assign(std::move(key), std::move(value));
 					},
 					err,
 					handle,
