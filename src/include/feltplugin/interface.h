@@ -7,13 +7,11 @@
 extern "C"
 {
 #endif
-	typedef enum
-	{
-		fp_ok = 1,
-		fp_error = 2
-	} fp_ErrorCode;
-
+	typedef int fp_ErrorCode;
 	typedef char fp_ErrorMessage[500];
+
+	static const fp_ErrorCode fp_ok = 0;
+	static const fp_ErrorCode fp_error = 1;
 #ifdef __cplusplus
 }
 #endif

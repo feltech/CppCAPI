@@ -3,25 +3,16 @@
 #include <stdexcept>
 
 #include <feltplugin/interface.h>
+#include <feltplugin/error_map.hpp>
 
 namespace feltplugin::client
 {
-inline void throw_on_error(fp_ErrorCode code, fp_ErrorMessage err)
-{
-	switch (code)
-	{
-		case fp_ErrorCode::fp_error:
-			throw std::runtime_error{err};
-		case fp_ErrorCode::fp_ok:
-			break;
-	}
-}
 
-template <class THandle, class THandleMap>
+template <class THandle, class THandleMap, class TErrorMap = DefaultErrorMap>
 struct HandleAdapter
 {
 protected:
-	using Base = HandleAdapter<THandle, THandleMap>;
+	using Base = HandleAdapter<THandle, THandleMap, TErrorMap>;
 
 public:
 	using Handle = THandle;
@@ -99,11 +90,19 @@ protected:
 	template <class... Args, class... Rest>
 	void call(fp_ErrorCode (*fn)(fp_ErrorMessage, Handle, Args...), Rest &&... args) const
 	{
-		fp_ErrorCode code;
+		fp_ErrorCode code = 1;
 		fp_ErrorMessage err;
 
 		code = fn(err, handle_, std::forward<Rest>(args)...);
 		throw_on_error(code, err);
+	}
+
+	static void throw_on_error(fp_ErrorCode const code, fp_ErrorMessage const & err)
+	{
+		if (code == fp_ok)
+			return;
+
+		TErrorMap::exception_from_code(code, err);
 	}
 
 protected:

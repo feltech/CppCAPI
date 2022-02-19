@@ -2,12 +2,22 @@
 
 #include <feltplugin/client/handle_adaptor.hpp>
 #include <feltplugin/client/handle_map.hpp>
+#include <feltplugin/error_map.hpp>
 #include <feltplugin/service/handle_factory.hpp>
 #include <feltplugin/service/handle_map.hpp>
 
 #include <feltplugindemo/interface.h>
 
-namespace feltplugindemoplugin::client
+namespace feltplugindemoplugin
+{
+using ErrorMap = feltplugin::ErrorMap<
+	// Out of range - e.g. map.at(...).
+	feltplugin::ErrorTraits<std::out_of_range, 100>,
+
+	// Invalid argument.
+	feltplugin::ErrorTraits<std::invalid_argument, 101>>;
+
+namespace client
 {
 using feltplugin::client::HandleTraits;
 
@@ -30,10 +40,10 @@ using HandleMap = feltplugin::client::HandleMap<
 		&fpdemo_StringDict_suite>>;
 
 template <class THandle>
-using HandleAdapter = feltplugin::client::HandleAdapter<THandle, HandleMap>;
-}  // namespace feltplugindemoplugin::client
+using HandleAdapter = feltplugin::client::HandleAdapter<THandle, HandleMap, ErrorMap>;
+}  // namespace client
 
-namespace feltplugindemoplugin::service
+namespace service
 {
 using feltplugin::service::HandlePtrTag;
 
@@ -42,5 +52,7 @@ using HandleMap = feltplugin::service::HandleMap<
 	feltplugin::service::HandleTraits<fpdemo_Worker_h, class Worker, HandlePtrTag::OwnedByClient>>;
 
 template <class Class>
-using HandleFactory = feltplugin::service::HandleFactory<Class, HandleMap, client::HandleMap>;
-}  // namespace feltplugindemoplugin::service
+using HandleFactory =
+	feltplugin::service::HandleFactory<Class, HandleMap, client::HandleMap, ErrorMap>;
+}  // namespace service
+}  // namespace feltplugindemoplugin

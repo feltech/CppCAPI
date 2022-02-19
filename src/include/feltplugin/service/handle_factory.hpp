@@ -2,32 +2,24 @@
 
 #include <cstring>
 
+#include "../error_map.hpp"
 #include "../interface.h"
 #include "../pointers.hpp"
 #include "handle_map.hpp"
 
 namespace feltplugin::service
 {
-template <typename Fn>
-fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
-{
-	try
-	{
-		fn();
-	}
-	catch (std::exception & ex)
-	{
-		strncpy(err, ex.what(), sizeof(fp_ErrorMessage));
-		return fp_error;
-	}
-	return fp_ok;
-}
 
-template <class THandle, class TServiceHandleMap, class TClientHandleMap>
+template <
+	class THandle,
+	class TServiceHandleMap,
+	class TClientHandleMap,
+	class TErrorMap = DefaultErrorMap>
 struct HandleFactory
 {
 	template <class Handle>
-	using OtherHandleFactory = HandleFactory<Handle, TServiceHandleMap, TClientHandleMap>;
+	using OtherHandleFactory =
+		HandleFactory<Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	using Handle = THandle;
 	using Class = typename TServiceHandleMap::template class_from_handle<Handle>;
@@ -43,7 +35,8 @@ struct HandleFactory
 	template <typename... Args>
 	static fp_ErrorCode make(char * err, Handle * out, Args... args)
 	{
-		return wrap_exception(err, [&out, &args...] { *out = make(std::forward<Args>(args)...); });
+		return TErrorMap::wrap_exception(
+			err, [&out, &args...] { *out = make(std::forward<Args>(args)...); });
 	}
 
 	template <typename... Args>
@@ -146,7 +139,7 @@ struct HandleFactory
 	static fp_ErrorCode mem_fn(
 		Fn && fn, fp_ErrorMessage err, Ret * out, Handle handle, Args... args)
 	{
-		return wrap_exception(
+		return TErrorMap::wrap_exception(
 			err,
 			[handle, &out, &fn, &args...]
 			{
@@ -159,7 +152,7 @@ struct HandleFactory
 	template <class Fn, class... Args>
 	static fp_ErrorCode mem_fn(Fn && fn, fp_ErrorMessage err, Handle handle, Args... args)
 	{
-		return wrap_exception(
+		return TErrorMap::wrap_exception(
 			err,
 			[&fn, handle, &args...] {
 				fn(*convert(handle),

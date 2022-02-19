@@ -19,11 +19,16 @@ void Worker::update_dict(client::String const & key)
 		auto const & value = dict_.at("plugin expects to exist");
 		dict_.insert(key, std::string{value} + " updated by plugin");
 	}
+	catch (std::out_of_range const & ex)
+	{
+		std::cerr << "Out of range error from host caught in plugin: " << ex.what() << "\n";
+		dict_.insert(key, "error from plugin");
+		throw std::invalid_argument{"Couldn't find key plugin expects to exist"};
+	}
 	catch (std::exception const & ex)
 	{
-		std::cerr << "Error from host caught in plugin: " << ex.what() << "\n";
-		dict_.insert(key, "error from plugin");
-		throw std::runtime_error{"Couldn't find key plugin expects to exist"};
+		std::cerr << "Unexpected error from host caught in plugin: " << ex.what() << "\n";
+		throw;
 	}
 }
 }  // namespace feltplugindemoplugin::service

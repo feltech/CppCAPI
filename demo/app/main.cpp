@@ -23,9 +23,13 @@ void execute()
 	{
 		plugin.update_dict("first key from host");
 	}
+	catch (std::invalid_argument const & ex)
+	{
+		std::cerr << "Invalid argument error from plugin caught in host: " << ex.what() << "\n";
+	}
 	catch (std::exception const & ex)
 	{
-		std::cerr << "Error from plugin caught in host: " << ex.what() << "\n";
+		std::cerr << "Unexpected error from plugin caught in host: " << ex.what() << "\n";
 	}
 	std::cerr << std::flush;
 
