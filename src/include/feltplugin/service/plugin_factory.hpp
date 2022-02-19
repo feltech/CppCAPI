@@ -35,6 +35,15 @@ public:
 		return reinterpret_cast<Symbol>(sym);
 	}
 
+	template <class Adapter, typename... Args>
+	Adapter load_adapter(char const* suite_factory_name, Args&&... args)
+	{
+		auto const suite_factory =
+			load_symbol<typename Adapter::SuiteFactory>( suite_factory_name);
+
+		return Adapter{suite_factory, std::forward<Args>(args)...};
+	}
+
 private:
 	std::string file_path_;
 	PluginHandle handle_;

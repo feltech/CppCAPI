@@ -15,14 +15,12 @@ void execute()
 
 	feltplugin::service::PluginLoader plugin_loader{"./libFeltPluginDemoPlugin.so"};
 
-	auto const fpdemo_Worker_suite =
-		plugin_loader.load_symbol<feltplugindemohost::client::Worker::SuiteFactory>(
-			"fpdemo_Worker_suite");
-	feltplugindemohost::client::Worker plugin{fpdemo_Worker_suite, dict};
+	auto worker =
+		plugin_loader.load_adapter<feltplugindemohost::client::Worker>("fpdemo_Worker_suite", dict);
 
 	try
 	{
-		plugin.update_dict("first key from host");
+		worker.update_dict("first key from host");
 	}
 	catch (std::invalid_argument const & ex)
 	{
@@ -40,7 +38,7 @@ void execute()
 
 	dict->insert({"plugin expects to exist", "value from host"});
 
-	plugin.update_dict("second key from host");
+	worker.update_dict("second key from host");
 
 	for (auto [k, v] : *dict) std::cout << k << " = " << v << std::endl;
 }
