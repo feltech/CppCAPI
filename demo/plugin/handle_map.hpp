@@ -1,9 +1,9 @@
 #pragma once
 
-#include <feltplugin/owner/handle_factory.hpp>
-#include <feltplugin/owner/handle_map.hpp>
 #include <feltplugin/client/handle_adaptor.hpp>
 #include <feltplugin/client/handle_map.hpp>
+#include <feltplugin/service/handle_factory.hpp>
+#include <feltplugin/service/handle_map.hpp>
 
 #include <feltplugindemo/interface.h>
 
@@ -33,14 +33,14 @@ template <class THandle>
 using HandleAdapter = feltplugin::client::HandleAdapter<THandle, HandleMap>;
 }  // namespace feltplugindemoplugin::client
 
-namespace feltplugindemoplugin::owner
+namespace feltplugindemoplugin::service
 {
-using feltplugin::owner::HandlePtrTag;
+using feltplugin::service::HandlePtrTag;
 
-using HandleMap = feltplugin::owner::HandleMap<
+using HandleMap = feltplugin::service::HandleMap<
 	// Worker
-	feltplugin::owner::HandleTraits<fpdemo_Worker_h, class Worker, HandlePtrTag::OwnedByClient>>;
+	feltplugin::service::HandleTraits<fpdemo_Worker_h, class Worker, HandlePtrTag::OwnedByClient>>;
 
 template <class Class>
-using HandleFactory = feltplugin::owner::HandleFactory<Class, HandleMap, client::HandleMap>;
-}  // namespace feltplugindemoplugin::owner
+using HandleFactory = feltplugin::service::HandleFactory<Class, HandleMap, client::HandleMap>;
+}  // namespace feltplugindemoplugin::service

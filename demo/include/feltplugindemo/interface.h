@@ -18,7 +18,7 @@ extern "C"
 	typedef struct
 	{
 		char const * (*data)(fpdemo_StringView_h);	// noexcept
-		size_t (*size)(fpdemo_StringView_h);	// noexcept
+		size_t (*size)(fpdemo_StringView_h);		// noexcept
 	} fpdemo_StringView_s;
 
 	fpdemo_StringView_s fpdemo_StringView_suite();

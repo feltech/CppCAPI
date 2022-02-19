@@ -1,18 +1,18 @@
 
-#include <feltplugin/owner/plugin_factory.hpp>
+#include <feltplugin/service/plugin_factory.hpp>
 #include <iostream>
 
 #include "client.hpp"
-#include "owner.hpp"
+#include "service.hpp"
 
 namespace feltplugindemohost
 {
 void execute()
 {
-	auto dict = feltplugin::make_shared<owner::StringDict>(
-		owner::StringDict{{"key at construction", "value at construction"}});
+	auto dict = feltplugin::make_shared<service::StringDict>(
+		service::StringDict{{"key at construction", "value at construction"}});
 
-	feltplugin::owner::PluginLoader plugin_loader{"./libFeltPluginDemoPlugin.so"};
+	feltplugin::service::PluginLoader plugin_loader{"./libFeltPluginDemoPlugin.so"};
 
 	auto const fpdemo_Worker_suite =
 		plugin_loader.load_symbol<feltplugindemohost::client::Worker::SuiteFactory>(
@@ -22,7 +22,8 @@ void execute()
 	try
 	{
 		plugin.update_dict("first key from host");
-	} catch (std::exception const& ex)
+	}
+	catch (std::exception const & ex)
 	{
 		std::cerr << "Error from plugin caught in host: " << ex.what() << "\n";
 	}

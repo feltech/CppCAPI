@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <string>
 
-namespace feltplugin::owner
+namespace feltplugin::service
 {
 using PluginHandle = decltype(dlopen("", 0));
 using SymHandle = decltype(dlsym(nullptr, ""));
@@ -39,4 +39,4 @@ private:
 	std::string file_path_;
 	PluginHandle handle_;
 };
-}  // namespace feltplugin::host
+}  // namespace feltplugin::service

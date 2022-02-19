@@ -34,7 +34,6 @@ struct String : HandleAdapter<fpdemo_String_h>
 	explicit operator std::string() const;
 };
 
-
 struct StringDict : HandleAdapter<fpdemo_StringDict_h>
 {
 	using Base::HandleAdapter;

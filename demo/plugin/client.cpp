@@ -5,7 +5,7 @@
 namespace feltplugindemoplugin::client
 {
 
-String::String(StringView const& str)
+String::String(StringView const & str)
 {
 	Base::create();
 	call(suite_.assign_StringView, static_cast<fpdemo_StringView_h>(str));
@@ -17,7 +17,7 @@ String::String(char const * cstr)
 	call(suite_.assign_cstr, cstr);
 }
 
-String::String(std::string const& str)
+String::String(std::string const & str)
 {
 	Base::create();
 	call(suite_.assign_cstr, str.c_str());
@@ -62,4 +62,4 @@ void StringDict::insert(String const & key, String const & value)
 {
 	call(suite_.insert, static_cast<fpdemo_String_h>(key), static_cast<fpdemo_String_h>(value));
 }
-}  // namespace feltplugindemoplugin
+}  // namespace feltplugindemoplugin::client

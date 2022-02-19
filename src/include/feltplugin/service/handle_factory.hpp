@@ -6,7 +6,7 @@
 #include "../pointers.hpp"
 #include "handle_map.hpp"
 
-namespace feltplugin::owner
+namespace feltplugin::service
 {
 namespace
 {
@@ -27,14 +27,14 @@ fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 }
 }  // namespace
 
-template <class THandle, class TOwnerHandleMap, class TClientHandleMap>
+template <class THandle, class TServiceHandleMap, class TClientHandleMap>
 struct HandleFactory
 {
 	template <class Handle>
-	using OtherHandleFactory = HandleFactory<Handle, TOwnerHandleMap, TClientHandleMap>;
+	using OtherHandleFactory = HandleFactory<Handle, TServiceHandleMap, TClientHandleMap>;
 
 	using Handle = THandle;
-	using Class = typename TOwnerHandleMap::template class_from_handle<Handle>;
+	using Class = typename TServiceHandleMap::template class_from_handle<Handle>;
 	using Wrapper = typename TClientHandleMap::template class_from_handle<Handle>;
 
 	static_assert(
@@ -42,7 +42,7 @@ struct HandleFactory
 		"Cannot have a handle that is both a native type and a client wrapper");
 
 	static constexpr HandlePtrTag ptr_type_tag =
-		TOwnerHandleMap::template ptr_tag_from_handle<Handle>();
+		TServiceHandleMap::template ptr_tag_from_handle<Handle>();
 
 	template <typename... Args>
 	static fp_ErrorCode make(char * err, Handle * out, Args... args)
@@ -54,7 +54,7 @@ struct HandleFactory
 	static Handle make(Args &&... args)
 	{
 		static_assert(
-			ptr_type_tag != HandlePtrTag::OwnedByOwner,
+			ptr_type_tag != HandlePtrTag::OwnedByService,
 			"Cannot make a handle to a new instance for non-shared non-transferred types");
 
 		if constexpr (ptr_type_tag == HandlePtrTag::Shared)
@@ -78,7 +78,7 @@ struct HandleFactory
 	static Handle create(Class & obj)
 	{
 		static_assert(
-			ptr_type_tag == HandlePtrTag::OwnedByOwner,
+			ptr_type_tag == HandlePtrTag::OwnedByService,
 			"Cannot create a non-shared non-transferred handle for shared / transferred types");
 		return reinterpret_cast<Handle>(&obj);
 	}
@@ -102,7 +102,7 @@ struct HandleFactory
 	static void release(Handle handle)
 	{
 		static_assert(
-			ptr_type_tag != HandlePtrTag::OwnedByOwner,
+			ptr_type_tag != HandlePtrTag::OwnedByService,
 			"Cannot release a handle not owned by client");
 		static_assert(
 			ptr_type_tag != HandlePtrTag::Unrecognized,
@@ -123,7 +123,7 @@ struct HandleFactory
 	{
 		if constexpr (
 			ptr_type_tag == HandlePtrTag::OwnedByClient ||
-			ptr_type_tag == HandlePtrTag::OwnedByOwner)
+			ptr_type_tag == HandlePtrTag::OwnedByService)
 		{
 			return reinterpret_cast<Class *>(handle);
 		}
@@ -192,4 +192,4 @@ private:
 	};
 };
 
-}  // namespace feltplugin::owner
+}  // namespace feltplugin::service

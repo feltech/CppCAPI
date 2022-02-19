@@ -1,4 +1,4 @@
-#include "owner.hpp"
+#include "service.hpp"
 #include "feltplugindemohostlib_export.h"
 
 #include <feltplugindemo/interface.h>
@@ -7,16 +7,16 @@
 
 extern "C"
 {
-	using String = feltplugindemohost::owner::String;
-	using StringView = feltplugindemohost::owner::StringView;
-	using StringDict = feltplugindemohost::owner::StringDict;
+	using String = feltplugindemohost::service::String;
+	using StringView = feltplugindemohost::service::StringView;
+	using StringDict = feltplugindemohost::service::StringDict;
 
 	// String
 
-	using feltplugindemohost::owner::String;
+	using feltplugindemohost::service::String;
 	FELTPLUGINDEMOHOSTLIB_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
-		using HandleFactory = feltplugindemohost::owner::HandleFactory<fpdemo_String_h>;
+		using HandleFactory = feltplugindemohost::service::HandleFactory<fpdemo_String_h>;
 		return {
 			.create = &HandleFactory::make,
 
@@ -26,9 +26,7 @@ extern "C"
 				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr)
 			{
 				return HandleFactory::mem_fn(
-					[](String & self, char const * str) {
-						self = str;
-					}, err, hself, cstr);
+					[](String & self, char const * str) { self = str; }, err, hself, cstr);
 			},
 
 			.assign_StringView =
@@ -54,11 +52,11 @@ extern "C"
 
 	// StringView
 
-	using feltplugindemohost::owner::StringView;
+	using feltplugindemohost::service::StringView;
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
 	{
-		using HandleFactory = feltplugindemohost::owner::HandleFactory<fpdemo_StringView_h>;
+		using HandleFactory = feltplugindemohost::service::HandleFactory<fpdemo_StringView_h>;
 		return {
 			.data =
 				[](fpdemo_StringView_h handle) {
@@ -77,7 +75,7 @@ extern "C"
 
 	FELTPLUGINDEMOHOSTLIB_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
-		using HandleFactory = feltplugindemohost::owner::HandleFactory<fpdemo_StringDict_h>;
+		using HandleFactory = feltplugindemohost::service::HandleFactory<fpdemo_StringDict_h>;
 		return {
 			.create = &HandleFactory::make,
 
@@ -90,9 +88,8 @@ extern "C"
 				   fpdemo_String_h value)
 			{
 				return HandleFactory::mem_fn(
-					[](StringDict & self, String key, String value) {
-						return self.insert_or_assign(std::move(key), std::move(value));
-					},
+					[](StringDict & self, String key, String value)
+					{ return self.insert_or_assign(std::move(key), std::move(value)); },
 					err,
 					handle,
 					key,

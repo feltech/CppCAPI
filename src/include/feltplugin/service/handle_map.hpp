@@ -1,13 +1,13 @@
 #pragma once
 
-namespace feltplugin::owner
+namespace feltplugin::service
 {
 
 enum class HandlePtrTag
 {
 	Shared,
 	OwnedByClient,
-	OwnedByOwner,
+	OwnedByService,
 	Unrecognized
 };
 
@@ -93,4 +93,4 @@ struct HandleMap<Traits>
 	template <class Arg>
 	using class_from_handle = typename class_from_handle_t<Arg>::type;
 };
-}  // namespace feltplugin::owner
+}  // namespace feltplugin::service

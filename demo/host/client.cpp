@@ -1,19 +1,19 @@
 #include "client.hpp"
-#include "owner.hpp"
+#include "service.hpp"
 
 namespace feltplugindemohost::client
 {
 
-Worker::Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<owner::StringDict> dict)
+Worker::Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<service::StringDict> dict)
 	: Base{suite_factory}
 {
-	auto hdict = owner::HandleFactory<fpdemo_StringDict_h>::create(std::move(dict));
+	auto hdict = service::HandleFactory<fpdemo_StringDict_h>::create(std::move(dict));
 	create(hdict);
 }
 
-void Worker::update_dict(owner::StringView key)
+void Worker::update_dict(service::StringView key)
 {
-	auto hkey = owner::HandleFactory<fpdemo_StringView_h>::create(key);
+	auto hkey = service::HandleFactory<fpdemo_StringView_h>::create(key);
 	call(suite_.update_dict, hkey);
 }
-}  // namespace feltplugindemohost::receiver
+}  // namespace feltplugindemohost::client

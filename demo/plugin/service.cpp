@@ -1,13 +1,13 @@
-#include "owner.hpp"
+#include "service.hpp"
 
 #include <iostream>
 #include "client.hpp"
 
 #include <feltplugindemo/interface.h>
-#include <feltplugin/owner/handle_factory.hpp>
+#include <feltplugin/service/handle_factory.hpp>
 #include "feltplugindemoplugin_export.h"
 
-namespace feltplugindemoplugin::owner
+namespace feltplugindemoplugin::service
 {
 
 Worker::Worker(client::StringDict dict) : dict_{std::move(dict)} {}
@@ -26,14 +26,14 @@ void Worker::update_dict(client::String const & key)
 		throw std::runtime_error{"Couldn't find key plugin expects to exist"};
 	}
 }
-}  // namespace feltplugindemoplugin::owner
+}  // namespace feltplugindemoplugin::service
 
 extern "C"
 {
 	using feltplugindemoplugin::client::String;
 	using feltplugindemoplugin::client::StringView;
-	using feltplugindemoplugin::owner::HandleFactory;
-	using feltplugindemoplugin::owner::Worker;
+	using feltplugindemoplugin::service::HandleFactory;
+	using feltplugindemoplugin::service::Worker;
 
 	// Plugin
 

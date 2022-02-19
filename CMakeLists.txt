@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 include(GenerateExportHeader)
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-	add_compile_options(-fsanitize=address -fno-omit-frame-pointer )
-	add_link_options(-fsanitize=address -fno-omit-frame-pointer )
+	add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+	add_link_options(-fsanitize=address -fno-omit-frame-pointer)
 endif ()
 
 
@@ -27,7 +27,7 @@ target_include_directories(
 add_library(
 	FeltPluginDemoHostLib
 	SHARED
-	demo/host/owner.cpp
+	demo/host/service.cpp
 	demo/host/client.cpp
 )
 set_target_properties(
@@ -73,7 +73,7 @@ add_library(
 	FeltPluginDemoPlugin
 	MODULE
 	demo/plugin/client.cpp
-	demo/plugin/owner.cpp
+	demo/plugin/service.cpp
 )
 target_include_directories(
 	FeltPluginDemoPlugin
