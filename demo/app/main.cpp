@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include <feltplugin/service/plugin_factory.hpp>
+#include <feltpluginsystem/service/plugin_factory.hpp>
 
 #include "../host/client.hpp"
 #include "../host/service.hpp"
@@ -13,7 +13,8 @@ void execute()
 	auto dict = feltplugin::make_shared<service::StringDict>(
 		service::StringDict{{"key at construction", "value at construction"}});
 
-	feltplugin::service::Plugin plugin{"./libFeltPluginDemoPlugin.so"};
+	feltplugin::service::Plugin plugin{
+		FELTPLUGINSYSTEM_PLUGIN_PATH "/libfeltpluginsystemdemoplugin.so"};
 
 	auto worker =
 		plugin.load_adapter<feltplugindemohost::client::Worker>("fpdemo_Worker_suite", dict);

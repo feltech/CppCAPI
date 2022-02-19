@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include <feltplugin/interface.h>
-#include <feltplugin/error_map.hpp>
+#include <feltpluginsystem/interface.h>
+#include <feltpluginsystem/error_map.hpp>
 
 namespace feltplugin::client
 {

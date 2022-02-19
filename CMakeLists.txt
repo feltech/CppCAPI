@@ -1,98 +1,71 @@
 cmake_minimum_required(VERSION 3.21)
-project(FeltPlugin)
+project(FeltPluginSystem VERSION 1.0.0)
 
-set(CMAKE_CXX_STANDARD 17)
+# For `generate_export_header`
 include(GenerateExportHeader)
+# For `write_basic_package_version_file` et al.
+include(CMakePackageConfigHelpers)
+# For default install directories, e.g. CMAKE_INSTALL_LIBDIR
+include(GNUInstallDirs)
+# Default to less spammy install status messages.
+if (NOT DEFINED CMAKE_INSTALL_MESSAGE)
+	set(CMAKE_INSTALL_MESSAGE LAZY)
+endif ()
 
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-	add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-	add_link_options(-fsanitize=address -fno-omit-frame-pointer)
+#------------------------------------------------------------
+# Options
+
+option(FELTPLUGIN_ENABLE_TESTS "Build/install tests and demos" OFF)
+
+
+#------------------------------------------------------------
+# Targets
+
+# Plugin system
+
+add_subdirectory(src)
+
+# Demos/tests
+
+if (FELTPLUGIN_ENABLE_TESTS)
+	# Tests install the project first, so default the install directory to be relative to the build
+	# root.
+	if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND PROJECT_IS_TOP_LEVEL)
+		set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/dist"
+			CACHE PATH "Installation location" FORCE)
+	endif ()
+	enable_testing()
+	add_subdirectory(demo)
 endif ()
 
 
 #------------------------------------------------------------
-# Plugin system
+# CMake install package config
 
-add_library(FeltPluginSystem INTERFACE)
-target_include_directories(
-	FeltPluginSystem
-	INTERFACE
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/include>
+set(version_config_file "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config_file "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+# Version fetched from the top level project()
+write_basic_package_version_file(
+	${version_config_file}
+	COMPATIBILITY SameMinorVersion
 )
 
-#------------------------------------------------------------
-# Host library
-
-#Llibrary mostly so we can use `generate_export_header`.
-add_library(
-	FeltPluginDemoHostLib
-	SHARED
-	demo/host/service.cpp
-	demo/host/client.cpp
-)
-set_target_properties(
-	FeltPluginDemoHostLib
-	PROPERTIES
-
-	C_VISIBILITY_PRESET hidden
-	CXX_VISIBILITY_PRESET hidden
-	VISIBILITY_INLINES_HIDDEN ON
-)
-target_include_directories(
-	FeltPluginDemoHostLib
-	PUBLIC
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/demo/include>
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-)
-target_link_libraries(
-	FeltPluginDemoHostLib
-	PUBLIC
-	FeltPluginSystem
-	${CMAKE_DL_LIBS}
-)
-generate_export_header(FeltPluginDemoHostLib)
-
-#------------------------------------------------------------
-# Host executable
-
-add_executable(FeltPluginDemoHost demo/app/main.cpp)
-target_link_libraries(FeltPluginDemoHost PRIVATE FeltPluginDemoHostLib)
-set_target_properties(
-	FeltPluginDemoHost
-	PROPERTIES
-
-	ENABLE_EXPORTS ON
-
-	C_VISIBILITY_PRESET hidden
-	CXX_VISIBILITY_PRESET hidden
-	VISIBILITY_INLINES_HIDDEN ON
+configure_package_config_file(
+	cmake/Config.cmake.in
+	${project_config_file}
+	INSTALL_DESTINATION ${config_install_dir}
 )
 
-#------------------------------------------------------------
-# Demo plugin
+install(
+	EXPORT ${PROJECT_NAME}_EXPORTED_TARGETS
+	DESTINATION ${config_install_dir}
+	NAMESPACE ${PROJECT_NAME}::
+	FILE ${PROJECT_NAME}Targets.cmake
+)
 
-add_library(
-	FeltPluginDemoPlugin
-	MODULE
-	demo/plugin/client.cpp
-	demo/plugin/service.cpp
-)
-target_include_directories(
-	FeltPluginDemoPlugin
-	PUBLIC
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/demo/include>
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-)
-target_link_libraries(
-	FeltPluginDemoPlugin
-	PRIVATE
-	FeltPluginSystem
-)
-generate_export_header(FeltPluginDemoPlugin)
-set_target_properties(
-	FeltPluginDemoPlugin
-	PROPERTIES
-	C_VISIBILITY_PRESET hidden
-	CXX_VISIBILITY_PRESET hidden
-	VISIBILITY_INLINES_HIDDEN ON
+install(
+	FILES "${project_config_file}" "${version_config_file}"
+	DESTINATION "${config_install_dir}"
 )

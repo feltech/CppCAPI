@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include "feltplugin/pointers.hpp"
+#include "../pointers.hpp"
 
 namespace feltplugin::client
 {

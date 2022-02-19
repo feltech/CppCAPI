@@ -1,10 +1,10 @@
 #pragma once
 #include <string>
 
-#include <feltplugin/client/handle_adaptor.hpp>
-#include <feltplugin/client/handle_map.hpp>
+#include <feltpluginsystem/client/handle_adaptor.hpp>
+#include <feltpluginsystem/client/handle_map.hpp>
 
-#include <feltplugindemo/interface.h>
+#include <feltpluginsystemdemo/interface.h>
 
 #include "handle_wrapper.hpp"
 

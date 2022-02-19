@@ -1,9 +1,9 @@
 #pragma once
 #include <stdexcept>
 
-#include <feltplugin/handle_wrapper.hpp>
+#include <feltpluginsystem/handle_wrapper.hpp>
 
-#include <feltplugindemo/interface.h>
+#include <feltpluginsystemdemo/interface.h>
 
 namespace feltplugindemohost
 {

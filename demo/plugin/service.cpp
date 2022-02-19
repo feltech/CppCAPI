@@ -3,9 +3,9 @@
 #include <iostream>
 #include "client.hpp"
 
-#include <feltplugindemo/interface.h>
-#include <feltplugin/service/handle_factory.hpp>
-#include "feltplugindemoplugin_export.h"
+#include <feltpluginsystemdemo/interface.h>
+#include <feltpluginsystem/service/handle_factory.hpp>
+#include "feltpluginsystemdemoplugin_export.h"
 
 namespace feltplugindemoplugin::service
 {
@@ -42,7 +42,7 @@ extern "C"
 
 	// Plugin
 
-	FELTPLUGINDEMOPLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
+	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
 		return {
 			.create = &HandleWrapper::Factory<fpdemo_Worker_h>::make,

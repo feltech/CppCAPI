@@ -1,9 +1,9 @@
 #pragma once
 
-#include <feltplugin/service/handle_factory.hpp>
-#include <feltplugin/service/handle_map.hpp>
+#include <feltpluginsystem/service/handle_factory.hpp>
+#include <feltpluginsystem/service/handle_map.hpp>
 
-#include <feltplugindemo/interface.h>
+#include <feltpluginsystemdemo/interface.h>
 
 #include "client.hpp"
 
