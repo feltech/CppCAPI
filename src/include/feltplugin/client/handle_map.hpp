@@ -28,11 +28,14 @@ struct fallback_class_t : std::false_type
 
 struct fallback_suite_factory_t : std::false_type
 {
-	using type = std::false_type;
+	static constexpr auto type = nullptr;
 };
 
+template <class...>
+struct HandleMap;
+
 template <class Traits, class... Rest>
-struct HandleMap
+struct HandleMap<Traits, Rest...>
 {
 	template <class HandleToLookup>
 	using class_from_handle_t = typename std::disjunction<
@@ -110,6 +113,22 @@ struct HandleMap<Traits>
 	static constexpr auto suite_factory_from_handle()
 	{
 		return suite_factory_from_handle_t<HandleToLookup>::type;
+	};
+};
+
+template <>
+struct HandleMap<>
+{
+	template <class HandleToLookup>
+	using class_from_handle = fallback_class_t;
+
+	template <class HandleToLookup>
+	using suite_from_handle = fallback_suite_t;
+
+	template <class HandleToLookup>
+	static constexpr auto suite_factory_from_handle()
+	{
+		return fallback_suite_factory_t::type;
 	};
 };
 }  // namespace feltplugin::client

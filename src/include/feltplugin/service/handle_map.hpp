@@ -35,8 +35,11 @@ struct fallback_ptr_tag_t : std::false_type
 	static constexpr auto type = HandlePtrTag::Unrecognized;
 };
 
+template <class...>
+struct HandleMap;
+
 template <class Traits, class... Rest>
-struct HandleMap
+struct HandleMap<Traits, Rest...>
 {
 	template <class HandleToLookup>
 	using ptr_tag_from_handle_t = typename std::disjunction<
@@ -92,5 +95,18 @@ struct HandleMap<Traits>
 
 	template <class Arg>
 	using class_from_handle = typename class_from_handle_t<Arg>::type;
+};
+
+template <>
+struct HandleMap<>
+{
+	template <class HandleToLookup>
+	static constexpr auto ptr_tag_from_handle()
+	{
+		return fallback_ptr_tag_t<HandleToLookup>::type;
+	};
+	template <class HandleToLookup>
+	using class_from_handle = typename fallback_class_t<HandleToLookup>::type;
+
 };
 }  // namespace feltplugin::service

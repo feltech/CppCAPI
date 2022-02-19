@@ -27,7 +27,8 @@ struct HandleFactory
 
 	static_assert(
 		std::is_same_v<Handle, Class> || std::is_same_v<Wrapper, std::false_type>,
-		"Cannot have a handle that is both a native type and a client wrapper");
+		"Cannot have a handle that is both a native type and a client wrapper. Are you missing an "
+		"entry in your HandleMaps?");
 
 	static constexpr HandlePtrTag ptr_type_tag =
 		TServiceHandleMap::template ptr_tag_from_handle<Handle>();
@@ -95,7 +96,8 @@ struct HandleFactory
 			"Cannot release a handle not owned by client");
 		static_assert(
 			ptr_type_tag != HandlePtrTag::Unrecognized,
-			"Cannot release a handle aliasing a temporary");
+			"Cannot release a handle aliasing a temporary. Are you missing an entry in your "
+			"HandleMaps?");
 
 		if constexpr (ptr_type_tag == HandlePtrTag::Shared)
 		{
