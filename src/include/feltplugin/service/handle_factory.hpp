@@ -8,9 +8,6 @@
 
 namespace feltplugin::service
 {
-namespace
-{
-
 template <typename Fn>
 fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 {
@@ -25,7 +22,6 @@ fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 	}
 	return fp_ok;
 }
-}  // namespace
 
 template <class THandle, class TServiceHandleMap, class TClientHandleMap>
 struct HandleFactory
