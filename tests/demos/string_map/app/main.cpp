@@ -1,4 +1,5 @@
-
+#include <cstdlib>
+#include <filesystem>
 #include <iostream>
 
 #include "feltpluginsystem/plugin_factory.hpp"
@@ -10,14 +11,23 @@ namespace feltpluginsystemdemohost
 {
 void execute()
 {
+	// Calculate plugin path.
+	std::filesystem::path plugin_path = std::getenv("FELTPLUGINSYSTEM_PLUGIN_PATH");
+	plugin_path /= "libfeltpluginsystem-demo-string_map-plugin.so";
+	std::cout << "Loding plugin at " << plugin_path << std::endl;
+
+	// Load the plugin DSO.
+	feltplugin::service::Plugin plugin{plugin_path.c_str()};
+
+	// Create a shared StringDict to be used by both host and plugin.
 	auto dict = feltplugin::make_shared<service::StringDict>(
 		service::StringDict{{"key at construction", "value at construction"}});
 
-	feltplugin::service::Plugin plugin{
-		FELTPLUGINSYSTEM_PLUGIN_PATH "libfeltpluginsystem-demo-string_map-plugin.so"};
-
+	// Instantiate the Worker in the plugin and wrap it in a Worker wrapper here on the host.
 	auto worker =
 		plugin.load_adapter<feltpluginsystemdemohost::client::Worker>("fpdemo_Worker_suite", dict);
+
+	// Do some work with the worker.
 
 	try
 	{

@@ -56,13 +56,6 @@ function(set_default_standalone_host_target_properties target_name)
 		TARGETS ${target_name}
 		EXPORT ${PROJECT_NAME}_EXPORTED_TARGETS
 	)
-	# Default plugin path compile definition.
-	target_compile_definitions(
-		${target_name}
-		PUBLIC
-		$<BUILD_INTERFACE:FELTPLUGINSYSTEM_PLUGIN_PATH=\"${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/\">
-		$<INSTALL_INTERFACE:FELTPLUGINSYSTEM_PLUGIN_PATH=\"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/\">
-	)
 endfunction()
 
 function(set_default_host_lib_target_properties target_name)
@@ -79,7 +72,7 @@ function(set_default_plugin_lib_target_properties target_name)
 	set_default_target_properties(${target_name})
 
 	set_target_properties(
-		feltpluginsystem.demo.hello_plugin.plugin
+		${target_name}
 		PROPERTIES
 		LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
 	)
@@ -119,7 +112,9 @@ function(add_demo_test_target target_name)
 
 	add_test(
 		NAME ${target_name}.test
-		COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target ${target_name}.test
+		COMMAND
+		env FELTPLUGINSYSTEM_PLUGIN_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
+		${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target ${target_name}.test
 	)
 endfunction()
 

@@ -40,7 +40,10 @@ install(
 #------------------------------------------------------------
 # Host library
 
-# Use library rather than just executable mostly so we can use `generate_export_header`.
+# Splitting host interface out of executable into a library means
+# * Bindings to other languages can be made to this library (via the C interface).
+# * We can use `generate_export_header` CMake convenience.
+
 add_library(
 	feltpluginsystem.demo.string_map.host.lib
 	SHARED
@@ -56,7 +59,7 @@ set_target_properties(
 
 
 #------------------------------------------------------------
-# Plugin library
+# Plugin module
 
 add_library(
 	feltpluginsystem.demo.string_map.plugin
@@ -64,33 +67,11 @@ add_library(
 	plugin/client.cpp
 	plugin/service.cpp
 )
-set_default_target_properties(feltpluginsystem.demo.string_map.plugin)
+set_default_plugin_lib_target_properties(feltpluginsystem.demo.string_map.plugin)
 set_target_properties(
 	feltpluginsystem.demo.string_map.plugin
 	PROPERTIES
 	OUTPUT_NAME feltpluginsystem-demo-string_map-plugin
-	LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
-)
-target_include_directories(
-	feltpluginsystem.demo.string_map.plugin
-	PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-)
-target_link_libraries(
-	feltpluginsystem.demo.string_map.plugin
-	PRIVATE
-	feltpluginsystem
-)
-generate_export_header(
-	feltpluginsystem.demo.string_map.plugin
-	BASE_NAME FELTPLUGINSYSTEM_DEMO_PLUGIN
-	EXPORT_FILE_NAME plugin_export.h
-)
-install(
-	TARGETS feltpluginsystem.demo.string_map.plugin
-	EXPORT ${PROJECT_NAME}_EXPORTED_TARGETS
-	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
 )
 
 

@@ -1,7 +1,9 @@
+#include <cstdlib>
+#include <filesystem>
 #include <iostream>
 
-#include <feltpluginsystem/plugin_factory.hpp>
 #include <feltpluginsystem/handle_wrapper.hpp>
+#include <feltpluginsystem/plugin_factory.hpp>
 
 #include <feltpluginsystem-demo-hello_plugin/interface.h>
 
@@ -17,7 +19,6 @@ using HandleWrapper = feltplugin::HandleWrapper<
 		// Worker
 		feltplugin::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, Worker>>>>;
 
-
 struct Worker : HandleWrapper::Adapter<fpdemo_Worker_h>
 {
 	using Base::HandleAdapter;
@@ -30,8 +31,13 @@ struct Worker : HandleWrapper::Adapter<fpdemo_Worker_h>
 
 int main()
 {
-	feltplugin::service::Plugin plugin{FELTPLUGINSYSTEM_PLUGIN_PATH
-									   "libfeltpluginsystem-demo-hello_plugin-plugin.so"};
+	// Calculate plugin path.
+	std::filesystem::path plugin_path = std::getenv("FELTPLUGINSYSTEM_PLUGIN_PATH");
+	plugin_path /= "libfeltpluginsystem-demo-hello_plugin-plugin.so";
+	std::cout << "Loding plugin at " << plugin_path << std::endl;
+
+	// Load the plugin DSO.
+	feltplugin::service::Plugin plugin{plugin_path.c_str()};
 
 	auto worker = plugin.load_adapter<Worker>("fpdemo_Worker_suite");
 
