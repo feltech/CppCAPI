@@ -27,11 +27,6 @@ void Worker::update_dict(client::String const & key)
 		dict_.insert(key, client::String{"error from plugin"});
 		throw std::invalid_argument{"Couldn't find key plugin expects to exist"};
 	}
-	catch (std::exception const & ex)
-	{
-		std::cerr << "Unexpected error from host caught in plugin: " << ex.what() << "\n";
-		throw;
-	}
 }
 }  // namespace feltpluginsystemdemoplugin::service
 

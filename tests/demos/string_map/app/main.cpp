@@ -27,10 +27,6 @@ void execute()
 	{
 		std::cerr << "Invalid argument error from plugin caught in host: " << ex.what() << "\n";
 	}
-	catch (std::exception const & ex)
-	{
-		std::cerr << "Unexpected error from plugin caught in host: " << ex.what() << "\n";
-	}
 	std::cerr << std::flush;
 
 	for (auto [k, v] : *dict) std::cout << k << " = " << v << std::endl;
