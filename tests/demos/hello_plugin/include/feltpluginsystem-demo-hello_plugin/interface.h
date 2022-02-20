@@ -1,7 +1,7 @@
 #ifndef feltplugin_demo_handles_h
 #define feltplugin_demo_handles_h
 
-#include "feltpluginsystem/interface.h"
+#include <feltpluginsystem/interface.h>
 
 #ifdef __cplusplus
 extern "C"

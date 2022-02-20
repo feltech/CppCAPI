@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <iostream>
 
-#include "feltpluginsystem/plugin_factory.hpp"
+#include <feltpluginsystem/plugin_factory.hpp>
 
 #include "../host/client.hpp"
 #include "../host/service.hpp"
