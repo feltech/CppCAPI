@@ -1,3 +1,8 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
+/**
+ * Contains the Plugin class used for loading DSOs and their symbols.
+ */
 #pragma once
 #include <dlfcn.h>
 
@@ -6,12 +11,23 @@
 
 namespace feltplugin::service
 {
+/// Result of calling `dlopen`.
 using PluginHandle = decltype(dlopen("", 0));
+/// Result of calling `dlsym`.
 using SymHandle = decltype(dlsym(nullptr, ""));
 
+/**
+ * RAII wrapper and utilities for loading a DSO and its symbols.
+ */
 class Plugin
 {
 public:
+	/**
+	 * Constructor - load the plugin and throw `filesystem_error` on failure.
+	 *
+	 * @param file_path Path to DSO file to load.
+	 * @param mode Mode to pass to `dlopen`.
+	 */
 	// TODO: dlmopen
 	explicit Plugin(char const * file_path, int mode = RTLD_LAZY)
 		: file_path_{file_path}, handle_{dlopen(file_path, mode)}
@@ -22,6 +38,7 @@ public:
 				std::make_error_code(std::errc::io_error)};
 	}
 
+	/// Destructor - call `dlclose` on the handle.
 	~Plugin()
 	{
 		if (handle_)
@@ -29,6 +46,13 @@ public:
 		handle_ = nullptr;
 	}
 
+	/**
+	 * Load an arbitrary symbol from the plugin DSO.
+	 *
+	 * @tparam Symbol Type of the symbol.
+	 * @param name Name of the symbol.
+	 * @return Loaded symbol.
+	 */
 	template <typename Symbol>
 	Symbol load_symbol(char const * name)
 	{
@@ -42,6 +66,16 @@ public:
 		return reinterpret_cast<Symbol>(sym);
 	}
 
+	/**
+	 * Load a function pointer suite factory from the plugin DSO and instantiate an adapter class
+	 * around it.
+	 *
+	 * @tparam Adapter Adapter class type to instantiate.
+	 * @tparam Args Additional argument types to pass to Adapter constructor.
+	 * @param suite_factory_name Symbol name in DSO of suite factory function.
+	 * @param args Additional arguments to pass to Adapter constructor.
+	 * @return Adapter instance.
+	 */
 	template <class Adapter, typename... Args>
 	Adapter load_adapter(char const* suite_factory_name, Args&&... args)
 	{

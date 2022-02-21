@@ -1,3 +1,9 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
+/**
+ * Contains the ErrorMap of ErrorTraits to be used by services/clients converting between exceptions
+ * and error codes.
+ */
 #pragma once
 
 #include <cstring>
@@ -45,7 +51,7 @@ struct ErrorMap;
 /**
  * Utility to extract the type/code of an exception.
  *
- * This is the default error map to use if the exception is unmatched.
+ * This is the default error map unless overridden in HandleFactory.
  *
  * Catches `std::exception` (and derived), raises `std::runtime_error`, and associates with error
  * code fp_error.
@@ -53,6 +59,16 @@ struct ErrorMap;
 template <>
 struct ErrorMap<>
 {
+	/**
+	 * Execute a callable, converting any thrown exception to an error code and message.
+	 *
+	 * This default implementation catches all exceptions and returns fp_error on error.
+	 *
+	 * @tparam Fn Callable type to execute.
+	 * @param err Storage for error message.
+	 * @param fn Callback to execute.
+	 * @return fp_ok if no exception was raised, fp_error otherwise.
+	 */
 	template <typename Fn>
 	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 	{
@@ -68,6 +84,15 @@ struct ErrorMap<>
 		return fp_ok;
 	}
 
+	/**
+	 * Throw exception if given error code matches.
+	 *
+	 * This default implementation throws std::runtime_error with given message if code is anything
+	 * other than fp_ok.
+	 *
+	 * @param err Storage for error message.
+	 * @param code Error code.
+	 */
 	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
 	{
 		if (code != fp_ok)
@@ -75,12 +100,31 @@ struct ErrorMap<>
 	};
 };
 
+/**
+ * Utility to extract the type/code of an exception.
+ *
+ * This is a single-element error map.
+ *
+ * @tparam Traits ErrorTraits of exception to be matched.
+ */
 template <class Traits>
 struct ErrorMap<Traits>
 {
+	/// Hoist exception type from traits.
 	using Exception = typename Traits::Exception;
+	/// Hoist exception code from traits.
 	static constexpr fp_ErrorCode kCode = Traits::code;
 
+	/**
+	 * Execute a callable, converting any thrown exception to an error code and message.
+	 *
+	 * If thrown exception matches Exception then returns kCode, otherwise returns fp_error.
+	 *
+	 * @tparam Fn Callable type to execute.
+	 * @param err Storage for error message.
+	 * @param fn Callback to execute.
+	 * @return fp_ok if no exception was raised, error code otherwise.
+	 */
 	template <typename Fn>
 	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 	{
@@ -101,6 +145,14 @@ struct ErrorMap<Traits>
 		return fp_ok;
 	}
 
+	/**
+	 * Throw exception if given error code matches.
+	 *
+	 * If the code does not match, calls through to the unmatched case, ErrorMap<>.
+	 *
+	 * @param err Storage for error message.
+	 * @param code Error code.
+	 */
 	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
 	{
 		if (code == kCode)
@@ -168,6 +220,17 @@ struct ErrorMap<Traits, Rest...>
 	using Exception = typename Traits::Exception;
 	static constexpr fp_ErrorCode kCode = Traits::code;
 
+	/**
+	 * Execute a callable, converting any thrown exception to an error code and message.
+	 *
+	 * If thrown exception matches Exception then returns kCode, otherwise recursively calls
+	 * with the Rest of the ErrorTraits. If none of them matches, then returns fp_error.
+	 *
+	 * @tparam Fn Callable type to execute.
+	 * @param err Storage for error message.
+	 * @param fn Callback to execute.
+	 * @return fp_ok if no exception was raised, error code otherwise.
+	 */
 	template <typename Fn>
 	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 	{
@@ -187,6 +250,14 @@ struct ErrorMap<Traits, Rest...>
 		}
 	}
 
+	/**
+	 * Throw exception if given error code matches.
+	 *
+	 * If the code does not match, recurse through Rest of the ErrorTraits.
+	 *
+	 * @param err Storage for error message.
+	 * @param code Error code.
+	 */
 	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
 	{
 		if (code == kCode)
@@ -195,8 +266,4 @@ struct ErrorMap<Traits, Rest...>
 		ErrorMap<Rest...>::throw_exception(err, code);
 	};
 };
-
-using DefaultErrorMap = ErrorMap<
-	// Catch-all exception.
-	ErrorTraits<std::runtime_error, fp_error>>;
 }  // namespace feltplugin

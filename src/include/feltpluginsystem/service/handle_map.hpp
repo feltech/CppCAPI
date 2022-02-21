@@ -1,3 +1,8 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
+/**
+ * Contains the HandleMap of HandleTraits to be used by services converting to/from opaque handles.
+ */
 #pragma once
 
 namespace feltplugin::service

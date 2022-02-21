@@ -1,13 +1,11 @@
 // Copyright 2022 David Feltell
 // SPDX-License-Identifier: MIT
 /**
- * Contains the HandleMap to be used by clients wrapping service types.
+ * Contains the HandleMap of HandleTraits to be used by clients converting to/from opaque handles.
  */
 #pragma once
 
 #include <type_traits>
-
-#include "../pointers.hpp"
 
 namespace feltplugin::client
 {

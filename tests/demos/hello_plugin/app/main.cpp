@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <feltpluginsystem/handle_wrapper.hpp>
-#include <feltpluginsystem/plugin_factory.hpp>
+#include <feltpluginsystem/plugin.hpp>
 
 #include <feltpluginsystem-demo-hello_plugin/interface.h>
 
