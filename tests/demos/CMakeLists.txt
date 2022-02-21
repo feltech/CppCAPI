@@ -2,7 +2,7 @@
 # Common
 
 function(set_default_target_properties target_name)
-	if (CMAKE_BUILD_TYPE STREQUAL Debug AND CMAKE_COMPILER_ID STREQUAL GNU)
+	if (CMAKE_BUILD_TYPE STREQUAL Debug AND CMAKE_CXX_COMPILER_ID STREQUAL GNU)
 		# Enable sanitizers for tests on GCC.
 		target_compile_options(
 			${target_name} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
