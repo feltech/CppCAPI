@@ -17,9 +17,9 @@ using HandleWrapper = feltplugin::HandleWrapper<
 	feltplugin::service::HandleMap<>,
 
 	// Client
-	feltplugin::client::HandleMap<feltplugin::client::HandleMap<
+	feltplugin::client::HandleMap<
 		// Worker
-		feltplugin::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, Worker>>>>;
+		feltplugin::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, Worker>>>;
 
 struct Worker : HandleWrapper::Adapter<fpdemo_Worker_h>
 {
