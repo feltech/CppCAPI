@@ -1,3 +1,5 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
 #ifndef feltplugin_demo_handles_h
 #define feltplugin_demo_handles_h
 

@@ -1,9 +1,16 @@
+# Copyright 2022 David Feltell
+# SPDX-License-Identifier: MIT
+
+# Note: this demo doesn't work in debug mode with ASan enabled because of
+# https://bugs.llvm.org/show_bug.cgi?id=39641 - the C++ lib hangs when throwing an exception.
+
 import ctypes
 import os
 from ctypes import CFUNCTYPE, c_char_p, c_int, c_void_p, c_char
 
-lib_path = os.getenv("FELTPLUGINSYSTEM_DEMO_HOST_LIB")
-assert lib_path is not None, "FELTPLUGINSYSTEM_DEMO_HOST_LIB must be set to host library path"
+lib_path = os.getenv("FELTPLUGINSYSTEM_HOST_PATH")
+assert lib_path is not None, "FELTPLUGINSYSTEM_HOST_PATH must be set"
+lib_path = os.path.join(lib_path, "libfeltpluginsystem-demo-string_map-host.so")
 
 host = None
 

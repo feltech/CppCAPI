@@ -1,3 +1,5 @@
+# Copyright 2022 David Feltell
+# SPDX-License-Identifier: MIT
 add_library(feltpluginsystem INTERFACE)
 target_include_directories(
 	feltpluginsystem

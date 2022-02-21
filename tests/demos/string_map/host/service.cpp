@@ -1,3 +1,5 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
 #include "service.hpp"
 
 #include <feltpluginsystem-demo-string_map/interface.h>

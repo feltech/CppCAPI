@@ -1,3 +1,5 @@
+# Copyright 2022 David Feltell
+# SPDX-License-Identifier: MIT
 cmake_minimum_required(VERSION 3.21)
 project(FeltPluginSystem VERSION 1.0.0)
 

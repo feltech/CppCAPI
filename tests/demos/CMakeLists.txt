@@ -1,3 +1,5 @@
+# Copyright 2022 David Feltell
+# SPDX-License-Identifier: MIT
 #------------------------------------------------------------
 # Common
 
@@ -55,6 +57,10 @@ function(set_default_standalone_host_target_properties target_name)
 	install(
 		TARGETS ${target_name}
 		EXPORT ${PROJECT_NAME}_EXPORTED_TARGETS
+		LIBRARY
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		RUNTIME
+		DESTINATION ${CMAKE_INSTALL_BINDIR}
 	)
 endfunction()
 

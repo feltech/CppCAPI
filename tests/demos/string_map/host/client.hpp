@@ -1,3 +1,5 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
 #pragma once
 
 #include "handle_wrapper.hpp"

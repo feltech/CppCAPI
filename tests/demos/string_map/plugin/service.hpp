@@ -1,3 +1,5 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
 #pragma once
 
 #include <feltpluginsystem/service/handle_factory.hpp>

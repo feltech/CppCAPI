@@ -103,7 +103,7 @@ public:
 		if (handle_ == nullptr)
 			return;	 // Assume moved out
 
-		// E.g. a handle to a temporary shouldn't have a `release` function in its suite (though
+		// E.g. an OwnedByService handle shouldn't have a `release` function in its suite (though
 		// technically it could but should be a no-op, and certainly not try to free memory pointed
 		// to by the handle)
 		if constexpr (has_release_t<Suite>::value)
@@ -194,7 +194,6 @@ protected:
 		throw_on_error(code, err);
 	}
 
-
 	/**
 	 * Call a suite function that has no return value and cannot error.
 	 *
@@ -248,7 +247,6 @@ protected:
 	Suite const suite_;
 
 private:
-
 	/**
 	 * Check if given type has a `release` member.
 	 *

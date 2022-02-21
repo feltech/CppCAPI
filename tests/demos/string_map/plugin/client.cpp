@@ -1,3 +1,5 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
 #include "client.hpp"
 
 #include <string>
@@ -5,7 +7,7 @@
 namespace feltpluginsystemdemoplugin::client
 {
 
-String::String(StringView const & str)
+String::String(client::StringView const & str)
 {
 	Base::create();
 	call(suite_.assign_StringView, static_cast<fpdemo_StringView_h>(str));

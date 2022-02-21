@@ -85,7 +85,7 @@ public:
 	template <typename... Args>
 	static fp_ErrorCode make(fp_ErrorMessage err, Handle * out, Args... args)
 	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		return TErrorMap::wrap_exception(
 			err, [&out, &args...] { *out = make(std::forward<Args>(args)...); });
 	}
@@ -137,7 +137,7 @@ public:
 	 */
 	static Handle create(Class & obj)
 	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		static_assert(
 			ptr_type_tag == HandleOwnershipTag::OwnedByService,
 			"Cannot create a non-shared non-transferred handle for shared / transferred types");
@@ -177,7 +177,7 @@ public:
 	 */
 	static Handle create(SharedPtr<Class> && ptr)
 	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		static_assert(
 			ptr_type_tag == HandleOwnershipTag::Shared,
 			"Cannot create a shared handle for a non-shared type");
@@ -197,7 +197,7 @@ public:
 	 */
 	static void release(Handle handle)
 	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		static_assert(
 			ptr_type_tag != HandleOwnershipTag::OwnedByService,
 			"Cannot release a handle not owned by client");
@@ -280,7 +280,7 @@ public:
 	static fp_ErrorCode mem_fn(
 		Fn && fn, fp_ErrorMessage err, Ret * out, Handle handle, Args... args)
 	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		return TErrorMap::wrap_exception(
 			err,
 			[handle, &out, &fn, &args...]
@@ -310,7 +310,7 @@ public:
 	template <class Fn, class... Args>
 	static fp_ErrorCode mem_fn(Fn && fn, fp_ErrorMessage err, Handle handle, Args... args)
 	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		return TErrorMap::wrap_exception(
 			err,
 			[&fn, handle, &args...] {
@@ -335,10 +335,11 @@ public:
 	 * concrete types if necessary.
 	 * @return Error code.
 	 */
+	 // TODO: How to auto-convert HandleAdapter where suite is not known at compile-time.
 	template <class Fn, class... Args>
 	static auto mem_fn(Fn && fn, Handle handle, Args... args)
 	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		return fn(
 			*convert(handle), *OtherHandleFactory<Args>::convert(std::forward<Args>(args))...);
 	}
