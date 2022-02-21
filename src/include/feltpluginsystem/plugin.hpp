@@ -9,7 +9,7 @@
 #include <filesystem>
 #include <string>
 
-namespace feltplugin::service
+namespace feltplugin
 {
 /// Result of calling `dlopen`.
 using PluginHandle = decltype(dlopen("", 0));
@@ -70,7 +70,7 @@ public:
 	 * Load a function pointer suite factory from the plugin DSO and instantiate an adapter class
 	 * around it.
 	 *
-	 * @tparam Adapter Adapter class type to instantiate.
+	 * @tparam Adapter client::HandleAdapter type to instantiate.
 	 * @tparam Args Additional argument types to pass to Adapter constructor.
 	 * @param suite_factory_name Symbol name in DSO of suite factory function.
 	 * @param args Additional arguments to pass to Adapter constructor.

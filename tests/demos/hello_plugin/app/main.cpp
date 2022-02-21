@@ -34,10 +34,10 @@ int main()
 	// Calculate plugin path.
 	std::filesystem::path plugin_path = std::getenv("FELTPLUGINSYSTEM_PLUGIN_PATH");
 	plugin_path /= "libfeltpluginsystem-demo-hello_plugin-plugin.so";
-	std::cout << "Loding plugin at " << plugin_path << std::endl;
+	std::cout << "Loading plugin at " << plugin_path << std::endl;
 
 	// Load the plugin DSO.
-	feltplugin::service::Plugin plugin{plugin_path.c_str()};
+	feltplugin::Plugin plugin{plugin_path.c_str()};
 
 	auto worker = plugin.load_adapter<Worker>("fpdemo_Worker_suite");
 

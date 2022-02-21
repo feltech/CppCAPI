@@ -17,10 +17,10 @@ void execute()
 		throw std::invalid_argument{"FELTPLUGINSYSTEM_PLUGIN_PATH must be set"};
 	std::filesystem::path plugin_path = std::getenv("FELTPLUGINSYSTEM_PLUGIN_PATH");
 	plugin_path /= "libfeltpluginsystem-demo-string_map-plugin.so";
-	std::cout << "Loding plugin at " << plugin_path << std::endl;
+	std::cout << "Loading plugin at " << plugin_path << std::endl;
 
 	// Load the plugin DSO.
-	feltplugin::service::Plugin plugin{plugin_path.c_str()};
+	feltplugin::Plugin plugin{plugin_path.c_str()};
 
 	// Create a shared StringDict to be used by both host and plugin.
 	auto dict = feltplugin::make_shared<service::StringDict>(
