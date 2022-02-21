@@ -1,3 +1,8 @@
+// Copyright 2022 David Feltell
+// SPDX-License-Identifier: MIT
+/**
+ * Contains the HandleAdapter to be used by clients wrapping service types.
+ */
 #pragma once
 
 #include <stdexcept>
@@ -7,42 +12,92 @@
 
 namespace feltplugin::client
 {
-
-template <class THandle, class THandleMap, class TErrorMap = DefaultErrorMap>
+/**
+ * Base class for adapters wrapping opaque handles on the client.
+ *
+ * @tparam THandle Opaque handle type.
+ * @tparam THandleMap HandleMap detailing mapping of handles to wrapper classes.
+ * @tparam TErrorMap ErrorMap detailing mapping of exceptions to error codes.
+ */
+template <class THandle, class THandleMap, class TErrorMap = ErrorMap<>>
 struct HandleAdapter
 {
 protected:
+	/// Convenience for referring to this base class in subclasses.
 	using Base = HandleAdapter<THandle, THandleMap, TErrorMap>;
 
 public:
+	/// Opaque handle type.
 	using Handle = THandle;
+	/// C function pointer suite associated with the handle.
 	using Suite = typename THandleMap::template suite_from_handle<THandle>;
+	/// Signature of function used to construct a function pointer suite for the handle.
 	using SuiteFactory = Suite (*)();
 
 protected:
+	/**
+	 * Compile-time known factory for creating function pointer suite associated with handle.
+	 *
+	 * Can be `nullptr` (the default), in which case the suite factory must be passed to the
+	 * constructor.
+	 */
 	static constexpr SuiteFactory ksuite_factory =
 		THandleMap::template suite_factory_from_handle<THandle>();
 
 public:
+	/**
+	 * Construct from a given handle, assuming compile-time known associated function pointer suite.
+	 *
+	 * Typically this constructor is used for plugin clients wrapping host service types, where the
+	 * host DSO has already exported the suite factory as a global symbol available immediately on
+	 * loading (linking) the plugin.
+	 *
+	 * @param handle Opaque handle to service type.
+	 */
 	HandleAdapter(Handle handle)  // NOLINT(google-explicit-constructor)
 		: HandleAdapter{handle, ksuite_factory}
 	{
 		static_assert(ksuite_factory != nullptr, "Attempting to construct with null suite factory");
 	}
 
+	/**
+	 * Construct injecting provided function pointer suite, initially wrapping a null handle.
+	 *
+	 * Typically this constructor is used by host clients wrapping plugin service types, where the
+	 * suite factory has to be queried from the plugin DSO. Once this constructor has been called,
+	 * the subclass should immediately use the suite's `create` function to fill in the null handle.
+	 *
+	 * @param suite_factory Factory function that returns the function pointer suite associated with
+	 * the handle.
+	 */
 	explicit HandleAdapter(SuiteFactory suite_factory) : HandleAdapter{nullptr, suite_factory} {}
 
+	/**
+	 * Construct injecting provided opaque handle and associated function pointer suite.
+	 *
+	 * @param handle Opaque handle to service type.
+	 * @param suite_factory Factory function that returns the function pointer suite associated with
+	 * the handle.
+	 */
 	explicit HandleAdapter(Handle handle, SuiteFactory suite_factory)
 		: handle_{handle}, suite_{suite_factory()}
 	{
 	}
 
+	/// It is not safe to copy a handle adapter, since it may lead to use-after-free.
 	HandleAdapter(HandleAdapter const &) = delete;
+
+	/// Move the handle from the other adapter and set its handle to null.
 	HandleAdapter(HandleAdapter && other) noexcept : handle_{other.handle_}, suite_{other.suite_}
 	{
 		other.handle_ = nullptr;
 	};
 
+	/**
+	 * Call the function suite's `release` function, if appropriate.
+	 *
+	 * I.e. Call `release` if the handle is not null and the suite defines a `release` function.
+	 */
 	virtual ~HandleAdapter()
 	{
 		if (handle_ == nullptr)
@@ -57,14 +112,28 @@ public:
 		handle_ = nullptr;
 	}
 
+	/// Allow `static_cast`ing from this adapter back to a raw handle.
 	explicit operator Handle() const
 	{
 		return handle_;
 	}
 
 protected:
+	/// Allow default construction, relying on the subclass to populate the handle.
 	HandleAdapter() : HandleAdapter{Handle{nullptr}} {}
 
+	/**
+	 * Call our suite's `create` function, updating our opaque handle with the result.
+	 *
+	 * Assumes `create` is defined in the function pointer suite with signature
+	 * `(fp_ErrorMessage, Handle*, Args...) -> fp_ErrorCode`.
+	 *
+	 * No conversion to opaque handles is performed - if these are required by the `create` function
+	 * then conversion must happen in the caller.
+	 *
+	 * @tparam Args Additional constructor argument types.
+	 * @param args Constructor arguments.
+	 */
 	template <class... Args>
 	void create(Args &&... args)
 	{
@@ -75,6 +144,21 @@ protected:
 		throw_on_error(code, err);
 	}
 
+	/**
+	 * Call a suite function that has a return value and can error.
+	 *
+	 * The handle, error message/code, and return value out parameter are all handled, allowing the
+	 * caller to just provide any additional arguments specific to the given function.
+	 *
+	 * A non-zero error code is thrown as an exception, as defined by the ErrorMap.
+	 *
+	 * @tparam Ret Type of return value (out parameter).
+	 * @tparam Args Additional argument types required by the suite function.
+	 * @tparam Rest Additional argument types given to the suite function.
+	 * @param fn Suite function to call.
+	 * @param args Additional arguments given to the suite function.
+	 * @return Value of suite function's out parameter after invocation.
+	 */
 	template <class Ret, class... Args, class... Rest>
 	Ret call(fp_ErrorCode (*fn)(fp_ErrorMessage, Ret *, Handle, Args...), Rest &&... args) const
 	{
@@ -87,6 +171,19 @@ protected:
 		return ret;
 	}
 
+	/**
+	 * Call a suite function that has no return value but can error.
+	 *
+	 * The handle and error message/code all handled, allowing the caller to just provide any
+	 * additional arguments specific to the given function.
+	 *
+	 * A non-zero error code is thrown as an exception, as defined by the ErrorMap.
+	 *
+	 * @tparam Args Additional argument types required by the suite function.
+	 * @tparam Rest Additional argument types given to the suite function.
+	 * @param fn Suite function to call.
+	 * @param args Additional arguments given to the suite function.
+	 */
 	template <class... Args, class... Rest>
 	void call(fp_ErrorCode (*fn)(fp_ErrorMessage, Handle, Args...), Rest &&... args) const
 	{
@@ -97,35 +194,80 @@ protected:
 		throw_on_error(code, err);
 	}
 
+
+	/**
+	 * Call a suite function that has no return value and cannot error.
+	 *
+	 * The handle is injected, allowing the caller to just provide any
+	 * additional arguments specific to the given function.
+	 *
+	 * @tparam Args Additional argument types required by the suite function.
+	 * @tparam Rest Additional argument types given to the suite function.
+	 * @param fn Suite function to call.
+	 * @param args Additional arguments given to the suite function.
+	 */
 	template <class... Args, class... Rest>
 	void call(void (*fn)(Handle, Args...), Rest &&... args) const
 	{
 		fn(handle_, std::forward<Rest>(args)...);
 	}
 
+	/**
+	 * Call a suite function that has arguments nor return value and cannot error.
+	 *
+	 * The handle is injected.
+	 *
+	 * @tparam Args Additional argument types required by the suite function.
+	 * @tparam Rest Additional argument types given to the suite function.
+	 * @param fn Suite function to call.
+	 * @param args Additional arguments given to the suite function.
+	 */
 	void call(void (*fn)(Handle)) const
 	{
 		fn(handle_);
 	}
 
-	static void throw_on_error(fp_ErrorCode const code, fp_ErrorMessage const & err)
+	/**
+	 * Convert an error code into an exception and throw it.
+	 *
+	 * @param code Code to look up.
+	 * @param err Error message to pass to constructor of exception.
+	 */
+	static void throw_on_error(fp_ErrorCode const code, fp_ErrorMessage err)
 	{
 		if (code == fp_ok)
 			return;
 
-		TErrorMap::exception_from_code(code, err);
+		TErrorMap::throw_exception(err, code);
 	}
 
 protected:
+	/// Opaque handle to C++ object in the service.
 	Handle handle_;
+	/// Function pointer suite associated with Handle.
 	Suite const suite_;
 
 private:
+
+	/**
+	 * Check if given type has a `release` member.
+	 *
+	 * SFINAE type. This default means the given type has no `release` member.
+	 *
+	 * @tparam T Type to check.
+	 */
 	template <typename T, typename = void>
 	struct has_release_t : std::false_type
 	{
 	};
 
+	/**
+	 * Check if given type has a `release` member.
+	 *
+	 * SFINAE type. If this specialisation is chosen then the given type has a `release` member.
+	 *
+	 * @tparam T Type to check.
+	 */
 	template <typename T>
 	struct has_release_t<T, decltype(T::release, void())> : std::true_type
 	{

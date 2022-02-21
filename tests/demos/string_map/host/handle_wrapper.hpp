@@ -26,19 +26,19 @@ using HandleWrapper = feltplugin::HandleWrapper<
 		feltplugin::service::HandleTraits<
 			fpdemo_StringView_h,
 			service::StringView,
-			feltplugin::service::HandlePtrTag::OwnedByService>,
+			feltplugin::service::HandleOwnershipTag::OwnedByService>,
 
 		// String
 		feltplugin::service::HandleTraits<
 			fpdemo_String_h,
 			service::String,
-			feltplugin::service::HandlePtrTag::OwnedByClient>,
+			feltplugin::service::HandleOwnershipTag::OwnedByClient>,
 
 		// StringDict
 		feltplugin::service::HandleTraits<
 			fpdemo_StringDict_h,
 			service::StringDict,
-			feltplugin::service::HandlePtrTag::Shared>>,
+			feltplugin::service::HandleOwnershipTag::Shared>>,
 
 	// Client
 	feltplugin::client::HandleMap<

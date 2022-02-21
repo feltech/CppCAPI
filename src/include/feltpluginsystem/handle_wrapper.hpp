@@ -9,7 +9,7 @@
 namespace feltplugin
 {
 
-template <class TServiceHandleMap, class TClientHandleMap, class TErrorMap = DefaultErrorMap>
+template <class TServiceHandleMap, class TClientHandleMap, class TErrorMap = ErrorMap<>>
 struct HandleWrapper
 {
 	template <class Class>

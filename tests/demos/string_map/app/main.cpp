@@ -12,6 +12,9 @@ namespace feltpluginsystemdemohost
 void execute()
 {
 	// Calculate plugin path.
+	char const * plugin_path_var = std::getenv("FELTPLUGINSYSTEM_PLUGIN_PATH");
+	if (!plugin_path_var)
+		throw std::invalid_argument{"FELTPLUGINSYSTEM_PLUGIN_PATH must be set"};
 	std::filesystem::path plugin_path = std::getenv("FELTPLUGINSYSTEM_PLUGIN_PATH");
 	plugin_path /= "libfeltpluginsystem-demo-string_map-plugin.so";
 	std::cout << "Loding plugin at " << plugin_path << std::endl;
@@ -35,9 +38,9 @@ void execute()
 	}
 	catch (std::invalid_argument const & ex)
 	{
-		std::cerr << "Invalid argument error from plugin caught in host: " << ex.what() << "\n";
+		std::cout << "Invalid argument error from plugin caught in host: " << ex.what()
+				  << std::endl;
 	}
-	std::cerr << std::flush;
 
 	for (auto [k, v] : *dict) std::cout << k << " = " << v << std::endl;
 

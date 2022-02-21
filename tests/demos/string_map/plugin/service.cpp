@@ -23,7 +23,7 @@ void Worker::update_dict(client::String const & key)
 	}
 	catch (std::out_of_range const & ex)
 	{
-		std::cerr << "Out of range error from host caught in plugin: " << ex.what() << "\n";
+		std::cout << "Out of range error from host caught in plugin: " << ex.what() << std::endl;
 		dict_.insert(key, client::String{"error from plugin"});
 		throw std::invalid_argument{"Couldn't find key plugin expects to exist"};
 	}

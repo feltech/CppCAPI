@@ -10,6 +10,12 @@
 namespace feltplugin
 {
 
+/**
+ * Traits mapping an exception class to error code.
+ *
+ * @tparam TException Exception class.
+ * @tparam Tcode Error code.
+ */
 template <class TException, fp_ErrorCode Tcode>
 struct ErrorTraits
 {
@@ -17,41 +23,55 @@ struct ErrorTraits
 	static constexpr fp_ErrorCode code = Tcode;
 };
 
-template <class Traits, class... Rest>
-struct ErrorMap
+namespace detail
 {
-	using Exception = typename Traits::Exception;
-	static constexpr fp_ErrorCode kCode = Traits::code;
+inline void extract_exception_message(fp_ErrorMessage err, std::exception const & ex) noexcept
+{
+	strncpy(err, ex.what(), sizeof(fp_ErrorMessage) - 1);
+	err[sizeof(fp_ErrorMessage) - 1] = '\0';
+}
+}  // namespace detail
 
+/**
+ * Utility to extract the type/code of an exception.
+ *
+ * Default implementation, will never be instantiated.
+ *
+ * @tparam ...
+ */
+template <class...>
+struct ErrorMap;
+
+/**
+ * Utility to extract the type/code of an exception.
+ *
+ * This is the default error map to use if the exception is unmatched.
+ *
+ * Catches `std::exception` (and derived), raises `std::runtime_error`, and associates with error
+ * code fp_error.
+ */
+template <>
+struct ErrorMap<>
+{
 	template <typename Fn>
 	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
 	{
 		try
 		{
-			return ErrorMap<Rest...>::wrap_exception(err, [&fn] { fn(); });
+			fn();
 		}
-		catch (Exception const & ex)
+		catch (std::exception const & ex)
 		{
-			return code_from_exception(ex, err);
+			detail::extract_exception_message(err, ex);
+			return fp_error;
 		}
+		return fp_ok;
 	}
 
-	template <class ErrorToLookup>
-	static fp_ErrorCode code_from_exception(ErrorToLookup const & ex, fp_ErrorMessage err)
+	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
 	{
-		if constexpr (!std::is_same_v<ErrorToLookup, Exception>)
-			return ErrorMap<Rest...>::code_from_exception(ex);
-
-		strncpy(err, ex.what(), sizeof(fp_ErrorMessage) - 1);
-		err[sizeof(fp_ErrorMessage) - 1] = '\0';
-
-		return kCode;
-	}
-	static constexpr void exception_from_code(fp_ErrorCode const code, fp_ErrorMessage const & err)
-	{
-		if (code != kCode)
-			ErrorMap<Rest...>::exception_from_code(code, err);
-		throw Exception{err};
+		if (code != fp_ok)
+			throw std::runtime_error{err};
 	};
 };
 
@@ -70,29 +90,109 @@ struct ErrorMap<Traits>
 		}
 		catch (Exception const & ex)
 		{
-			return code_from_exception(ex, err);
+			detail::extract_exception_message(err, ex);
+			return kCode;
+		}
+		catch (std::exception const & ex)
+		{
+			detail::extract_exception_message(err, ex);
+			return fp_error;
 		}
 		return fp_ok;
 	}
 
-	template <class ErrorToLookup>
-	static fp_ErrorCode code_from_exception(ErrorToLookup const & ex, fp_ErrorMessage err)
-	{
-		strncpy(err, ex.what(), sizeof(fp_ErrorMessage) - 1);
-		err[sizeof(fp_ErrorMessage) - 1] = '\0';
-
-		if constexpr (!std::is_same_v<ErrorToLookup, Exception>)
-			return fp_error;
-
-		return kCode;
-	}
-
-	static constexpr void exception_from_code(fp_ErrorCode const code, fp_ErrorMessage const & err)
+	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
 	{
 		if (code == kCode)
 			throw Exception{err};
 
-		throw std::runtime_error{err};
+		ErrorMap<>::throw_exception(err, code);
+	};
+};
+
+namespace detail
+{
+template <class Traits, class... Rest>
+struct ErrorMapRecursive
+{
+	using Exception = typename Traits::Exception;
+	static constexpr fp_ErrorCode kCode = Traits::code;
+
+	template <typename Fn>
+	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
+	{
+		try
+		{
+			return ErrorMapRecursive<Rest...>::wrap_exception(err, [&fn] { fn(); });
+		}
+		catch (Exception const & ex)
+		{
+			detail::extract_exception_message(err, ex);
+			return kCode;
+		}
+	}
+};
+
+template <class Traits>
+struct ErrorMapRecursive<Traits>
+{
+	using Exception = typename Traits::Exception;
+	static constexpr fp_ErrorCode kCode = Traits::code;
+
+	template <typename Fn>
+	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
+	{
+		try
+		{
+			fn();
+		}
+		catch (Exception const & ex)
+		{
+			detail::extract_exception_message(err, ex);
+			return kCode;
+		}
+		return fp_ok;
+	}
+};
+}  // namespace detail
+
+/**
+ * Utility to extract the type/code of an exception.
+ *
+ * @tparam Traits First ErrorTraits in the list.
+ * @tparam Rest Remaining ErrorTraits.
+ */
+template <class Traits, class... Rest>
+struct ErrorMap<Traits, Rest...>
+{
+	using Exception = typename Traits::Exception;
+	static constexpr fp_ErrorCode kCode = Traits::code;
+
+	template <typename Fn>
+	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
+	{
+		try
+		{
+			return detail::ErrorMapRecursive<Rest...>::wrap_exception(err, [&fn] { fn(); });
+		}
+		catch (Exception const & ex)
+		{
+			detail::extract_exception_message(err, ex);
+			return kCode;
+		}
+		catch (std::exception const & ex)
+		{
+			detail::extract_exception_message(err, ex);
+			return fp_error;
+		}
+	}
+
+	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
+	{
+		if (code == kCode)
+			throw Exception{err};
+
+		ErrorMap<Rest...>::throw_exception(err, code);
 	};
 };
 

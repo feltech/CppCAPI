@@ -26,7 +26,7 @@ using HandleWrapper = feltplugin::HandleWrapper<
 		feltplugin::service::HandleTraits<
 			fpdemo_Worker_h,
 			feltpluginsystemdemoplugin::service::Worker,
-			feltplugin::service::HandlePtrTag::OwnedByClient>>,
+			feltplugin::service::HandleOwnershipTag::OwnedByClient>>,
 
 	// Client
 	feltplugin::client::HandleMap<
