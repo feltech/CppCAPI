@@ -32,7 +32,11 @@ struct Worker : HandleWrapper::Adapter<fpdemo_Worker_h>
 int main()
 {
 	// Calculate plugin path.
-	std::filesystem::path plugin_path = std::getenv("FELTPLUGINSYSTEM_PLUGIN_PATH");
+	char const * plugin_path_var = std::getenv("FELTPLUGINSYSTEM_PLUGIN_PATH");
+	if (!plugin_path_var)
+		throw std::invalid_argument{"FELTPLUGINSYSTEM_PLUGIN_PATH must be set"};
+	std::filesystem::path plugin_path{plugin_path_var};
+
 	plugin_path /= "libfeltpluginsystem-demo-hello_plugin-plugin.so";
 	std::cout << "Loading plugin at " << plugin_path << std::endl;
 
