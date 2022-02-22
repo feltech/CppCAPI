@@ -1,8 +1,8 @@
 # Copyright 2022 David Feltell
 # SPDX-License-Identifier: MIT
 
-# Note: this demo doesn't work in debug mode with ASan enabled because of
-# https://bugs.llvm.org/show_bug.cgi?id=39641 - the C++ lib hangs when throwing an exception.
+# Note: this demo doesn't work with ASan enabled on GCC 9.3.0 because of
+# https://bugs.llvm.org/show_bug.cgi?id=39641
 
 import ctypes
 import os
