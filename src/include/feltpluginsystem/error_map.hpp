@@ -205,7 +205,10 @@ struct ErrorMap<Traits>
 /**
  * Utility to extract the type/code of an exception.
  *
- * @tparam Traits ErrorTraits in the list.
+ * This is a multi-element error map, where multiple ErrorTraits are given for matching against
+ * thrown exceptions.
+ *
+ * @tparam Traits List of ErrorTraits
  */
 template <class... Traits>
 struct ErrorMap
@@ -213,8 +216,8 @@ struct ErrorMap
 	/**
 	 * Execute a callable, converting any thrown exception to an error code and message.
 	 *
-	 * If thrown exception matches Exception then returns kCode, otherwise recursively calls
-	 * with the Rest of the ErrorTraits. If none of them matches, then returns fp_error.
+	 * Recursively decorates the callable with an exception handler for each of the provided
+	 * ErrorTraits.
 	 *
 	 * @tparam Fn Callable type to execute.
 	 * @param err Storage for error message.
@@ -258,8 +261,8 @@ struct ErrorMap
 	/**
 	 * Throw exception if given error code matches.
 	 *
-	 * Will attempt to match against each of the error Traits in turn, before falling back to the
-	 * default ErrorMap<>::throw_exception handler.
+	 * Will attempt to match against each of the ErrorTraits in turn, before falling back to the
+	 * default ErrorMap<> handler.
 	 *
 	 * @param err Storage for error message.
 	 * @param code Error code.
