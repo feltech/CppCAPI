@@ -55,9 +55,9 @@ using HandleWrapper = feltplugin::HandleWrapper<
 
 	// Errors
 	feltplugin::ErrorMap<
-		// Out of range - e.g. map.at(...).
-		feltplugin::ErrorTraits<std::out_of_range, 100>,
-
 		// Invalid argument.
-		feltplugin::ErrorTraits<std::invalid_argument, 101>>>;
+		feltplugin::ErrorTraits<std::invalid_argument, 101>,
+
+		// Out of range - e.g. map.at(...).
+		feltplugin::ErrorTraits<std::out_of_range, 100>>>;
 }  // namespace feltpluginsystemdemoplugin

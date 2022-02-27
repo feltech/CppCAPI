@@ -55,7 +55,7 @@ public:
 	 * @param handle Opaque handle to service type.
 	 */
 	HandleAdapter(Handle handle)  // NOLINT(google-explicit-constructor)
-		: HandleAdapter{handle, ksuite_factory}
+		: HandleAdapter{ksuite_factory, handle}
 	{
 		static_assert(ksuite_factory != nullptr, "Attempting to construct with null suite factory");
 	}
@@ -70,7 +70,7 @@ public:
 	 * @param suite_factory Factory function that returns the function pointer suite associated with
 	 * the handle.
 	 */
-	explicit HandleAdapter(SuiteFactory suite_factory) : HandleAdapter{nullptr, suite_factory} {}
+	explicit HandleAdapter(SuiteFactory suite_factory) : HandleAdapter{suite_factory, nullptr} {}
 
 	/**
 	 * Construct injecting provided opaque handle and associated function pointer suite.
@@ -79,8 +79,8 @@ public:
 	 * @param suite_factory Factory function that returns the function pointer suite associated with
 	 * the handle.
 	 */
-	explicit HandleAdapter(Handle handle, SuiteFactory suite_factory)
-		: handle_{handle}, suite_{suite_factory()}
+	explicit HandleAdapter(SuiteFactory suite_factory, Handle handle)
+		:  suite_{suite_factory()}, handle_{handle}
 	{
 	}
 
@@ -88,13 +88,13 @@ public:
 	HandleAdapter(HandleAdapter const &) = delete;
 
 	/// Move the handle from the other adapter and set its handle to null.
-	HandleAdapter(HandleAdapter && other) noexcept : handle_{other.handle_}, suite_{other.suite_}
+	HandleAdapter(HandleAdapter && other) noexcept :  suite_{other.suite_}, handle_{other.handle_}
 	{
 		other.handle_ = nullptr;
 	};
 
 	/**
-	 * Call the function suite's `release` function, if appropriate.
+	 * Call our suite's `release` function, if appropriate.
 	 *
 	 * I.e. Call `release` if the handle is not null and the suite defines a `release` function.
 	 */
@@ -131,12 +131,22 @@ protected:
 	 * No conversion to opaque handles is performed - if these are required by the `create` function
 	 * then conversion must happen in the caller.
 	 *
+	 * @warning This must not be called until _after_ the constructor, otherwise the function
+	 * pointer suite will be in an uninitialized state.
+	 *
 	 * @tparam Args Additional constructor argument types.
 	 * @param args Constructor arguments.
 	 */
 	template <class... Args>
 	void create(Args &&... args)
 	{
+		if (handle_ != nullptr)
+			throw std::invalid_argument{
+				"Cannot `create` a handle adapter if handle is already assigned."};
+		// TODO: suite_.create is not default initialized (to nullptr).
+//		if (suite_.create == nullptr)
+//			throw std::invalid_argument{
+//				"Cannot `create` a handle adapter when no function pointer suite is assigned."};
 		fp_ErrorCode code;
 		fp_ErrorMessage err;
 
@@ -241,10 +251,10 @@ protected:
 	}
 
 protected:
-	/// Opaque handle to C++ object in the service.
-	Handle handle_;
 	/// Function pointer suite associated with Handle.
 	Suite const suite_;
+	/// Opaque handle to C++ object in the service.
+	Handle handle_;
 
 private:
 	/**

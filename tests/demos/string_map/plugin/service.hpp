@@ -14,12 +14,13 @@ namespace feltpluginsystemdemoplugin::service
 class Worker
 {
 public:
-	explicit Worker(client::StringDict dict);
+	explicit Worker(client::StringDict service_dict);
 	~Worker() = default;
 
 	void update_dict(client::String const & key);
 
 private:
-	client::StringDict dict_;
+	client::StringDict service_dict_;
+	client::StringDict client_dict_;
 };
 }  // namespace feltpluginsystemdemoplugin::service

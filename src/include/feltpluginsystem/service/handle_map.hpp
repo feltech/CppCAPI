@@ -57,33 +57,20 @@ struct fallback_ownership_tag_t : std::false_type
 /**
  * Utility to look up the traits of a given opaque handle.
  *
- * Default implementation, will never be instantiated.
- *
- * @tparam ...
- */
-template <class...>
-struct HandleMap;
-
-/**
- * Utility to look up the traits of a given opaque handle.
- *
  * This specialisation is chosen if two or more HandleTraits are provided to the HandleMap.
  *
- * @tparam Traits First opaque handle traits class in the list.
  * @tparam Rest Remaining opaque handles' traits.
  */
-template <class Traits, class... Rest>
-struct HandleMap<Traits, Rest...>
+template <class... Rest>
+struct HandleMap
 {
 	template <class HandleToLookup>
 	using ownership_tag_from_handle_t = typename std::disjunction<
-		typename HandleMap<Traits>::template ownership_tag_from_handle_t<HandleToLookup>,
-		typename HandleMap<Rest...>::template ownership_tag_from_handle_t<HandleToLookup>>;
+		typename HandleMap<Rest>::template ownership_tag_from_handle_t<HandleToLookup>...>;
 
 	template <class HandleToLookup>
 	using class_from_handle_t = typename std::disjunction<
-		typename HandleMap<Traits>::template class_from_handle_t<HandleToLookup>,
-		typename HandleMap<Rest...>::template class_from_handle_t<HandleToLookup>>;
+		typename HandleMap<Rest>::template class_from_handle_t<HandleToLookup>...>;
 
 	/**
 	 * Find the ownership model for the given handle type.

@@ -44,38 +44,24 @@ struct fallback_suite_factory_t : std::false_type
 /**
  * Utility to look up the traits of a given opaque handle.
  *
- * Default implementation, will never be instantiated.
- *
- * @tparam ...
- */
-template <class...>
-struct HandleMap;
-
-/**
- * Utility to look up the traits of a given opaque handle.
- *
  * This specialisation is chosen if two or more HandleTraits are provided to the HandleMap.
  *
- * @tparam Traits First HandleTraits in the list.
  * @tparam Rest Remaining opaque handles' traits.
  */
-template <class Traits, class... Rest>
-struct HandleMap<Traits, Rest...>
+template <class... Rest>
+struct HandleMap
 {
 	template <class HandleToLookup>
 	using class_from_handle_t = typename std::disjunction<
-		typename HandleMap<Traits>::template class_from_handle_t<HandleToLookup>,
-		typename HandleMap<Rest...>::template class_from_handle_t<HandleToLookup>>;
+		typename HandleMap<Rest>::template class_from_handle_t<HandleToLookup> ...>;
 
 	template <class HandleToLookup>
 	using suite_from_handle_t = typename std::disjunction<
-		typename HandleMap<Traits>::template suite_from_handle_t<HandleToLookup>,
-		typename HandleMap<Rest...>::template suite_from_handle_t<HandleToLookup>>;
+		typename HandleMap<Rest>::template suite_from_handle_t<HandleToLookup> ...>;
 
 	template <class HandleToLookup>
 	using suite_factory_from_handle_t = typename std::disjunction<
-		typename HandleMap<Traits>::template suite_factory_from_handle_t<HandleToLookup>,
-		typename HandleMap<Rest...>::template suite_factory_from_handle_t<HandleToLookup>>;
+		typename HandleMap<Rest>::template suite_factory_from_handle_t<HandleToLookup> ...>;
 
 	/**
 	 * Find the adapter class associated with the given handle type.

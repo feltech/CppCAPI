@@ -55,6 +55,11 @@ StringView::operator std::string_view() const
 	return std::string_view{data(), size()};
 }
 
+StringDict::StringDict()
+{
+	Base::create();
+}
+
 String StringDict::at(String const & key)
 {
 	return String{call(suite_.at, static_cast<fpdemo_String_h>(key))};

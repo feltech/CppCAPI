@@ -40,6 +40,8 @@ struct StringDict : HandleWrapper::Adapter<fpdemo_StringDict_h>
 {
 	using Base::HandleAdapter;
 
+	StringDict();
+
 	[[nodiscard]] String at(String const & key);
 
 	void insert(String const & key, String const & value);

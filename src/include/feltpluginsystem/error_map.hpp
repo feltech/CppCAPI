@@ -29,19 +29,18 @@ struct ErrorTraits
 	static constexpr fp_ErrorCode code = Tcode;
 };
 
-namespace detail
+/**
+ * Default exception type if error code is unrecognized.
+ */
+struct UnknownError : std::runtime_error
 {
-inline void extract_exception_message(fp_ErrorMessage err, std::exception const & ex) noexcept
-{
-	strncpy(err, ex.what(), sizeof(fp_ErrorMessage) - 1);
-	err[sizeof(fp_ErrorMessage) - 1] = '\0';
-}
-}  // namespace detail
+	using runtime_error::runtime_error;
+};
 
 /**
  * Utility to extract the type/code of an exception.
  *
- * Default implementation, will never be instantiated.
+ * Forward declaration.
  *
  * @tparam ...
  */
@@ -49,11 +48,53 @@ template <class...>
 struct ErrorMap;
 
 /**
+ * Utility functions.
+ */
+namespace detail
+{
+
+inline void extract_message(fp_ErrorMessage err, char const * msg) noexcept
+{
+	strncpy(err, msg, sizeof(fp_ErrorMessage) - 1);
+	err[sizeof(fp_ErrorMessage) - 1] = '\0';
+}
+
+inline void extract_exception_message(fp_ErrorMessage err, std::exception const & ex) noexcept
+{
+	extract_message(err, ex.what());
+}
+
+inline void non_exception_message(fp_ErrorMessage err) noexcept
+{
+	extract_message(err, "Unknown non-exception error caught");
+}
+
+template <class Traits>
+void throw_if_matches(fp_ErrorMessage const err, fp_ErrorCode const code)
+{
+	if (code == Traits::code)
+		throw typename Traits::Exception{err};
+}
+
+template <class Outer, class Inner>
+static decltype(auto) decorate(Outer && outer, Inner && inner)
+{
+	return [&outer, &inner] { return outer(std::forward<Inner>(inner)); };
+}
+
+template <class Outer, class... Inners>
+static decltype(auto) decorate(Outer && outer, Inners &&... inners)
+{
+	return [&outer, &inners...] { return outer(decorate(std::forward<Inners>(inners)...)); };
+}
+}  // namespace detail
+
+/**
  * Utility to extract the type/code of an exception.
  *
  * This is the default error map unless overridden in HandleFactory.
  *
- * Catches `std::exception` (and derived), raises `std::runtime_error`, and associates with error
+ * Catches `std::exception` (and derived), raises `UnknownError`, and associates with error
  * code fp_error.
  */
 template <>
@@ -87,7 +128,7 @@ struct ErrorMap<>
 	/**
 	 * Throw exception if given error code matches.
 	 *
-	 * This default implementation throws std::runtime_error with given message if code is anything
+	 * This default implementation throws UnknownError with given message if code is anything
 	 * other than fp_ok.
 	 *
 	 * @param err Storage for error message.
@@ -96,7 +137,7 @@ struct ErrorMap<>
 	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
 	{
 		if (code != fp_ok)
-			throw std::runtime_error{err};
+			throw UnknownError{err};
 	};
 };
 
@@ -110,15 +151,11 @@ struct ErrorMap<>
 template <class Traits>
 struct ErrorMap<Traits>
 {
-	/// Hoist exception type from traits.
-	using Exception = typename Traits::Exception;
-	/// Hoist exception code from traits.
-	static constexpr fp_ErrorCode kCode = Traits::code;
-
 	/**
 	 * Execute a callable, converting any thrown exception to an error code and message.
 	 *
-	 * If thrown exception matches Exception then returns kCode, otherwise returns fp_error.
+	 * If thrown exception matches Traits::Exception then returns Traits::code, otherwise returns
+	 * fp_error.
 	 *
 	 * @tparam Fn Callable type to execute.
 	 * @param err Storage for error message.
@@ -132,14 +169,19 @@ struct ErrorMap<Traits>
 		{
 			fn();
 		}
-		catch (Exception const & ex)
+		catch (typename Traits::Exception const & ex)
 		{
 			detail::extract_exception_message(err, ex);
-			return kCode;
+			return Traits::code;
 		}
 		catch (std::exception const & ex)
 		{
 			detail::extract_exception_message(err, ex);
+			return fp_error;
+		}
+		catch (...)
+		{
+			detail::non_exception_message(err);
 			return fp_error;
 		}
 		return fp_ok;
@@ -155,71 +197,19 @@ struct ErrorMap<Traits>
 	 */
 	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
 	{
-		if (code == kCode)
-			throw Exception{err};
-
+		detail::throw_if_matches<Traits>(err, code);
 		ErrorMap<>::throw_exception(err, code);
 	};
 };
 
-namespace detail
-{
-template <class Traits, class... Rest>
-struct ErrorMapRecursive
-{
-	using Exception = typename Traits::Exception;
-	static constexpr fp_ErrorCode kCode = Traits::code;
-
-	template <typename Fn>
-	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
-	{
-		try
-		{
-			return ErrorMapRecursive<Rest...>::wrap_exception(err, [&fn] { fn(); });
-		}
-		catch (Exception const & ex)
-		{
-			detail::extract_exception_message(err, ex);
-			return kCode;
-		}
-	}
-};
-
-template <class Traits>
-struct ErrorMapRecursive<Traits>
-{
-	using Exception = typename Traits::Exception;
-	static constexpr fp_ErrorCode kCode = Traits::code;
-
-	template <typename Fn>
-	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
-	{
-		try
-		{
-			fn();
-		}
-		catch (Exception const & ex)
-		{
-			detail::extract_exception_message(err, ex);
-			return kCode;
-		}
-		return fp_ok;
-	}
-};
-}  // namespace detail
-
 /**
  * Utility to extract the type/code of an exception.
  *
- * @tparam Traits First ErrorTraits in the list.
- * @tparam Rest Remaining ErrorTraits.
+ * @tparam Traits ErrorTraits in the list.
  */
-template <class Traits, class... Rest>
-struct ErrorMap<Traits, Rest...>
+template <class... Traits>
+struct ErrorMap
 {
-	using Exception = typename Traits::Exception;
-	static constexpr fp_ErrorCode kCode = Traits::code;
-
 	/**
 	 * Execute a callable, converting any thrown exception to an error code and message.
 	 *
@@ -236,16 +226,31 @@ struct ErrorMap<Traits, Rest...>
 	{
 		try
 		{
-			return detail::ErrorMapRecursive<Rest...>::wrap_exception(err, [&fn] { fn(); });
+			return detail::decorate(
+				[&err](auto && wrapped)
+				{
+					try
+					{
+						wrapped();
+					}
+					catch (typename Traits::Exception const & ex)
+					{
+						detail::extract_exception_message(err, ex);
+						return Traits::code;
+					}
+					return fp_ok;
+				}...,
+				fn)();
 		}
-		catch (Exception const & ex)
-		{
-			detail::extract_exception_message(err, ex);
-			return kCode;
-		}
+		// Fallthrough catch-all if no ErrorMap matches.
 		catch (std::exception const & ex)
 		{
 			detail::extract_exception_message(err, ex);
+			return fp_error;
+		}
+		catch (...)
+		{
+			detail::non_exception_message(err);
 			return fp_error;
 		}
 	}
@@ -253,17 +258,18 @@ struct ErrorMap<Traits, Rest...>
 	/**
 	 * Throw exception if given error code matches.
 	 *
-	 * If the code does not match, recurse through Rest of the ErrorTraits.
+	 * Will attempt to match against each of the error Traits in turn, before falling back to the
+	 * default ErrorMap<>::throw_exception handler.
 	 *
 	 * @param err Storage for error message.
 	 * @param code Error code.
 	 */
 	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
 	{
-		if (code == kCode)
-			throw Exception{err};
+		if (code == fp_ok)
+			return;
 
-		ErrorMap<Rest...>::throw_exception(err, code);
+		(detail::throw_if_matches<Traits>(err, code), ..., ErrorMap<>::throw_exception(err, code));
 	};
 };
 }  // namespace feltplugin

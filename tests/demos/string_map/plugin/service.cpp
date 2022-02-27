@@ -8,25 +8,35 @@
 
 #include <feltpluginsystem/service/handle_factory.hpp>
 
-#include "plugin_export.h"
 #include "client.hpp"
+#include "plugin_export.h"
 
 namespace feltpluginsystemdemoplugin::service
 {
 
-Worker::Worker(client::StringDict dict) : dict_{std::move(dict)} {}
+Worker::Worker(client::StringDict service_dict) : service_dict_{std::move(service_dict)} {}
 
+/**
+ * Do some pointless queries and updates on StringDicts with some exception wrangling.
+ *
+ * @param key Key in service dict to update.
+ */
 void Worker::update_dict(client::String const & key)
 {
+	client_dict_.insert(client::String{"plugin client key"}, client::String{"plugin client value"});
+	client::String client_value = client_dict_.at(client::String{"plugin client key"});
 	try
 	{
-		auto const & value = dict_.at(client::String{"plugin expects to exist"});
-		dict_.insert(key, client::String{std::string{value} + " updated by plugin"});
+		auto const & value = service_dict_.at(client::String{"plugin expects to exist"});
+		service_dict_.insert(
+			key,
+			client::String{
+				std::string{value} + " updated by plugin to " + std::string{client_value}});
 	}
 	catch (std::out_of_range const & ex)
 	{
 		std::cout << "Out of range error from host caught in plugin: " << ex.what() << std::endl;
-		dict_.insert(key, client::String{"error from plugin"});
+		service_dict_.insert(key, client::String{"error from plugin"});
 		throw std::invalid_argument{"Couldn't find key plugin expects to exist"};
 	}
 }
