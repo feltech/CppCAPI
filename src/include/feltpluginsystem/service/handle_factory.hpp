@@ -74,7 +74,7 @@ public:
 	 * The signature of this function matches the convention that function pointer suites should
 	 * adhere to, allowing it to be used directly without wrapping, e.g. when defining the `create`
 	 * member during construction of a function pointer suite we can simply do
-	 * `.create = &HandleFactory:::make,`.
+	 * `.create = &HandleFactory::make,`.
 	 *
 	 * @tparam Args Argument types to pass to the constructor.
 	 * @param err Storage for exception message, if one occurs during construction.
