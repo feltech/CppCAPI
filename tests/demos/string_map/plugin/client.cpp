@@ -13,10 +13,10 @@ String::String(client::StringView const & str)
 	call(suite_.assign_StringView, static_cast<fpdemo_StringView_h>(str));
 }
 
-String::String(char const * cstr)
+String::String(char const * str)
 {
 	Base::create();
-	call(suite_.assign_cstr, cstr);
+	call(suite_.assign_cstr, str);
 }
 
 String::String(std::string const & str)

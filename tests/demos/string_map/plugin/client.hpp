@@ -28,7 +28,7 @@ struct String : HandleWrapper::Adapter<fpdemo_String_h>
 
 	explicit String(StringView const & str);
 	explicit String(std::string const & str);
-	explicit String(char const * local);
+	explicit String(char const * str);
 
 	[[nodiscard]] char const * c_str() const;
 	[[nodiscard]] char at(int n) const;
