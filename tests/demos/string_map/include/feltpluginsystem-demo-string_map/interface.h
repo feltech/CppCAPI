@@ -36,7 +36,7 @@ extern "C"
 		fp_ErrorCode (*assign_cstr)(fp_ErrorMessage, fpdemo_String_h, char const *);
 		fp_ErrorCode (*assign_StringView)(fp_ErrorMessage, fpdemo_String_h, fpdemo_StringView_h);
 		char const * (*c_str)(fpdemo_String_h);	 // noexcept
-		fp_ErrorCode (*at)(fp_ErrorMessage, char *, fpdemo_String_h, int);
+		fp_ErrorCode (*at)(fp_ErrorMessage, char *, fpdemo_String_h, size_t);
 	} fpdemo_String_s;
 
 	fpdemo_String_s fpdemo_String_suite();

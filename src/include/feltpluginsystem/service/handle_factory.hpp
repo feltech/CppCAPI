@@ -259,6 +259,21 @@ public:
 		}
 	}
 
+	//	template <class Ret, class... Args, Ret(*fn)(Args...)>
+	template <auto fn, class Ret, typename... Args>
+	static fp_ErrorCode mem_fn(char * err, Ret * out, Handle handle, Args... args)
+	{
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		return TErrorMap::wrap_exception(
+			err,
+			[handle, &out, &args...]
+			{
+				*out = OtherHandleFactory<Ret>::make(
+					fn(*convert(handle),
+					   *OtherHandleFactory<Args>::convert(std::forward<Args>(args))...));
+			});
+	}
+
 	/**
 	 * Adapt a suite function to have a more C++-like interface, automatically converting handles.
 	 *
@@ -291,6 +306,18 @@ public:
 			});
 	}
 
+	template <auto fn, class... Args>
+	static fp_ErrorCode mem_fn(fp_ErrorMessage err, Handle handle, Args... args)
+	{
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		return TErrorMap::wrap_exception(
+			err,
+			[handle, &args...] {
+				fn(*convert(handle),
+				   *OtherHandleFactory<Args>::convert(std::forward<Args>(args))...);
+			});
+	}
+
 	/**
 	 * Adapt a suite function that has no return value.
 	 *
@@ -319,6 +346,13 @@ public:
 			});
 	}
 
+	template <auto fn, class... Args>
+	static auto mem_fn(Handle handle, Args... args)
+	{
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		return fn(
+			*convert(handle), *OtherHandleFactory<Args>::convert(std::forward<Args>(args))...);
+	}
 	/**
 	 * Adapt a suite function that has no return value and does not throw exceptions.
 	 *
