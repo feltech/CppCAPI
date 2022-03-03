@@ -7,12 +7,38 @@
 #include "handle_wrapper.hpp"
 #include "host_export.h"
 
+namespace
+{
+using String = feltpluginsystemdemohost::service::String;
+using StringView = feltpluginsystemdemohost::service::StringView;
+using StringDict = feltpluginsystemdemohost::service::StringDict;
+
+struct CString
+{
+	static auto at(String const & self, size_t n)
+	{
+		return self.at(n);
+	};
+
+	static auto c_str(String const & self)
+	{
+		return self.c_str();
+	}
+	static auto assign_cstr(String & self, char const * str)
+	{
+		self = str;
+	}
+
+	static auto assign_StringView(String & self, StringView const & str)
+	{
+		self = str;
+	}
+};
+}  // namespace
+
 extern "C"
 {
 	using HandleWrapper = feltpluginsystemdemohost::HandleWrapper;
-	using String = feltpluginsystemdemohost::service::String;
-	using StringView = feltpluginsystemdemohost::service::StringView;
-	using StringDict = feltpluginsystemdemohost::service::StringDict;
 
 	// String
 
@@ -20,33 +46,14 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
 		using Factory = HandleWrapper::Factory<fpdemo_String_h>;
+
 		return {
 			.create = &Factory::make,
-
 			.release = &Factory::release,
-
-			.assign_cstr =
-				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr) {
-					return Factory::mem_fn(
-						[](String & self, char const * str) { self = str; }, err, hself, cstr);
-				},
-
-			.assign_StringView =
-				[](fp_ErrorMessage err, fpdemo_String_h hself, fpdemo_StringView_h hstr)
-			{
-				return Factory::mem_fn(
-					[](String & self, StringView const & str) { self = str; }, err, hself, hstr);
-			},
-
-			.c_str = [](fpdemo_String_h handle)
-			{ return Factory::mem_fn([](String const & self) { return self.c_str(); }, handle); },
-
-			.at =
-				[](fp_ErrorMessage err, char * out, fpdemo_String_h handle, int n)
-			{
-				return Factory::mem_fn(
-					[](String const & self, int n) { return self.at(n); }, err, out, handle, n);
-			}};
+			.assign_cstr = &Factory::mem_fn<CString::assign_cstr>,
+			.assign_StringView = &Factory::mem_fn<CString::assign_StringView>,
+			.c_str = &Factory::mem_fn<CString::c_str>,
+			.at = &Factory::mem_fn<CString::at>};
 	}
 
 	// StringView
