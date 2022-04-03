@@ -369,7 +369,6 @@ public:
 			{
 				return [](char * err, auto out, Handle handle, auto... args)
 				{
-					(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 					return TErrorMap::wrap_exception(
 						err,
 						[handle, &out, &args...]
