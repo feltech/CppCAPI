@@ -275,7 +275,7 @@ template <
 	class TServiceHandleMap,
 	class TClientHandleMap,
 	class TErrorMap = ErrorMap<>>
-struct HandleFactory
+struct SuiteDecorator
 {
 private:
 	template <class Handle>

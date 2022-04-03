@@ -25,7 +25,8 @@ template <class TServiceHandleMap, class TClientHandleMap, class TErrorMap = Err
 struct HandleWrapper
 {
 	template <class THandle>
-	using Factory = service::HandleFactory<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
+	using Decorator =
+		service::SuiteDecorator<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	template <class THandle>
 	using Converter =
