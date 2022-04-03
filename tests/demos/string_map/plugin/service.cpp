@@ -54,9 +54,9 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
 		return {
-			.create = &HandleWrapper::Factory<fpdemo_Worker_h>::ThisConverter::make,
+			.create = &HandleWrapper::Converter<fpdemo_Worker_h>::make,
 
-			.release = &HandleWrapper::Factory<fpdemo_Worker_h>::release,
+			.release = &HandleWrapper::Converter<fpdemo_Worker_h>::release,
 
 			.update_dict = [](fp_ErrorMessage err, fpdemo_Worker_h handle, fpdemo_StringView_h hkey)
 			{

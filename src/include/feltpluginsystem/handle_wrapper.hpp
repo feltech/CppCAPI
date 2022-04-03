@@ -28,6 +28,10 @@ struct HandleWrapper
 	using Factory = service::HandleFactory<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	template <class THandle>
+	using Converter =
+		service::HandleConverter<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
+
+	template <class THandle>
 	using Adapter = client::HandleAdapter<THandle, TClientHandleMap, TErrorMap>;
 };
 }  // namespace feltplugin
