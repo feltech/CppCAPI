@@ -46,11 +46,12 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
 		using Factory = HandleWrapper::Factory<fpdemo_String_h>;
+		using Converter = HandleWrapper::Converter<fpdemo_String_h>;
 
 		return {
-			.create = &Factory::ThisConverter::make,
+			.create = &Converter::make,
 
-			.release = &Factory::release,
+			.release = &Converter::release,
 
 			.assign_cstr =
 				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr) {
@@ -103,10 +104,12 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
 		using Factory = HandleWrapper::Factory<fpdemo_StringDict_h>;
-		return {
-			.create = &Factory::ThisConverter::make,
+		using Converter = HandleWrapper::Converter<fpdemo_StringDict_h>;
 
-			.release = &Factory::release,
+		return {
+			.create = &Converter::make,
+
+			.release = &Converter::release,
 
 			.insert =
 				[](fp_ErrorMessage err,

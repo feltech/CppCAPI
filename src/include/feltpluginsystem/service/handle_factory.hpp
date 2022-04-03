@@ -216,6 +216,38 @@ public:
 		return TErrorMap::wrap_exception(err, [&out, &args...] { *out = make_cpp(args...); });
 	}
 
+	/**
+	 * Release an opaque handle.
+	 *
+	 * This function is only valid if the `ptr_type_tag` in our HandleTraits is `OwnedByClient` or
+	 * `Shared`.
+	 *
+	 * If `OwnedByClient` then the object is destroyed. If `Shared` then the reference count is
+	 * decremented, potentially destroying the object.
+	 *
+	 * @param handle Handle to release.
+	 */
+	static void release(Handle handle)
+	{
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		static_assert(
+			ptr_type_tag != HandleOwnershipTag::OwnedByService,
+			"Cannot release a handle not owned by client");
+		static_assert(
+			ptr_type_tag != HandleOwnershipTag::Unrecognized,
+			"Cannot release a handle aliasing a temporary. Are you missing an entry in your "
+			"HandleMaps?");
+
+		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
+		{
+			delete reinterpret_cast<SharedPtr<Class> *>(handle);
+		}
+		else if constexpr (ptr_type_tag == HandleOwnershipTag::OwnedByClient)
+		{
+			delete reinterpret_cast<Class *>(handle);
+		}
+	}
+
 private:
 	template <class T>
 	struct Dereferenceable
@@ -261,8 +293,6 @@ private:
 		"Check HandleMap lists.");
 
 public:
-	using ThisConverter = Converter<Handle>;
-
 	template <auto fn>
 	using mem_fn_ptr_t = std::integral_constant<decltype(fn), fn>;
 
@@ -351,37 +381,6 @@ public:
 		};
 	}
 
-	/**
-	 * Release an opaque handle.
-	 *
-	 * This function is only valid if the `ptr_type_tag` in our HandleTraits is `OwnedByClient` or
-	 * `Shared`.
-	 *
-	 * If `OwnedByClient` then the object is destroyed. If `Shared` then the reference count is
-	 * decremented, potentially destroying the object.
-	 *
-	 * @param handle Handle to release.
-	 */
-	static void release(Handle handle)
-	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
-		static_assert(
-			ptr_type_tag != HandleOwnershipTag::OwnedByService,
-			"Cannot release a handle not owned by client");
-		static_assert(
-			ptr_type_tag != HandleOwnershipTag::Unrecognized,
-			"Cannot release a handle aliasing a temporary. Are you missing an entry in your "
-			"HandleMaps?");
-
-		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
-		{
-			delete reinterpret_cast<SharedPtr<Class> *>(handle);
-		}
-		else if constexpr (ptr_type_tag == HandleOwnershipTag::OwnedByClient)
-		{
-			delete reinterpret_cast<Class *>(handle);
-		}
-	}
 
 	/**
 	 * Adapt a suite function to have a more C++-like interface, automatically converting
