@@ -18,15 +18,15 @@ namespace feltplugin::service
 {
 
 /**
-	 * Utility to static_assert that a given handle maps to either a native class or adapter.
-	 *
-	 * If the Handle type is not found in the service::HandleMap, then Class resolves to Handle
-	 * (pass-through). If the Handle type is not found in the client::HandleMap, then the
-	 * Adapter resolves to `std::false_type`.
-	 *
-	 * @tparam Handle Handle type to check.
-	 * @tparam Class Native class type that the handle is associated with, if any.
-	 * @tparam Adapter Adapter class that the handle is associated with, if any.
+ * Utility to static_assert that a given handle maps to either a native class or adapter.
+ *
+ * If the Handle type is not found in the service::HandleMap, then Class resolves to Handle
+ * (pass-through). If the Handle type is not found in the client::HandleMap, then the
+ * Adapter resolves to `std::false_type`.
+ *
+ * @tparam Handle Handle type to check.
+ * @tparam Class Native class type that the handle is associated with, if any.
+ * @tparam Adapter Adapter class that the handle is associated with, if any.
  */
 template <class Handle, class Class, class Adapter>
 struct assert_is_valid_handle_type
