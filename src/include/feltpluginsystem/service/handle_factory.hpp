@@ -292,9 +292,15 @@ private:
 		"Cannot have a handle that is associated with both a native type and a client adapter. "
 		"Check HandleMap lists.");
 
-public:
 	template <auto fn>
-	using mem_fn_ptr_t = std::integral_constant<decltype(fn), fn>;
+	struct mem_fn_ptr_t : std::integral_constant<decltype(fn), fn>
+	{
+		static_assert(
+			std::is_member_function_pointer_v<decltype(fn)>,
+			"mem_fn_ptr must only be used with member function pointers");
+	};
+
+public:
 
 	template <auto fn>
 	static constexpr mem_fn_ptr_t<fn> mem_fn_ptr{};
