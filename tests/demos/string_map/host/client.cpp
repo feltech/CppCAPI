@@ -9,13 +9,13 @@ namespace feltpluginsystemdemohost::client
 Worker::Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<service::StringDict> dict)
 	: Base{suite_factory}
 {
-	auto hdict = HandleWrapper::Factory<fpdemo_StringDict_h>::create(std::move(dict));
+	auto hdict = HandleWrapper::Factory<fpdemo_StringDict_h>::ThisConverter::create(std::move(dict));
 	create(hdict);
 }
 
 void Worker::update_dict(service::StringView key)
 {
-	auto hkey = HandleWrapper::Factory<fpdemo_StringView_h>::create(key);
+	auto hkey = HandleWrapper::Factory<fpdemo_StringView_h>::ThisConverter::create(key);
 	call(suite_.update_dict, hkey);
 }
 }  // namespace feltpluginsystemdemohost::client

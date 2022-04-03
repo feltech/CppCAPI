@@ -48,12 +48,33 @@ extern "C"
 		using Factory = HandleWrapper::Factory<fpdemo_String_h>;
 
 		return {
-			.create = &Factory::make,
+			.create = &Factory::ThisConverter::make,
+
 			.release = &Factory::release,
-			.assign_cstr = &Factory::mem_fn<CString::assign_cstr>,
-			.assign_StringView = &Factory::mem_fn<CString::assign_StringView>,
-			.c_str = &Factory::mem_fn<CString::c_str>,
-			.at = &Factory::mem_fn<CString::at>};
+
+			.assign_cstr =
+				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr) {
+				return Factory::mem_fn(
+					[](String & self, char const * str) { self = str; }, err, hself, cstr);
+			},
+
+			.assign_StringView =
+				[](fp_ErrorMessage err, fpdemo_String_h hself, fpdemo_StringView_h hstr)
+			{
+				return Factory::mem_fn(
+					[](String & self, StringView const & str) { self = str; }, err, hself, hstr);
+			},
+
+//			.c_str = [](fpdemo_String_h handle)
+//			{ return Factory::mem_fn([](String const & self) { return self.c_str(); }, handle); },
+
+			.c_str = Factory::decorate(Factory::mem_fn_ptr<&String::c_str>),
+//			.at = Factory::decorate(
+//					[](String const & self, int n) { return self.at(n); })
+
+			.at = Factory::decorate([](String const & self, size_t n) { return self.at(n); })
+			};
+//		return suite;
 	}
 
 	// StringView
@@ -83,7 +104,7 @@ extern "C"
 	{
 		using Factory = HandleWrapper::Factory<fpdemo_StringDict_h>;
 		return {
-			.create = &Factory::make,
+			.create = &Factory::ThisConverter::make,
 
 			.release = &Factory::release,
 
