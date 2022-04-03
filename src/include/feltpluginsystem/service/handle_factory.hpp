@@ -359,7 +359,6 @@ public:
 			{
 				return [](Handle handle, auto... args)
 				{
-					// TODO: get return type.
 					auto const ret = (std::mem_fn(fn)(
 						*Converter<Handle>::convert(handle), *Converter<Handle>::convert(args)...));
 
