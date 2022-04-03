@@ -66,16 +66,20 @@ extern "C"
 					[](String & self, StringView const & str) { self = str; }, err, hself, hstr);
 			},
 
-			//			.c_str = [](fpdemo_String_h handle)
-			//			{ return Factory::mem_fn([](String const & self) { return self.c_str(); },
-			// handle); },
-
 			.c_str = Decorator::decorate(Decorator::mem_fn_ptr<&String::c_str>),
-			//			.at = Factory::decorate(
-			//					[](String const & self, int n) { return self.at(n); })
-
+			// clang-format off
+/*
+			// Overloaded method requires a static_cast. However:
+			// The following does not work because https://stackoverflow.com/a/51922982/535103
+			.at = Decorator::decorate(
+				Decorator::mem_fn_ptr<static_cast<char const & (String::*)(size_t) const>(&String::at)>),
+			// Instead we could use:
+			.at = Decorator::decorate(
+				Decorator::mem_fn_ptr<static_cast<char const & (std::basic_string<char>::*)(size_t) const>(&String::at)>),
+*/
+			// clang-format on
+			// Lambda is more concise in this case due to overloaded `at`.
 			.at = Decorator::decorate([](String const & self, size_t n) { return self.at(n); })};
-		//		return suite;
 	}
 
 	// StringView
