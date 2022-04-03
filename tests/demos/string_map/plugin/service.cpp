@@ -60,7 +60,7 @@ extern "C"
 
 			.update_dict = [](fp_ErrorMessage err, fpdemo_Worker_h handle, fpdemo_StringView_h hkey)
 			{
-				return HandleWrapper::Factory<fpdemo_Worker_h>::mem_fn(
+				return HandleWrapper::Decorator<fpdemo_Worker_h>::mem_fn(
 					[](Worker & self, StringView const & key) { self.update_dict(String{key}); },
 					err,
 					handle,

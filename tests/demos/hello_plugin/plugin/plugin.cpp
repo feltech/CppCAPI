@@ -51,7 +51,7 @@ extern "C"
 
 			.work = [](fpdemo_Worker_h handle)
 			{
-				return HandleWrapper::Factory<fpdemo_Worker_h>::mem_fn(
+				return HandleWrapper::Decorator<fpdemo_Worker_h>::mem_fn(
 					[](Worker & self) { self.work(); }, handle);
 			}};
 	}

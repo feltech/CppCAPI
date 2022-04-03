@@ -45,7 +45,7 @@ extern "C"
 	using feltpluginsystemdemohost::service::String;
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
-		using Factory = HandleWrapper::Factory<fpdemo_String_h>;
+		using Factory = HandleWrapper::Decorator<fpdemo_String_h>;
 		using Converter = HandleWrapper::Converter<fpdemo_String_h>;
 
 		return {
@@ -84,7 +84,7 @@ extern "C"
 
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
 	{
-		using Factory = HandleWrapper::Factory<fpdemo_StringView_h>;
+		using Factory = HandleWrapper::Decorator<fpdemo_StringView_h>;
 		return {
 			.data =
 				[](fpdemo_StringView_h handle)
@@ -103,7 +103,7 @@ extern "C"
 
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
-		using Factory = HandleWrapper::Factory<fpdemo_StringDict_h>;
+		using Factory = HandleWrapper::Decorator<fpdemo_StringDict_h>;
 		using Converter = HandleWrapper::Converter<fpdemo_StringDict_h>;
 
 		return {
