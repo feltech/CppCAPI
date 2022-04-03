@@ -92,7 +92,7 @@ static decltype(auto) decorate(Outer && outer, Inners &&... inners)
 /**
  * Utility to extract the type/code of an exception.
  *
- * This is the default error map unless overridden in HandleFactory.
+ * This is the default error map unless overridden when specialising HandleConverter/SuiteDecorator.
  *
  * Catches `std::exception` (and derived), raises `UnknownError`, and associates with error
  * code fp_error.

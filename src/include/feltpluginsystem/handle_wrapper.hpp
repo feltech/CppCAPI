@@ -14,8 +14,8 @@
 namespace feltplugin
 {
 /**
- * Convenience alias aggregation of service::HandleFactory and client::HandleAdapter and their
- * common template parameters.
+ * Convenience alias aggregation of service::HandleConverter, service::SuiteDecorator and
+ * client::HandleAdapter and their common template parameters.
  *
  * @tparam TServiceHandleMap service::HandleMap mapping handles to native classes.
  * @tparam TClientHandleMap client::HandleMap mapping handles to adapter classes.

@@ -1,7 +1,8 @@
 // Copyright 2022 David Feltell
 // SPDX-License-Identifier: MIT
 /**
- * Contains the HandleFactory to be used by services converting to/from opaque handles.
+ * Contains the HandleConverter and SuiteDecorator to be used by services converting to/from opaque
+ * handles and constructing function pointer suites..
  */
 #pragma once
 
@@ -37,7 +38,7 @@ struct assert_is_valid_handle_type
 };
 
 /**
- * Utility class for creating and converting opaque handles, and adapting function pointer suites.
+ * Utility class for creating and converting opaque handles.
  *
  * @tparam THandle Opaque handle type.
  * @tparam TServiceHandleMap service::HandleMap for mapping handles to native classes.
@@ -201,7 +202,7 @@ public:
 	 * The signature of this function matches the convention that function pointer suites should
 	 * adhere to, allowing it to be used directly without wrapping, e.g. when defining the `create`
 	 * member during construction of a function pointer suite we can simply do
-	 * `.create = &HandleFactory::make_cpp,`.
+	 * `.create = &Converter::make_cpp,`.
 	 *
 	 * @tparam Args Argument types to pass to the constructor.
 	 * @param err Storage for exception message, if one occurs during construction.
@@ -262,8 +263,7 @@ private:
 };
 
 /**
- * Utility class for creating and converting opaque handles, and adapting function pointer
- * suites.
+ * Utility class for decorating callables to be used in function pointer suites.
  *
  * @tparam THandle Opaque handle type.
  * @tparam TServiceHandleMap service::HandleMap for mapping handles to native classes.
