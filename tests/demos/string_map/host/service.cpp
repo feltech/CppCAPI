@@ -12,28 +12,6 @@ namespace
 using String = feltpluginsystemdemohost::service::String;
 using StringView = feltpluginsystemdemohost::service::StringView;
 using StringDict = feltpluginsystemdemohost::service::StringDict;
-
-struct CString
-{
-	static auto at(String const & self, size_t n)
-	{
-		return self.at(n);
-	};
-
-	static auto c_str(String const & self)
-	{
-		return self.c_str();
-	}
-	static auto assign_cstr(String & self, char const * str)
-	{
-		self = str;
-	}
-
-	static auto assign_StringView(String & self, StringView const & str)
-	{
-		self = str;
-	}
-};
 }  // namespace
 
 extern "C"
