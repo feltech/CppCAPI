@@ -45,7 +45,7 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
 		return {
-			.create = &HandleWrapper::Factory<fpdemo_Worker_h>::make,
+			.create = &HandleWrapper::Factory<fpdemo_Worker_h>::ThisConverter::make,
 
 			.release = &HandleWrapper::Factory<fpdemo_Worker_h>::release,
 
