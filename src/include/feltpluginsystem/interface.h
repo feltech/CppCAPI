@@ -15,7 +15,12 @@ extern "C"
 	/// Type to use when returning an error code.
 	typedef int fp_ErrorCode;
 
-	/// Storage for error messages.
+	/**
+	 * Storage for error messages.
+	 *
+	 * @warning This type should not be used for arguments other than the first argument of a suite
+	 * function, or template matches might fail.
+	 */
 	typedef struct
 	{
 		size_t capacity;
