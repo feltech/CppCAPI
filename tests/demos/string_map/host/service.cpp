@@ -79,7 +79,7 @@ extern "C"
 
 			.insert = Decorator::decorate(
 				[](StringDict & self, String key, String value)
-				{ return self.insert_or_assign(std::move(key), std::move(value)); }),
+				{ self.insert_or_assign(std::move(key), std::move(value)); }),
 
 			.at = Decorator::decorate([](StringDict const & self, String const & key)
 									  { return self.at(key); })

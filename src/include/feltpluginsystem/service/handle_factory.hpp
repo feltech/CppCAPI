@@ -116,11 +116,11 @@ public:
 	 * @return Newly minted opaque handle.
 	 */
 	template <typename... Args>
-	static Handle make_cpp(Args &&... args)
+	static Handle make_handle(Args &&... args)
 	{
 		static_assert(
 			ptr_type_tag != HandleOwnershipTag::OwnedByService,
-			"Cannot make_cpp a handle to a new instance for non-shared non-transferred types");
+			"Cannot make a handle to a new instance for non-shared non-transferred types");
 
 		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{
@@ -202,7 +202,7 @@ public:
 	 * The signature of this function matches the convention that function pointer suites should
 	 * adhere to, allowing it to be used directly without wrapping, e.g. when defining the `create`
 	 * member during construction of a function pointer suite we can simply do
-	 * `.create = &Converter::make_cpp,`.
+	 * `.create = &Converter::make_handle,`.
 	 *
 	 * @tparam Args Argument types to pass to the constructor.
 	 * @param[out] err Storage for exception message, if one occurs during construction.
@@ -214,7 +214,7 @@ public:
 	static fp_ErrorCode make(fp_ErrorMessage * err, Handle * out, Args... args)
 	{
 		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
-		return TErrorMap::wrap_exception(*err, [&out, &args...] { *out = make_cpp(args...); });
+		return TErrorMap::wrap_exception(*err, [&out, &args...] { *out = make_handle(args...); });
 	}
 
 	/**
@@ -304,6 +304,24 @@ public:
 	template <auto fn>
 	static constexpr mem_fn_ptr_t<fn> mem_fn_ptr{};
 
+	/**
+	 * Adapt a suite function to have a more C++-like interface, automatically converting
+	 * handles.
+	 *
+	 * The arguments will be converted from handles to objects using `convert`, and the return
+	 * value converted from an object to a handle using `make_handle`, as appropriate.
+	 *
+	 * @tparam Ret Return type of suite function.
+	 * @tparam Fn Type of wrapped callable.
+	 * @tparam Args Argument types to convert then pass to wrapped callable.
+	 * @param fn Wrapped callable to execute.
+	 * @param[out] err Storage for exception message, if any.
+	 * @param[out] out Return value destination.
+	 * @param handle Opaque handle to self.
+	 * @param args Arguments to pass along to wrapped callable, converting from opaque handles
+	 * to concrete types if necessary.
+	 * @return Error code.
+	 */
 	template <typename Lambda>
 	static auto decorate(Lambda && lambda)
 	{
@@ -323,24 +341,26 @@ public:
 			{
 				return [](Handle handle, auto... args)
 				{
-					using Ret = decltype(fn(
-						*Converter<Handle>::convert(handle),
-						*Converter<decltype(args)>::convert(args)...));
+					const auto do_call = [&]
+					{
+						return fn(
+							*Converter<Handle>::convert(handle),
+							*Converter<decltype(args)>::convert(
+								std::forward<decltype(args)>(args))...);
+					};
+					using Ret = decltype(do_call());
 
-					// Although `cannot_return_cannot_error`, this refers to out-parameter, the
-					// function may still return a value, so we must handle both cases.
+					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
+					// function that cannot error is free to use its return value for something
+					// other than an error code. So detect if the wrapped function returns a value
+					// and if so attempt to return it from the C function.
 					if constexpr (std::is_void_v<Ret>)
 					{
-						fn(*Converter<Handle>::convert(handle),
-						   *Converter<decltype(args)>::convert(args)...);
+						do_call();
 					}
 					else
 					{
-						Ret const ret =
-							fn(*Converter<Handle>::convert(handle),
-							   *Converter<decltype(args)>::convert(args)...);
-
-						return Converter<Ret>::make_cpp(ret);
+						return Converter<Ret>::make_handle(do_call());
 					}
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -348,30 +368,23 @@ public:
 			{
 				return [](fp_ErrorMessage * err, Handle handle, auto... args)
 				{
-					return TErrorMap::wrap_exception(
-						*err,
-						[handle, &args...]
-						{
-							using Ret = decltype(fn(
-								*Converter<Handle>::convert(handle),
-								*Converter<decltype(args)>::convert(args)...));
+					const auto do_call = [&]
+					{
+						return fn(
+							*Converter<Handle>::convert(handle),
+							*Converter<decltype(args)>::convert(
+								std::forward<decltype(args)>(args))...);
+					};
 
-							// Although `cannot_return_can_error`, this refers to out-parameter,
-							// the function may still return a value, so we must handle both cases.
-							if constexpr (std::is_void_v<Ret>)
-							{
-								fn(*Converter<Handle>::convert(handle),
-								   *Converter<decltype(args)>::convert(args)...);
-							}
-							else
-							{
-								Ret const ret =
-									fn(*Converter<Handle>::convert(handle),
-									   *Converter<decltype(args)>::convert(args)...);
+					// C suite function supporting error cases must use the return value for an
+					// error code. In this `cannot_return_can_error` case there is no out-parameter
+					// for returning a value through. So the wrapped C++ function should in turn not
+					// return any value.
+					static_assert(
+						std::is_void_v<decltype(do_call())>,
+						"Suite function signature does not support a return value");
 
-								return Converter<Ret>::make_cpp(ret);
-							}
-						});
+					return TErrorMap::wrap_exception(*err, do_call);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_return_cannot_error)
@@ -384,7 +397,7 @@ public:
 						*Converter<Handle>::convert(handle),
 						*Converter<decltype(args)>::convert(std::forward<decltype(args)>(args))...);
 
-					*out = Converter<Out>::make_cpp(ret);
+					*out = Converter<Out>::make_handle(ret);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_return_can_error)
@@ -402,13 +415,31 @@ public:
 								   *Converter<decltype(args)>::convert(
 									   std::forward<decltype(args)>(args))...);
 
-							*out = Converter<Out>::make_cpp(ret);
+							*out = Converter<Out>::make_handle(ret);
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
 		};
 	}
 
+	/**
+	 * Adapt a suite function to have a more C++-like interface, automatically converting
+	 * handles.
+	 *
+	 * The arguments will be converted from handles to objects using `convert`, and the return
+	 * value converted from an object to a handle using `make_handle`, as appropriate.
+	 *
+	 * @tparam Ret Return type of suite function.
+	 * @tparam Fn Type of wrapped callable.
+	 * @tparam Args Argument types to convert then pass to wrapped callable.
+	 * @param fn Wrapped callable to execute.
+	 * @param[out] err Storage for exception message, if any.
+	 * @param[out] out Return value destination.
+	 * @param handle Opaque handle to self.
+	 * @param args Arguments to pass along to wrapped callable, converting from opaque handles
+	 * to concrete types if necessary.
+	 * @return Error code.
+	 */
 	template <auto fn>
 	static auto decorate(mem_fn_ptr_t<fn>)
 	{
@@ -423,25 +454,24 @@ public:
 			{
 				return [](Handle handle, auto... args)
 				{
-					using Ret = decltype(std::mem_fn(fn)(
-						*Converter<Handle>::convert(handle),
-						*Converter<decltype(args)>::convert(args)...));
+					const auto do_call = [&]
+					{
+						return std::mem_fn(fn)(
+							*Converter<Handle>::convert(handle),
+							*Converter<decltype(args)>::convert(
+								std::forward<decltype(args)>(args))...);
+					};
+					using Ret = decltype(do_call());
 
 					// Although `cannot_return_cannot_error`, this refers to out-parameter, the
 					// function may still return a value, so we must handle both cases.
 					if constexpr (std::is_void_v<Ret>)
 					{
-						std::mem_fn(fn)(
-							*Converter<Handle>::convert(handle),
-							*Converter<decltype(args)>::convert(args)...);
+						do_call();
 					}
 					else
 					{
-						Ret const ret = std::mem_fn(fn)(
-							*Converter<Handle>::convert(handle),
-							*Converter<decltype(args)>::convert(args)...);
-
-						return Converter<Ret>::make_cpp(ret);
+						return Converter<Ret>::make_handle(do_call());
 					}
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -449,29 +479,28 @@ public:
 			{
 				return [](fp_ErrorMessage * err, Handle handle, auto... args)
 				{
+					const auto do_call = [&]
+					{
+						return std::mem_fn(fn)(
+							*Converter<Handle>::convert(handle),
+							*Converter<decltype(args)>::convert(
+								std::forward<decltype(args)>(args))...);
+					};
 					return TErrorMap::wrap_exception(
 						*err,
-						[handle, &args...]
+						[&do_call]
 						{
-							using Ret = decltype(std::mem_fn(fn)(
-								*Converter<Handle>::convert(handle),
-								*Converter<decltype(args)>::convert(args)...));
+							using Ret = decltype(do_call());
 
 							// Although `cannot_return_can_error`, this refers to out-parameter,
 							// the function may still return a value, so we must handle both cases.
 							if constexpr (std::is_void_v<Ret>)
 							{
-								std::mem_fn(fn)(
-									*Converter<Handle>::convert(handle),
-									*Converter<decltype(args)>::convert(args)...);
+								do_call();
 							}
 							else
 							{
-								Ret const ret = std::mem_fn(fn)(
-									*Converter<Handle>::convert(handle),
-									*Converter<decltype(args)>::convert(args)...);
-
-								return Converter<Ret>::make_cpp(ret);
+								return Converter<Ret>::make_handle(do_call());
 							}
 						});
 				}(std::forward<decltype(args)>(args)...);
@@ -486,7 +515,7 @@ public:
 						*Converter<Handle>::convert(handle),
 						*Converter<decltype(args)>::convert(std::forward<decltype(args)>(args))...);
 
-					*out = Converter<Out>::make_cpp(ret);
+					*out = Converter<Out>::make_handle(ret);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_return_can_error)
@@ -504,99 +533,11 @@ public:
 								*Converter<decltype(args)>::convert(
 									std::forward<decltype(args)>(args))...);
 
-							*out = Converter<Out>::make_cpp(ret);
+							*out = Converter<Out>::make_handle(ret);
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
 		};
-	}
-
-	/**
-	 * Adapt a suite function to have a more C++-like interface, automatically converting
-	 * handles.
-	 *
-	 * The arguments will be converted from handles to objects using `convert`, and the return
-	 * value converted from an object to a handle using `make_cpp`, as appropriate.
-	 *
-	 * @tparam Ret Return type of suite function.
-	 * @tparam Fn Type of wrapped callable.
-	 * @tparam Args Argument types to convert then pass to wrapped callable.
-	 * @param fn Wrapped callable to execute.
-	 * @param[out] err Storage for exception message, if any.
-	 * @param[out] out Return value destination.
-	 * @param handle Opaque handle to self.
-	 * @param args Arguments to pass along to wrapped callable, converting from opaque handles
-	 * to concrete types if necessary.
-	 * @return Error code.
-	 */
-	template <class Ret, class Fn, class... Args>
-	static fp_ErrorCode mem_fn(
-		Fn && fn, fp_ErrorMessage * err, Ret * out, Handle handle, Args... args)
-	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
-		return TErrorMap::wrap_exception(
-			*err,
-			[handle, &out, &fn, &args...]
-			{
-				*out = Converter<Ret>::make_cpp(
-					fn(*Converter<Handle>::convert(handle),
-					   *Converter<Args>::convert(std::forward<Args>(args))...));
-			});
-	}
-
-	/**
-	 * Adapt a suite function that has no return value.
-	 *
-	 * Gives a more C++-like interface, automatically converting handles.
-	 *
-	 * The arguments will be converted from handles to objects using `convert`.
-	 *
-	 * @tparam Fn Type of wrapped callable.
-	 * @tparam Args Argument types to convert then pass to wrapped callable.
-	 * @param fn Wrapped callable to execute.
-	 * @param[out] err Storage for exception message, if any.
-	 * @param handle Opaque handle to self.
-	 * @param args Arguments to pass along to wrapped callable, converting from opaque handles to
-	 * concrete types if necessary.
-	 * @return Error code.
-	 */
-	template <class Fn, class... Args>
-	static fp_ErrorCode mem_fn(Fn && fn, fp_ErrorMessage * err, Handle handle, Args... args)
-	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
-		return TErrorMap::wrap_exception(
-			*err,
-			[&fn, handle, &args...]
-			{
-				fn(*Converter<Handle>::convert(handle),
-				   *Converter<Args>::convert(std::forward<Args>(args))...);
-			});
-	}
-
-	/**
-	 * Adapt a suite function that has no return value and does not throw exceptions.
-	 *
-	 * Gives a more C++-like interface, automatically converting handles.
-	 *
-	 * The arguments will be converted from handles to objects using `convert`.
-	 *
-	 * @tparam Fn Type of wrapped callable.
-	 * @tparam Args Argument types to convert then pass to wrapped callable.
-	 * @param fn Wrapped callable to execute.
-	 * @param[out] err Storage for exception message, if any.
-	 * @param handle Opaque handle to self.
-	 * @param args Arguments to pass along to wrapped callable, converting from opaque handles to
-	 * concrete types if necessary.
-	 * @return Error code.
-	 */
-	// TODO: How to auto-convert HandleAdapter where suite is not known at compile-time.
-	template <class Fn, class... Args>
-	static auto mem_fn(Fn && fn, Handle handle, Args... args)
-	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
-		return fn(
-			*Converter<Handle>::convert(handle),
-			*Converter<Args>::convert(std::forward<Args>(args))...);
 	}
 
 private:
