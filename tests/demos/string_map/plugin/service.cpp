@@ -45,6 +45,8 @@ void Worker::update_dict(client::String const & key)
 extern "C"
 {
 	using feltpluginsystemdemoplugin::HandleWrapper;
+	using Decorator = HandleWrapper::Decorator<fpdemo_Worker_h>;
+
 	using feltpluginsystemdemoplugin::client::String;
 	using feltpluginsystemdemoplugin::client::StringView;
 	using feltpluginsystemdemoplugin::service::Worker;
@@ -58,14 +60,7 @@ extern "C"
 
 			.release = &HandleWrapper::Converter<fpdemo_Worker_h>::release,
 
-			.update_dict =
-				[](fp_ErrorMessage * err, fpdemo_Worker_h handle, fpdemo_StringView_h hkey)
-			{
-				return HandleWrapper::Decorator<fpdemo_Worker_h>::mem_fn(
-					[](Worker & self, StringView const & key) { self.update_dict(String{key}); },
-					err,
-					handle,
-					hkey);
-			}};
+			.update_dict = Decorator::decorate([](Worker & self, StringView const & key)
+											   { self.update_dict(String{key}); })};
 	}
 }

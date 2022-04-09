@@ -44,15 +44,13 @@ extern "C"
 
 	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
+		using Decorator = HandleWrapper::Decorator<fpdemo_Worker_h>;
+
 		return {
 			.create = &HandleWrapper::Converter<fpdemo_Worker_h>::make,
 
 			.release = &HandleWrapper::Converter<fpdemo_Worker_h>::release,
 
-			.work = [](fpdemo_Worker_h handle)
-			{
-				return HandleWrapper::Decorator<fpdemo_Worker_h>::mem_fn(
-					[](Worker & self) { self.work(); }, handle);
-			}};
+			.work = Decorator::decorate(Decorator::mem_fn_ptr<&Worker::work>)};
 	}
 }
