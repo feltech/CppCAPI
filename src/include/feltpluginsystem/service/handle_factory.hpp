@@ -339,20 +339,78 @@ public:
 
 		return [](auto... args)
 		{
-			static constexpr SuiteFuncType func_type = suite_func_type<decltype(args)...>();
-			static_assert(func_type != SuiteFuncType::unrecognised, "Ill-formed C suite function");
+			static constexpr out_param_sig sig_type = suite_func_type<decltype(args)...>();
+			static_assert(sig_type != out_param_sig::unrecognised, "Ill-formed C suite function");
 
-			if constexpr (func_type == SuiteFuncType::cannot_return_cannot_error)
+			if constexpr (sig_type == out_param_sig::cannot_return_cannot_error)
 			{
 				return [](Handle handle, auto... args)
 				{
-					auto const ret = (std::mem_fn(fn)(
-						*Converter<Handle>::convert(handle), *Converter<Handle>::convert(args)...));
+					using Ret = decltype(std::mem_fn(fn)(
+						*Converter<Handle>::convert(handle),
+						*Converter<decltype(args)>::convert(args)...));
 
-					return Converter<decltype(ret)>::make_cpp(ret);
+					// Although `cannot_return_cannot_error`, this refers to out-parameter, the
+					// function may still return a value, so we must handle both cases.
+					if constexpr (std::is_void_v<Ret>)
+					{
+						std::mem_fn(fn)(
+							*Converter<Handle>::convert(handle),
+							*Converter<decltype(args)>::convert(args)...);
+					}
+					else
+					{
+						Ret const ret = std::mem_fn(fn)(
+							*Converter<Handle>::convert(handle),
+							*Converter<decltype(args)>::convert(args)...);
+
+						return Converter<Ret>::make_cpp(ret);
+					}
 				}(std::forward<decltype(args)>(args)...);
 			}
-			else if constexpr (func_type == SuiteFuncType::can_return_can_error)
+			else if constexpr (sig_type == out_param_sig::cannot_return_can_error)
+			{
+				return [](fp_ErrorMessage * err, Handle handle, auto... args)
+				{
+					return TErrorMap::wrap_exception(
+						*err,
+						[handle, &args...]
+						{
+							using Ret = decltype(std::mem_fn(fn)(
+								*Converter<Handle>::convert(handle),
+								*Converter<decltype(args)>::convert(args)...));
+
+							// Although `cannot_return_can_error`, this refers to out-parameter,
+							// the function may still return a value, so we must handle both cases.
+							if constexpr (std::is_void_v<Ret>)
+							{
+								std::mem_fn(fn)(
+									*Converter<Handle>::convert(handle),
+									*Converter<decltype(args)>::convert(args)...);
+							}
+							else
+							{
+								Ret const ret = std::mem_fn(fn)(
+									*Converter<Handle>::convert(handle),
+									*Converter<decltype(args)>::convert(args)...);
+
+								return Converter<Ret>::make_cpp(ret);
+							}
+						});
+				}(std::forward<decltype(args)>(args)...);
+			}
+			else if constexpr (sig_type == out_param_sig::can_return_cannot_error)
+			{
+				return [](auto out, Handle handle, auto... args)
+				{
+					auto const ret = std::mem_fn(fn)(
+						*Converter<Handle>::convert(handle),
+						*Converter<decltype(args)>::convert(std::forward<decltype(args)>(args))...);
+
+					*out = Converter<decltype(ret)>::make_cpp(ret);
+				}(std::forward<decltype(args)>(args)...);
+			}
+			else if constexpr (sig_type == out_param_sig::can_return_can_error)
 			{
 				return [](fp_ErrorMessage * err, auto out, Handle handle, auto... args)
 				{
@@ -500,7 +558,7 @@ private:
 	template <typename... Args>
 	static constexpr auto is_0th_arg_error_v = is_0th_arg_error<Args...>::value;
 
-	enum class SuiteFuncType
+	enum class out_param_sig
 	{
 		cannot_return_cannot_error,
 		cannot_return_can_error,
@@ -510,29 +568,29 @@ private:
 	};
 
 	template <typename... Args>
-	static constexpr SuiteFuncType suite_func_type()
+	static constexpr out_param_sig suite_func_type()
 	{
 		if constexpr (is_nth_arg_handle_v<0, Args...>)
 		{
 			// fn(handle, args...)
-			return SuiteFuncType::cannot_return_cannot_error;
+			return out_param_sig::cannot_return_cannot_error;
 		}
 		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<1, Args...>)
 		{
 			// fn(err, handle, args...)
-			return SuiteFuncType::cannot_return_can_error;
+			return out_param_sig::cannot_return_can_error;
 		}
 		else if constexpr (!is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<1, Args...>)
 		{
 			// fn(out, handle, args...)
-			return SuiteFuncType::can_return_cannot_error;
+			return out_param_sig::can_return_cannot_error;
 		}
 		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<2, Args...>)
 		{
 			// fn(err, out, handle, args...)
-			return SuiteFuncType::can_return_can_error;
+			return out_param_sig::can_return_can_error;
 		}
-		return SuiteFuncType::unrecognised;
+		return out_param_sig::unrecognised;
 	}
 };
 
