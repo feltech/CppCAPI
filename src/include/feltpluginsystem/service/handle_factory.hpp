@@ -205,16 +205,16 @@ public:
 	 * `.create = &Converter::make_cpp,`.
 	 *
 	 * @tparam Args Argument types to pass to the constructor.
-	 * @param err Storage for exception message, if one occurs during construction.
+	 * @param[out] err Storage for exception message, if one occurs during construction.
 	 * @param[out] out Pointer to handle to newly constructed object.
 	 * @param args Arguments to pass to the constructor.
 	 * @return Error code.
 	 */
 	template <typename... Args>
-	static fp_ErrorCode make(fp_ErrorMessage err, Handle * out, Args... args)
+	static fp_ErrorCode make(fp_ErrorMessage * err, Handle * out, Args... args)
 	{
 		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
-		return TErrorMap::wrap_exception(err, [&out, &args...] { *out = make_cpp(args...); });
+		return TErrorMap::wrap_exception(*err, [&out, &args...] { *out = make_cpp(args...); });
 	}
 
 	/**
@@ -301,7 +301,6 @@ private:
 	};
 
 public:
-
 	template <auto fn>
 	static constexpr mem_fn_ptr_t<fn> mem_fn_ptr{};
 
@@ -314,13 +313,13 @@ public:
 
 		static const Lambda fn = std::forward<Lambda>(lambda);
 
-		return [](char * err, auto * out, Handle handle, auto... args)
+		return [](fp_ErrorMessage * err, auto * out, Handle handle, auto... args)
 		{
 			// TODO(DF): `if constexpr` for each suite function signature variant.
 
 			(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 			return TErrorMap::wrap_exception(
-				err,
+				*err,
 				[handle, &out, &args...]
 				{
 					using Ret = std::remove_pointer_t<decltype(out)>;
@@ -367,10 +366,10 @@ public:
 			}
 			else if constexpr (is_nth_arg_handle_v<2, decltype(args)...>)
 			{
-				return [](char * err, auto out, Handle handle, auto... args)
+				return [](fp_ErrorMessage * err, auto out, Handle handle, auto... args)
 				{
 					return TErrorMap::wrap_exception(
-						err,
+						*err,
 						[handle, &out, &args...]
 						{
 							auto const ret = std::mem_fn(fn)(
@@ -384,7 +383,6 @@ public:
 			}
 		};
 	}
-
 
 	/**
 	 * Adapt a suite function to have a more C++-like interface, automatically converting
@@ -406,11 +404,11 @@ public:
 	 */
 	template <class Ret, class Fn, class... Args>
 	static fp_ErrorCode mem_fn(
-		Fn && fn, fp_ErrorMessage err, Ret * out, Handle handle, Args... args)
+		Fn && fn, fp_ErrorMessage * err, Ret * out, Handle handle, Args... args)
 	{
 		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		return TErrorMap::wrap_exception(
-			err,
+			*err,
 			[handle, &out, &fn, &args...]
 			{
 				*out = Converter<Ret>::make_cpp(
@@ -436,11 +434,11 @@ public:
 	 * @return Error code.
 	 */
 	template <class Fn, class... Args>
-	static fp_ErrorCode mem_fn(Fn && fn, fp_ErrorMessage err, Handle handle, Args... args)
+	static fp_ErrorCode mem_fn(Fn && fn, fp_ErrorMessage * err, Handle handle, Args... args)
 	{
 		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		return TErrorMap::wrap_exception(
-			err,
+			*err,
 			[&fn, handle, &args...]
 			{
 				fn(*Converter<Handle>::convert(handle),
@@ -464,7 +462,7 @@ public:
 	 * concrete types if necessary.
 	 * @return Error code.
 	 */
-	 // TODO: How to auto-convert HandleAdapter where suite is not known at compile-time.
+	// TODO: How to auto-convert HandleAdapter where suite is not known at compile-time.
 	template <class Fn, class... Args>
 	static auto mem_fn(Fn && fn, Handle handle, Args... args)
 	{

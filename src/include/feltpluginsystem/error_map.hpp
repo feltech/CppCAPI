@@ -53,27 +53,28 @@ struct ErrorMap;
 namespace detail
 {
 
-inline void extract_message(fp_ErrorMessage err, char const * msg) noexcept
+inline void extract_message(fp_ErrorMessage & err, const std::string_view msg) noexcept
 {
-	strncpy(err, msg, sizeof(fp_ErrorMessage) - 1);
-	err[sizeof(fp_ErrorMessage) - 1] = '\0';
+	err.size = std::min(msg.size(), err.capacity);
+	strncpy(err.data, msg.data(), err.size);
+	err.data[err.capacity - 1] = '\0';
 }
 
-inline void extract_exception_message(fp_ErrorMessage err, std::exception const & ex) noexcept
+inline void extract_exception_message(fp_ErrorMessage & err, std::exception const & ex) noexcept
 {
 	extract_message(err, ex.what());
 }
 
-inline void non_exception_message(fp_ErrorMessage err) noexcept
+inline void non_exception_message(fp_ErrorMessage & err) noexcept
 {
 	extract_message(err, "Unknown non-exception error caught");
 }
 
 template <class Traits>
-void throw_if_matches(fp_ErrorMessage const err, fp_ErrorCode const code)
+void throw_if_matches(fp_ErrorMessage const & err, fp_ErrorCode const code)
 {
 	if (code == Traits::code)
-		throw typename Traits::Exception{err};
+		throw typename Traits::Exception{{err.data, err.size}};
 }
 
 template <class Outer, class Inner>
@@ -111,7 +112,7 @@ struct ErrorMap<>
 	 * @return fp_ok if no exception was raised, fp_error otherwise.
 	 */
 	template <typename Fn>
-	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
+	static fp_ErrorCode wrap_exception(fp_ErrorMessage & err, Fn && fn)
 	{
 		try
 		{
@@ -134,10 +135,10 @@ struct ErrorMap<>
 	 * @param err Storage for error message.
 	 * @param code Error code.
 	 */
-	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
+	static constexpr void throw_exception(fp_ErrorMessage const & err, fp_ErrorCode const code)
 	{
 		if (code != fp_ok)
-			throw UnknownError{err};
+			throw UnknownError{{err.data, err.size}};
 	};
 };
 
@@ -163,7 +164,7 @@ struct ErrorMap<Traits>
 	 * @return fp_ok if no exception was raised, error code otherwise.
 	 */
 	template <typename Fn>
-	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
+	static fp_ErrorCode wrap_exception(fp_ErrorMessage & err, Fn && fn)
 	{
 		try
 		{
@@ -195,7 +196,7 @@ struct ErrorMap<Traits>
 	 * @param err Storage for error message.
 	 * @param code Error code.
 	 */
-	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
+	static constexpr void throw_exception(fp_ErrorMessage const & err, fp_ErrorCode const code)
 	{
 		detail::throw_if_matches<Traits>(err, code);
 		ErrorMap<>::throw_exception(err, code);
@@ -225,7 +226,7 @@ struct ErrorMap
 	 * @return fp_ok if no exception was raised, error code otherwise.
 	 */
 	template <typename Fn>
-	static fp_ErrorCode wrap_exception(fp_ErrorMessage err, Fn && fn)
+	static fp_ErrorCode wrap_exception(fp_ErrorMessage & err, Fn && fn)
 	{
 		try
 		{
@@ -267,7 +268,7 @@ struct ErrorMap
 	 * @param err Storage for error message.
 	 * @param code Error code.
 	 */
-	static constexpr void throw_exception(fp_ErrorMessage err, fp_ErrorCode const code)
+	static constexpr void throw_exception(fp_ErrorMessage const & err, fp_ErrorCode const code)
 	{
 		if (code == fp_ok)
 			return;

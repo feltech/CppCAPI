@@ -14,8 +14,14 @@ extern "C"
 #endif
 	/// Type to use when returning an error code.
 	typedef int fp_ErrorCode;
-	/// Fixed-size char array to use as storage for error messages.
-	typedef char fp_ErrorMessage[500];
+
+	/// Storage for error messages.
+	typedef struct
+	{
+		size_t capacity;
+		size_t size;
+		char * data;
+	} fp_ErrorMessage;
 
 	/// Error code signaling no error occurred.
 	static const fp_ErrorCode fp_ok = 0;

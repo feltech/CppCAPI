@@ -32,13 +32,14 @@ extern "C"
 			.release = &Converter::release,
 
 			.assign_cstr =
-				[](fp_ErrorMessage err, fpdemo_String_h hself, char const * cstr) {
+				[](fp_ErrorMessage * err, fpdemo_String_h hself, char const * cstr)
+			{
 				return Decorator::mem_fn(
 					[](String & self, char const * str) { self = str; }, err, hself, cstr);
 			},
 
 			.assign_StringView =
-				[](fp_ErrorMessage err, fpdemo_String_h hself, fpdemo_StringView_h hstr)
+				[](fp_ErrorMessage * err, fpdemo_String_h hself, fpdemo_StringView_h hstr)
 			{
 				return Decorator::mem_fn(
 					[](String & self, StringView const & str) { self = str; }, err, hself, hstr);
@@ -94,7 +95,7 @@ extern "C"
 			.release = &Converter::release,
 
 			.insert =
-				[](fp_ErrorMessage err,
+				[](fp_ErrorMessage * err,
 				   fpdemo_StringDict_h handle,
 				   fpdemo_String_h key,
 				   fpdemo_String_h value)
@@ -109,7 +110,7 @@ extern "C"
 			},
 
 			.at =
-				[](fp_ErrorMessage err,
+				[](fp_ErrorMessage * err,
 				   fpdemo_String_h * out,
 				   fpdemo_StringDict_h handle,
 				   fpdemo_String_h key)

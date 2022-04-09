@@ -53,15 +53,15 @@ struct HandleMap
 {
 	template <class HandleToLookup>
 	using class_from_handle_t = typename std::disjunction<
-		typename HandleMap<Rest>::template class_from_handle_t<HandleToLookup> ...>;
+		typename HandleMap<Rest>::template class_from_handle_t<HandleToLookup>...>;
 
 	template <class HandleToLookup>
 	using suite_from_handle_t = typename std::disjunction<
-		typename HandleMap<Rest>::template suite_from_handle_t<HandleToLookup> ...>;
+		typename HandleMap<Rest>::template suite_from_handle_t<HandleToLookup>...>;
 
 	template <class HandleToLookup>
 	using suite_factory_from_handle_t = typename std::disjunction<
-		typename HandleMap<Rest>::template suite_factory_from_handle_t<HandleToLookup> ...>;
+		typename HandleMap<Rest>::template suite_factory_from_handle_t<HandleToLookup>...>;
 
 	/**
 	 * Find the adapter class associated with the given handle type.

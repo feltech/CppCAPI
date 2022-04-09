@@ -22,6 +22,8 @@ namespace feltplugin::client
 template <class THandle, class THandleMap, class TErrorMap = ErrorMap<>>
 struct HandleAdapter
 {
+	static constexpr std::size_t default_error_capacity = 500;
+
 protected:
 	/// Convenience for referring to this base class in subclasses.
 	using Base = HandleAdapter<THandle, THandleMap, TErrorMap>;
@@ -80,7 +82,7 @@ public:
 	 * the handle.
 	 */
 	explicit HandleAdapter(SuiteFactory suite_factory, Handle handle)
-		:  suite_{suite_factory()}, handle_{handle}
+		: suite_{suite_factory()}, handle_{handle}
 	{
 	}
 
@@ -88,7 +90,7 @@ public:
 	HandleAdapter(HandleAdapter const &) = delete;
 
 	/// Move the handle from the other adapter and set its handle to null.
-	HandleAdapter(HandleAdapter && other) noexcept :  suite_{other.suite_}, handle_{other.handle_}
+	HandleAdapter(HandleAdapter && other) noexcept : suite_{other.suite_}, handle_{other.handle_}
 	{
 		other.handle_ = nullptr;
 	};
@@ -126,7 +128,7 @@ protected:
 	 * Call our suite's `create` function, updating our opaque handle with the result.
 	 *
 	 * Assumes `create` is defined in the function pointer suite with signature
-	 * `(fp_ErrorMessage, Handle*, Args...) -> fp_ErrorCode`.
+	 * `(fp_ErrorMessage*, Handle*, Args...) -> fp_ErrorCode`.
 	 *
 	 * No conversion to opaque handles is performed - if these are required by the `create` function
 	 * then conversion must happen in the caller.
@@ -144,13 +146,14 @@ protected:
 			throw std::invalid_argument{
 				"Cannot `create` a handle adapter if handle is already assigned."};
 		// TODO: suite_.create is not default initialized (to nullptr).
-//		if (suite_.create == nullptr)
-//			throw std::invalid_argument{
-//				"Cannot `create` a handle adapter when no function pointer suite is assigned."};
+		//		if (suite_.create == nullptr)
+		//			throw std::invalid_argument{
+		//				"Cannot `create` a handle adapter when no function pointer suite is
+		// assigned."};
 		fp_ErrorCode code;
-		fp_ErrorMessage err;
+		fp_ErrorMessage err{err_storage_.capacity(), 0, err_storage_.data()};
 
-		code = suite_.create(err, &handle_, std::forward<Args>(args)...);
+		code = suite_.create(&err, &handle_, std::forward<Args>(args)...);
 		throw_on_error(code, err);
 	}
 
@@ -170,13 +173,13 @@ protected:
 	 * @return Value of suite function's out parameter after invocation.
 	 */
 	template <class Ret, class... Args, class... Rest>
-	Ret call(fp_ErrorCode (*fn)(fp_ErrorMessage, Ret *, Handle, Args...), Rest &&... args) const
+	Ret call(fp_ErrorCode (*fn)(fp_ErrorMessage *, Ret *, Handle, Args...), Rest &&... args) const
 	{
 		Ret ret;
 		fp_ErrorCode code;
-		fp_ErrorMessage err;
+		fp_ErrorMessage err{err_storage_.capacity(), 0, err_storage_.data()};
 
-		code = fn(err, &ret, handle_, std::forward<Rest>(args)...);
+		code = fn(&err, &ret, handle_, std::forward<Rest>(args)...);
 		throw_on_error(code, err);
 		return ret;
 	}
@@ -195,12 +198,12 @@ protected:
 	 * @param args Additional arguments given to the suite function.
 	 */
 	template <class... Args, class... Rest>
-	void call(fp_ErrorCode (*fn)(fp_ErrorMessage, Handle, Args...), Rest &&... args) const
+	void call(fp_ErrorCode (*fn)(fp_ErrorMessage *, Handle, Args...), Rest &&... args) const
 	{
-		fp_ErrorCode code = 1;
-		fp_ErrorMessage err;
+		fp_ErrorCode code;
+		fp_ErrorMessage err{err_storage_.capacity(), 0, err_storage_.data()};
 
-		code = fn(err, handle_, std::forward<Rest>(args)...);
+		code = fn(&err, handle_, std::forward<Rest>(args)...);
 		throw_on_error(code, err);
 	}
 
@@ -242,7 +245,7 @@ protected:
 	 * @param code Code to look up.
 	 * @param err Error message to pass to constructor of exception.
 	 */
-	static void throw_on_error(fp_ErrorCode const code, fp_ErrorMessage err)
+	static void throw_on_error(fp_ErrorCode const code, fp_ErrorMessage const & err)
 	{
 		if (code == fp_ok)
 			return;
@@ -255,6 +258,9 @@ protected:
 	Suite const suite_;
 	/// Opaque handle to C++ object in the service.
 	Handle handle_;
+
+	/// Storage for error messages.
+	inline static thread_local auto err_storage_ = std::string(default_error_capacity, '\0');
 
 private:
 	/**
