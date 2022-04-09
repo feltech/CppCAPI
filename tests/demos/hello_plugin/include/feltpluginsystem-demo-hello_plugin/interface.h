@@ -13,9 +13,9 @@ extern "C"
 
 	typedef struct
 	{
-		fp_ErrorCode (*create)(fp_ErrorMessage, fpdemo_Worker_h *);
+		fp_ErrorCode (*create)(fp_ErrorMessage *, fpdemo_Worker_h *);
 		void (*release)(fpdemo_Worker_h);
-		void (*work)(fpdemo_Worker_h);	 // noexcept
+		void (*work)(fpdemo_Worker_h);	// noexcept
 	} fpdemo_Worker_s;
 
 	// Host will expect plugin to define:

@@ -15,41 +15,57 @@ lib_path = os.path.join(lib_path, "libfeltpluginsystem-demo-string_map-host.so")
 host = None
 
 
+class fp_ErrorMessage(ctypes.Structure):
+    _fields_ = [
+        ("capacity", ctypes.c_size_t),
+        ("size", ctypes.c_size_t),
+        ("data", ctypes.c_char_p)
+    ]
+
+
+fp_ErrorMessage_p = ctypes.POINTER(fp_ErrorMessage)
+
+
 class fpdemo_String_s(ctypes.Structure):
     _fields_ = [
-        ("create", CFUNCTYPE(c_int, c_char_p, c_void_p)),
+        ("create", CFUNCTYPE(c_int, fp_ErrorMessage_p, c_void_p)),
         ("release", CFUNCTYPE(None, c_void_p)),
-        ("assign_cstr", CFUNCTYPE(c_int, c_char_p, c_void_p, c_char_p)),
-        ("assign_StringView", CFUNCTYPE(c_int, c_char_p, c_void_p, c_void_p)),
-        ("c_str", CFUNCTYPE(c_char_p, c_void_p)),
-        ("at", CFUNCTYPE(c_int, c_char_p, c_char_p, c_void_p, c_int)),
+        ("assign_cstr", CFUNCTYPE(c_int, fp_ErrorMessage_p, c_void_p, c_char_p)),
+        ("assign_StringView", CFUNCTYPE(c_int, fp_ErrorMessage_p, c_void_p, c_void_p)),
+        ("c_str", CFUNCTYPE(fp_ErrorMessage_p, c_void_p)),
+        ("at", CFUNCTYPE(c_int, fp_ErrorMessage_p, c_char_p, c_void_p, c_int)),
     ]
 
 
 class CString:
     def __init__(self, s: str):
-        self.__csuite = host.fpdemo_String_suite()
-        self.__cerr = ctypes.create_string_buffer(500)
         self.__chandle = c_void_p()
+        self.__csuite = host.fpdemo_String_suite()
 
-        code = self.__csuite.create(self.__cerr, ctypes.byref(self.__chandle))
+        self.__cerr_buffer = ctypes.create_string_buffer(500)
+        self.__cerr = fp_ErrorMessage(
+            len(self.__cerr_buffer), 0, ctypes.addressof(self.__cerr_buffer))
+
+        code = self.__csuite.create(ctypes.byref(self.__cerr), ctypes.byref(self.__chandle))
         if code != 0:
-            raise RuntimeError("Error code '%s' from C with message: '%s'" % (code, self.__cerr))
+            raise RuntimeError(
+                "Error code '%s' from C with message: '%s'" % (code, self.__cerr_buffer))
 
-        self.__csuite.assign_cstr(self.__cerr, self.__chandle, s.encode())
+        self.__csuite.assign_cstr(ctypes.byref(self.__cerr), self.__chandle, s.encode())
 
     def __del__(self):
-        self.__csuite.release(self.__chandle)
+        if self.__chandle.value:
+            self.__csuite.release(self.__chandle)
 
     def c_str(self):
         return self.__csuite.c_str(self.__chandle)
 
     def at(self, pos: int):
         out = c_char()
-        code = self.__csuite.at(self.__cerr, ctypes.byref(out), self.__chandle, pos)
+        code = self.__csuite.at(ctypes.byref(self.__cerr), ctypes.byref(out), self.__chandle, pos)
         if code != 0:
             raise RuntimeError(
-                "Error code '%s' from C with message: '%s'" % (code, self.__cerr.value))
+                "Error code '%s' from C with message: '%s'" % (code, self.__cerr.data.decode()))
         return out.value
 
 

@@ -58,7 +58,8 @@ extern "C"
 
 			.release = &HandleWrapper::Converter<fpdemo_Worker_h>::release,
 
-			.update_dict = [](fp_ErrorMessage err, fpdemo_Worker_h handle, fpdemo_StringView_h hkey)
+			.update_dict =
+				[](fp_ErrorMessage * err, fpdemo_Worker_h handle, fpdemo_StringView_h hkey)
 			{
 				return HandleWrapper::Decorator<fpdemo_Worker_h>::mem_fn(
 					[](Worker & self, StringView const & key) { self.update_dict(String{key}); },

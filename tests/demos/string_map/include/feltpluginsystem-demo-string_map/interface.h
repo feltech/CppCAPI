@@ -31,12 +31,12 @@ extern "C"
 
 	typedef struct
 	{
-		fp_ErrorCode (*create)(fp_ErrorMessage, fpdemo_String_h *);
+		fp_ErrorCode (*create)(fp_ErrorMessage *, fpdemo_String_h *);
 		void (*release)(fpdemo_String_h);
-		fp_ErrorCode (*assign_cstr)(fp_ErrorMessage, fpdemo_String_h, char const *);
-		fp_ErrorCode (*assign_StringView)(fp_ErrorMessage, fpdemo_String_h, fpdemo_StringView_h);
+		fp_ErrorCode (*assign_cstr)(fp_ErrorMessage *, fpdemo_String_h, char const *);
+		fp_ErrorCode (*assign_StringView)(fp_ErrorMessage *, fpdemo_String_h, fpdemo_StringView_h);
 		char const * (*c_str)(fpdemo_String_h);	 // noexcept
-		fp_ErrorCode (*at)(fp_ErrorMessage, char *, fpdemo_String_h, size_t);
+		fp_ErrorCode (*at)(fp_ErrorMessage *, char *, fpdemo_String_h, size_t);
 	} fpdemo_String_s;
 
 	fpdemo_String_s fpdemo_String_suite();
@@ -47,15 +47,15 @@ extern "C"
 
 	typedef struct
 	{
-		fp_ErrorCode (*create)(fp_ErrorMessage, fpdemo_StringDict_h *);
+		fp_ErrorCode (*create)(fp_ErrorMessage *, fpdemo_StringDict_h *);
 
 		void (*release)(fpdemo_StringDict_h);
 
 		fp_ErrorCode (*insert)(
-			fp_ErrorMessage, fpdemo_StringDict_h, fpdemo_String_h, fpdemo_String_h);
+			fp_ErrorMessage *, fpdemo_StringDict_h, fpdemo_String_h, fpdemo_String_h);
 
 		fp_ErrorCode (*at)(
-			fp_ErrorMessage, fpdemo_String_h *, fpdemo_StringDict_h, fpdemo_String_h);
+			fp_ErrorMessage *, fpdemo_String_h *, fpdemo_StringDict_h, fpdemo_String_h);
 	} fp_StringDict_s;
 
 	fp_StringDict_s fpdemo_StringDict_suite();
@@ -66,11 +66,11 @@ extern "C"
 
 	typedef struct
 	{
-		fp_ErrorCode (*create)(fp_ErrorMessage, fpdemo_Worker_h *, fpdemo_StringDict_h);
+		fp_ErrorCode (*create)(fp_ErrorMessage *, fpdemo_Worker_h *, fpdemo_StringDict_h);
 
 		void (*release)(fpdemo_Worker_h);
 
-		fp_ErrorCode (*update_dict)(fp_ErrorMessage, fpdemo_Worker_h, fpdemo_StringView_h);
+		fp_ErrorCode (*update_dict)(fp_ErrorMessage *, fpdemo_Worker_h, fpdemo_StringView_h);
 
 	} fpdemo_Worker_s;
 
