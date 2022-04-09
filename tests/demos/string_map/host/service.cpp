@@ -31,19 +31,10 @@ extern "C"
 
 			.release = &Converter::release,
 
-			.assign_cstr =
-				[](fp_ErrorMessage * err, fpdemo_String_h hself, char const * cstr)
-			{
-				return Decorator::mem_fn(
-					[](String & self, char const * str) { self = str; }, err, hself, cstr);
-			},
+			.assign_cstr = Decorator::decorate([](String & self, char const * str) { self = str; }),
 
 			.assign_StringView =
-				[](fp_ErrorMessage * err, fpdemo_String_h hself, fpdemo_StringView_h hstr)
-			{
-				return Decorator::mem_fn(
-					[](String & self, StringView const & str) { self = str; }, err, hself, hstr);
-			},
+				Decorator::decorate([](String & self, StringView const & str) { self = str; }),
 
 			.c_str = Decorator::decorate(Decorator::mem_fn_ptr<&String::c_str>),
 			// clang-format off
@@ -69,17 +60,9 @@ extern "C"
 	{
 		using Decorator = HandleWrapper::Decorator<fpdemo_StringView_h>;
 		return {
-			.data =
-				[](fpdemo_StringView_h handle) {
-					return Decorator::mem_fn(
-						[](StringView const & self) { return self.data(); }, handle);
-				},
+			.data = Decorator::decorate(Decorator::mem_fn_ptr<&StringView::data>),
 
-			.size =
-				[](fpdemo_StringView_h handle) {
-					return Decorator::mem_fn(
-						[](StringView const & self) { return self.size(); }, handle);
-				}};
+			.size = Decorator::decorate(Decorator::mem_fn_ptr<&StringView::size>)};
 	}
 
 	// StringDict
@@ -94,33 +77,13 @@ extern "C"
 
 			.release = &Converter::release,
 
-			.insert =
-				[](fp_ErrorMessage * err,
-				   fpdemo_StringDict_h handle,
-				   fpdemo_String_h key,
-				   fpdemo_String_h value)
-			{
-				return Decorator::mem_fn(
-					[](StringDict & self, String key, String value)
-					{ return self.insert_or_assign(std::move(key), std::move(value)); },
-					err,
-					handle,
-					key,
-					value);
-			},
+			.insert = Decorator::decorate(
+				[](StringDict & self, String key, String value)
+				{ return self.insert_or_assign(std::move(key), std::move(value)); }),
 
-			.at =
-				[](fp_ErrorMessage * err,
-				   fpdemo_String_h * out,
-				   fpdemo_StringDict_h handle,
-				   fpdemo_String_h key)
-			{
-				return Decorator::mem_fn(
-					[](StringDict const & self, String const & key) { return self.at(key); },
-					err,
-					out,
-					handle,
-					key);
-			}};
+			.at = Decorator::decorate([](StringDict const & self, String const & key)
+									  { return self.at(key); })
+
+		};
 	}
 }
