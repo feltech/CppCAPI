@@ -339,22 +339,10 @@ public:
 
 		return [](auto... args)
 		{
-			static_assert(
-				// No error, no return
-				is_nth_arg_handle_v<0, decltype(args)...> ||
-					// No error, has return
-					// TODO(DF): Add error string size argument to suite signatures variants to
-					//  make this condition valid.
-					is_nth_arg_handle_v<1, decltype(args)...> ||
-					// Has error, no return
-					is_nth_arg_handle_v<2, decltype(args)...> ||
-					// Has error, has return
-					is_nth_arg_handle_v<3, decltype(args)...>,
-				"Ill-formed C suite function - handle type not in expected argument position");
+			static constexpr SuiteFuncType func_type = suite_func_type<decltype(args)...>();
+			static_assert(func_type != SuiteFuncType::unrecognised, "Ill-formed C suite function");
 
-			// TODO(DF): `if constexpr` for each suite function signature variant.
-
-			if constexpr (is_nth_arg_handle_v<0, decltype(args)...>)
+			if constexpr (func_type == SuiteFuncType::cannot_return_cannot_error)
 			{
 				return [](Handle handle, auto... args)
 				{
@@ -364,7 +352,7 @@ public:
 					return Converter<decltype(ret)>::make_cpp(ret);
 				}(std::forward<decltype(args)>(args)...);
 			}
-			else if constexpr (is_nth_arg_handle_v<2, decltype(args)...>)
+			else if constexpr (func_type == SuiteFuncType::can_return_can_error)
 			{
 				return [](fp_ErrorMessage * err, auto out, Handle handle, auto... args)
 				{
@@ -498,6 +486,54 @@ private:
 
 	template <std::size_t N, typename... Args>
 	static constexpr auto is_nth_arg_handle_v = is_nth_arg_handle<N, Args...>::value;
+
+	template <typename... Args>
+	struct is_0th_arg_error : std::false_type
+	{
+	};
+
+	template <typename Arg, typename... Args>
+	struct is_0th_arg_error<Arg, Args...> : std::is_same<Arg, fp_ErrorMessage *>
+	{
+	};
+
+	template <typename... Args>
+	static constexpr auto is_0th_arg_error_v = is_0th_arg_error<Args...>::value;
+
+	enum class SuiteFuncType
+	{
+		cannot_return_cannot_error,
+		cannot_return_can_error,
+		can_return_cannot_error,
+		can_return_can_error,
+		unrecognised
+	};
+
+	template <typename... Args>
+	static constexpr SuiteFuncType suite_func_type()
+	{
+		if constexpr (is_nth_arg_handle_v<0, Args...>)
+		{
+			// fn(handle, args...)
+			return SuiteFuncType::cannot_return_cannot_error;
+		}
+		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<1, Args...>)
+		{
+			// fn(err, handle, args...)
+			return SuiteFuncType::cannot_return_can_error;
+		}
+		else if constexpr (!is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<1, Args...>)
+		{
+			// fn(out, handle, args...)
+			return SuiteFuncType::can_return_cannot_error;
+		}
+		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<2, Args...>)
+		{
+			// fn(err, out, handle, args...)
+			return SuiteFuncType::can_return_can_error;
+		}
+		return SuiteFuncType::unrecognised;
+	}
 };
 
 }  // namespace feltplugin::service
