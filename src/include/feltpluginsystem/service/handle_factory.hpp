@@ -316,7 +316,7 @@ public:
 
 		return [](auto... args)
 		{
-			static constexpr out_param_sig sig_type = suite_func_type<decltype(args)...>();
+			static constexpr out_param_sig sig_type = suite_func_sig_type<decltype(args)...>();
 			static_assert(sig_type != out_param_sig::unrecognised, "Ill-formed C suite function");
 
 			if constexpr (sig_type == out_param_sig::cannot_return_cannot_error)
@@ -416,7 +416,7 @@ public:
 
 		return [](auto... args)
 		{
-			static constexpr out_param_sig sig_type = suite_func_type<decltype(args)...>();
+			static constexpr out_param_sig sig_type = suite_func_sig_type<decltype(args)...>();
 			static_assert(sig_type != out_param_sig::unrecognised, "Ill-formed C suite function");
 
 			if constexpr (sig_type == out_param_sig::cannot_return_cannot_error)
@@ -649,7 +649,7 @@ private:
 	};
 
 	template <typename... Args>
-	static constexpr out_param_sig suite_func_type()
+	static constexpr out_param_sig suite_func_sig_type()
 	{
 		if constexpr (is_nth_arg_handle_v<0, Args...>)
 		{
