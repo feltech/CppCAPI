@@ -307,28 +307,103 @@ public:
 	template <typename Lambda>
 	static auto decorate(Lambda && lambda)
 	{
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		static_assert(
 			std::is_empty_v<Lambda>,
 			"Stateful callables (e.g. capturing lambdas) are not supported");
 
 		static const Lambda fn = std::forward<Lambda>(lambda);
 
-		return [](fp_ErrorMessage * err, auto * out, Handle handle, auto... args)
+		return [](auto... args)
 		{
-			// TODO(DF): `if constexpr` for each suite function signature variant.
+		  static constexpr out_param_sig sig_type = suite_func_type<decltype(args)...>();
+		  static_assert(sig_type != out_param_sig::unrecognised, "Ill-formed C suite function");
 
-			(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
-			return TErrorMap::wrap_exception(
-				*err,
-				[handle, &out, &args...]
+		  if constexpr (sig_type == out_param_sig::cannot_return_cannot_error)
+		  {
+			  return [](Handle handle, auto... args)
+			  {
+				using Ret = decltype(fn(
+					*Converter<Handle>::convert(handle),
+					*Converter<decltype(args)>::convert(args)...));
+
+				// Although `cannot_return_cannot_error`, this refers to out-parameter, the
+				// function may still return a value, so we must handle both cases.
+				if constexpr (std::is_void_v<Ret>)
 				{
-					using Ret = std::remove_pointer_t<decltype(out)>;
+					fn(
+						*Converter<Handle>::convert(handle),
+						*Converter<decltype(args)>::convert(args)...);
+				}
+				else
+				{
+					Ret const ret = fn(
+						*Converter<Handle>::convert(handle),
+						*Converter<decltype(args)>::convert(args)...);
 
-					*out = Converter<Ret>::make_cpp(
-						fn(*Converter<Handle>::convert(handle),
-						   *Converter<decltype(args)>::convert(
-							   std::forward<decltype(args)>(args))...));
-				});
+					return Converter<Ret>::make_cpp(ret);
+				}
+			  }(std::forward<decltype(args)>(args)...);
+		  }
+		  else if constexpr (sig_type == out_param_sig::cannot_return_can_error)
+		  {
+			  return [](fp_ErrorMessage * err, Handle handle, auto... args)
+			  {
+				return TErrorMap::wrap_exception(
+					*err,
+					[handle, &args...]
+					{
+					  using Ret = decltype(fn(
+						  *Converter<Handle>::convert(handle),
+						  *Converter<decltype(args)>::convert(args)...));
+
+					  // Although `cannot_return_can_error`, this refers to out-parameter,
+					  // the function may still return a value, so we must handle both cases.
+					  if constexpr (std::is_void_v<Ret>)
+					  {
+						  fn(
+							  *Converter<Handle>::convert(handle),
+							  *Converter<decltype(args)>::convert(args)...);
+					  }
+					  else
+					  {
+						  Ret const ret = fn(
+							  *Converter<Handle>::convert(handle),
+							  *Converter<decltype(args)>::convert(args)...);
+
+						  return Converter<Ret>::make_cpp(ret);
+					  }
+					});
+			  }(std::forward<decltype(args)>(args)...);
+		  }
+		  else if constexpr (sig_type == out_param_sig::can_return_cannot_error)
+		  {
+			  return [](auto out, Handle handle, auto... args)
+			  {
+				auto const ret = fn(
+					*Converter<Handle>::convert(handle),
+					*Converter<decltype(args)>::convert(std::forward<decltype(args)>(args))...);
+
+				*out = Converter<decltype(ret)>::make_cpp(ret);
+			  }(std::forward<decltype(args)>(args)...);
+		  }
+		  else if constexpr (sig_type == out_param_sig::can_return_can_error)
+		  {
+			  return [](fp_ErrorMessage * err, auto out, Handle handle, auto... args)
+			  {
+				return TErrorMap::wrap_exception(
+					*err,
+					[handle, &out, &args...]
+					{
+					  auto const ret = fn(
+						  *Converter<Handle>::convert(handle),
+						  *Converter<decltype(args)>::convert(
+							  std::forward<decltype(args)>(args))...);
+
+					  *out = Converter<decltype(ret)>::make_cpp(ret);
+					});
+			  }(std::forward<decltype(args)>(args)...);
+		  }
 		};
 	}
 
