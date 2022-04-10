@@ -20,13 +20,13 @@ namespace feltplugin::client
  * @tparam TErrorMap ErrorMap detailing mapping of exceptions to error codes.
  */
 template <class THandle, class THandleMap, class TErrorMap = ErrorMap<>>
-struct HandleAdapter
+struct SuiteAdapter
 {
 	static constexpr std::size_t default_error_capacity = 500;
 
 protected:
 	/// Convenience for referring to this base class in subclasses.
-	using Base = HandleAdapter<THandle, THandleMap, TErrorMap>;
+	using Base = SuiteAdapter<THandle, THandleMap, TErrorMap>;
 
 public:
 	/// Opaque handle type.
@@ -56,8 +56,8 @@ public:
 	 *
 	 * @param handle Opaque handle to service type.
 	 */
-	HandleAdapter(Handle handle)  // NOLINT(google-explicit-constructor)
-		: HandleAdapter{ksuite_factory, handle}
+	SuiteAdapter(Handle handle)  // NOLINT(google-explicit-constructor)
+		: SuiteAdapter{ksuite_factory, handle}
 	{
 		static_assert(ksuite_factory != nullptr, "Attempting to construct with null suite factory");
 	}
@@ -72,7 +72,7 @@ public:
 	 * @param suite_factory Factory function that returns the function pointer suite associated with
 	 * the handle.
 	 */
-	explicit HandleAdapter(SuiteFactory suite_factory) : HandleAdapter{suite_factory, nullptr} {}
+	explicit SuiteAdapter(SuiteFactory suite_factory) : SuiteAdapter{suite_factory, nullptr} {}
 
 	/**
 	 * Construct injecting provided opaque handle and associated function pointer suite.
@@ -81,16 +81,16 @@ public:
 	 * @param suite_factory Factory function that returns the function pointer suite associated with
 	 * the handle.
 	 */
-	explicit HandleAdapter(SuiteFactory suite_factory, Handle handle)
+	explicit SuiteAdapter(SuiteFactory suite_factory, Handle handle)
 		: suite_{suite_factory()}, handle_{handle}
 	{
 	}
 
 	/// It is not safe to copy a handle adapter, since it may lead to use-after-free.
-	HandleAdapter(HandleAdapter const &) = delete;
+	SuiteAdapter(SuiteAdapter const &) = delete;
 
 	/// Move the handle from the other adapter and set its handle to null.
-	HandleAdapter(HandleAdapter && other) noexcept : suite_{other.suite_}, handle_{other.handle_}
+	SuiteAdapter(SuiteAdapter && other) noexcept : suite_{other.suite_}, handle_{other.handle_}
 	{
 		other.handle_ = nullptr;
 	};
@@ -100,7 +100,7 @@ public:
 	 *
 	 * I.e. Call `release` if the handle is not null and the suite defines a `release` function.
 	 */
-	virtual ~HandleAdapter()
+	virtual ~SuiteAdapter()
 	{
 		if (handle_ == nullptr)
 			return;	 // Assume moved out
@@ -122,7 +122,7 @@ public:
 
 protected:
 	/// Allow default construction, relying on the subclass to populate the handle.
-	HandleAdapter() : HandleAdapter{Handle{nullptr}} {}
+	SuiteAdapter() : SuiteAdapter{Handle{nullptr}} {}
 
 	/**
 	 * Call our suite's `create` function, updating our opaque handle with the result.

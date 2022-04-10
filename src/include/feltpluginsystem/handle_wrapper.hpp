@@ -33,6 +33,6 @@ struct HandleWrapper
 		service::HandleConverter<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	template <class THandle>
-	using Adapter = client::HandleAdapter<THandle, TClientHandleMap, TErrorMap>;
+	using Adapter = client::SuiteAdapter<THandle, TClientHandleMap, TErrorMap>;
 };
 }  // namespace feltplugin

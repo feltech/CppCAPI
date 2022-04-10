@@ -23,7 +23,7 @@ using HandleWrapper = feltplugin::HandleWrapper<
 
 struct Worker : HandleWrapper::Adapter<fpdemo_Worker_h>
 {
-	using Base::HandleAdapter;
+	using Base::SuiteAdapter;
 
 	void work()
 	{

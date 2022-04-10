@@ -14,7 +14,7 @@ namespace feltpluginsystemdemoplugin::client
 {
 struct StringView : HandleWrapper::Adapter<fpdemo_StringView_h>
 {
-	using Base::HandleAdapter;
+	using Base::SuiteAdapter;
 
 	[[nodiscard]] char const * data() const;
 	[[nodiscard]] size_t size() const;
@@ -24,7 +24,7 @@ struct StringView : HandleWrapper::Adapter<fpdemo_StringView_h>
 
 struct String : HandleWrapper::Adapter<fpdemo_String_h>
 {
-	using Base::HandleAdapter;
+	using Base::SuiteAdapter;
 
 	explicit String(StringView const & str);
 	explicit String(std::string const & str);
@@ -38,7 +38,7 @@ struct String : HandleWrapper::Adapter<fpdemo_String_h>
 
 struct StringDict : HandleWrapper::Adapter<fpdemo_StringDict_h>
 {
-	using Base::HandleAdapter;
+	using Base::SuiteAdapter;
 
 	StringDict();
 
