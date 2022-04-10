@@ -4,7 +4,7 @@
 
 #include <feltpluginsystem-demo-string_map/interface.h>
 
-#include "handle_wrapper.hpp"
+#include "plugin_definition.hpp"
 #include "host_export.h"
 
 namespace

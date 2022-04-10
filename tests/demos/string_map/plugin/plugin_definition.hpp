@@ -3,7 +3,7 @@
 #pragma once
 #include <stdexcept>
 
-#include <feltpluginsystem/handle_wrapper.hpp>
+#include <feltpluginsystem/plugin_definition.hpp>
 
 #include <feltpluginsystem-demo-string_map/interface.h>
 

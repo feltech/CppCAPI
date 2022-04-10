@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "handle_wrapper.hpp"
+#include "plugin_definition.hpp"
 #include "host_export.h"
 
 namespace feltpluginsystemdemohost::client
