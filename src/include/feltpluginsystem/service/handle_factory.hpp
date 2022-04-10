@@ -279,7 +279,7 @@ struct SuiteDecorator
 {
 private:
 	template <class Handle>
-	using Converter = HandleManager<Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
+	using HandleManager = HandleManager<Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	using Handle = THandle;
 	using Class = typename TServiceHandleMap::template class_from_handle<Handle>;
@@ -344,8 +344,8 @@ public:
 					const auto do_call = [&]
 					{
 						return fn(
-							*Converter<Handle>::convert(handle),
-							*Converter<decltype(args)>::convert(
+							*HandleManager<Handle>::convert(handle),
+							*HandleManager<decltype(args)>::convert(
 								std::forward<decltype(args)>(args))...);
 					};
 					using Ret = decltype(do_call());
@@ -360,7 +360,7 @@ public:
 					}
 					else
 					{
-						return Converter<Ret>::make_handle(do_call());
+						return HandleManager<Ret>::make_handle(do_call());
 					}
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -371,8 +371,8 @@ public:
 					const auto do_call = [&]
 					{
 						return fn(
-							*Converter<Handle>::convert(handle),
-							*Converter<decltype(args)>::convert(
+							*HandleManager<Handle>::convert(handle),
+							*HandleManager<decltype(args)>::convert(
 								std::forward<decltype(args)>(args))...);
 					};
 
@@ -393,11 +393,12 @@ public:
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
-					auto const ret = fn(
-						*Converter<Handle>::convert(handle),
-						*Converter<decltype(args)>::convert(std::forward<decltype(args)>(args))...);
+					auto const ret =
+						fn(*HandleManager<Handle>::convert(handle),
+						   *HandleManager<decltype(args)>::convert(
+							   std::forward<decltype(args)>(args))...);
 
-					*out = Converter<Out>::make_handle(ret);
+					*out = HandleManager<Out>::make_handle(ret);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_return_can_error)
@@ -411,11 +412,11 @@ public:
 						[handle, &out, &args...]
 						{
 							auto const ret =
-								fn(*Converter<Handle>::convert(handle),
-								   *Converter<decltype(args)>::convert(
+								fn(*HandleManager<Handle>::convert(handle),
+								   *HandleManager<decltype(args)>::convert(
 									   std::forward<decltype(args)>(args))...);
 
-							*out = Converter<Out>::make_handle(ret);
+							*out = HandleManager<Out>::make_handle(ret);
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -457,8 +458,8 @@ public:
 					const auto do_call = [&]
 					{
 						return std::mem_fn(fn)(
-							*Converter<Handle>::convert(handle),
-							*Converter<decltype(args)>::convert(
+							*HandleManager<Handle>::convert(handle),
+							*HandleManager<decltype(args)>::convert(
 								std::forward<decltype(args)>(args))...);
 					};
 					using Ret = decltype(do_call());
@@ -471,7 +472,7 @@ public:
 					}
 					else
 					{
-						return Converter<Ret>::make_handle(do_call());
+						return HandleManager<Ret>::make_handle(do_call());
 					}
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -482,8 +483,8 @@ public:
 					const auto do_call = [&]
 					{
 						return std::mem_fn(fn)(
-							*Converter<Handle>::convert(handle),
-							*Converter<decltype(args)>::convert(
+							*HandleManager<Handle>::convert(handle),
+							*HandleManager<decltype(args)>::convert(
 								std::forward<decltype(args)>(args))...);
 					};
 					return TErrorMap::wrap_exception(
@@ -500,7 +501,7 @@ public:
 							}
 							else
 							{
-								return Converter<Ret>::make_handle(do_call());
+								return HandleManager<Ret>::make_handle(do_call());
 							}
 						});
 				}(std::forward<decltype(args)>(args)...);
@@ -512,10 +513,11 @@ public:
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					auto const ret = std::mem_fn(fn)(
-						*Converter<Handle>::convert(handle),
-						*Converter<decltype(args)>::convert(std::forward<decltype(args)>(args))...);
+						*HandleManager<Handle>::convert(handle),
+						*HandleManager<decltype(args)>::convert(
+							std::forward<decltype(args)>(args))...);
 
-					*out = Converter<Out>::make_handle(ret);
+					*out = HandleManager<Out>::make_handle(ret);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_return_can_error)
@@ -529,11 +531,11 @@ public:
 						[handle, &out, &args...]
 						{
 							auto const ret = std::mem_fn(fn)(
-								*Converter<Handle>::convert(handle),
-								*Converter<decltype(args)>::convert(
+								*HandleManager<Handle>::convert(handle),
+								*HandleManager<decltype(args)>::convert(
 									std::forward<decltype(args)>(args))...);
 
-							*out = Converter<Out>::make_handle(ret);
+							*out = HandleManager<Out>::make_handle(ret);
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}

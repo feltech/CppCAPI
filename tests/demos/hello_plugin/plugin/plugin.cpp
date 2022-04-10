@@ -44,7 +44,7 @@ extern "C"
 
 	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
-		using Decorator = HandleWrapper::Decorator<fpdemo_Worker_h>;
+		using Decorator = HandleWrapper::SuiteDecorator<fpdemo_Worker_h>;
 
 		return {
 			.create = &HandleWrapper::HandleManager<fpdemo_Worker_h>::make,

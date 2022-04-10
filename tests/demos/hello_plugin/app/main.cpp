@@ -21,7 +21,7 @@ using HandleWrapper = feltplugin::HandleWrapper<
 		// Worker
 		feltplugin::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, Worker>>>;
 
-struct Worker : HandleWrapper::Adapter<fpdemo_Worker_h>
+struct Worker : HandleWrapper::SuiteAdapter<fpdemo_Worker_h>
 {
 	using Base::SuiteAdapter;
 

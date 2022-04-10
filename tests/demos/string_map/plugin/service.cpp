@@ -45,7 +45,8 @@ void Worker::update_dict(client::String const & key)
 extern "C"
 {
 	using feltpluginsystemdemoplugin::HandleWrapper;
-	using Decorator = HandleWrapper::Decorator<fpdemo_Worker_h>;
+	using HandleManager = HandleWrapper::HandleManager<fpdemo_Worker_h>;
+	using SuiteDecorator = HandleWrapper::SuiteDecorator<fpdemo_Worker_h>;
 
 	using feltpluginsystemdemoplugin::client::String;
 	using feltpluginsystemdemoplugin::client::StringView;
@@ -56,11 +57,11 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
 		return {
-			.create = &HandleWrapper::HandleManager<fpdemo_Worker_h>::make,
+			.create = &HandleManager::make,
 
-			.release = &HandleWrapper::HandleManager<fpdemo_Worker_h>::release,
+			.release = &HandleManager::release,
 
-			.update_dict = Decorator::decorate([](Worker & self, StringView const & key)
+			.update_dict = SuiteDecorator::decorate([](Worker & self, StringView const & key)
 											   { self.update_dict(String{key}); })};
 	}
 }

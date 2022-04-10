@@ -12,7 +12,7 @@
 
 namespace feltpluginsystemdemoplugin::client
 {
-struct StringView : HandleWrapper::Adapter<fpdemo_StringView_h>
+struct StringView : HandleWrapper::SuiteAdapter<fpdemo_StringView_h>
 {
 	using Base::SuiteAdapter;
 
@@ -22,7 +22,7 @@ struct StringView : HandleWrapper::Adapter<fpdemo_StringView_h>
 	explicit operator std::string_view() const;
 };
 
-struct String : HandleWrapper::Adapter<fpdemo_String_h>
+struct String : HandleWrapper::SuiteAdapter<fpdemo_String_h>
 {
 	using Base::SuiteAdapter;
 
@@ -36,7 +36,7 @@ struct String : HandleWrapper::Adapter<fpdemo_String_h>
 	explicit operator std::string() const;
 };
 
-struct StringDict : HandleWrapper::Adapter<fpdemo_StringDict_h>
+struct StringDict : HandleWrapper::SuiteAdapter<fpdemo_StringDict_h>
 {
 	using Base::SuiteAdapter;
 

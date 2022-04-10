@@ -25,7 +25,7 @@ template <class TServiceHandleMap, class TClientHandleMap, class TErrorMap = Err
 struct HandleWrapper
 {
 	template <class THandle>
-	using Decorator =
+	using SuiteDecorator =
 		service::SuiteDecorator<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	template <class THandle>
@@ -33,6 +33,6 @@ struct HandleWrapper
 		service::HandleManager<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	template <class THandle>
-	using Adapter = client::SuiteAdapter<THandle, TClientHandleMap, TErrorMap>;
+	using SuiteAdapter = client::SuiteAdapter<THandle, TClientHandleMap, TErrorMap>;
 };
 }  // namespace feltplugin
