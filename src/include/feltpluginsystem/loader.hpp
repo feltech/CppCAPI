@@ -19,7 +19,7 @@ using SymHandle = decltype(dlsym(nullptr, ""));
 /**
  * RAII wrapper and utilities for loading a DSO and its symbols.
  */
-class Plugin
+class Loader
 {
 public:
 	/**
@@ -29,7 +29,7 @@ public:
 	 * @param mode Mode to pass to `dlopen`.
 	 */
 	// TODO: dlmopen
-	explicit Plugin(char const * file_path, int mode = RTLD_LAZY)
+	explicit Loader(char const * file_path, int mode = RTLD_LAZY)
 		: file_path_{file_path}, handle_{dlopen(file_path, mode)}
 	{
 		if (!handle_)
@@ -39,7 +39,7 @@ public:
 	}
 
 	/// Destructor - call `dlclose` on the handle.
-	~Plugin()
+	~Loader()
 	{
 		if (handle_)
 			dlclose(handle_);

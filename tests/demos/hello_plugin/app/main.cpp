@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include <feltpluginsystem/handle_wrapper.hpp>
-#include <feltpluginsystem/plugin.hpp>
+#include <feltpluginsystem/loader.hpp>
 
 #include <feltpluginsystem-demo-hello_plugin/interface.h>
 
@@ -43,9 +43,9 @@ int main()
 	std::cout << "Loading plugin at " << plugin_path << std::endl;
 
 	// Load the plugin DSO.
-	feltplugin::Plugin plugin{plugin_path.c_str()};
+	feltplugin::Loader loader{plugin_path.c_str()};
 
-	auto worker = plugin.load_adapter<Worker>("fpdemo_Worker_suite");
+	auto worker = loader.load_adapter<Worker>("fpdemo_Worker_suite");
 
 	std::cout << "Host client telling plugin service to do work..." << std::endl;
 

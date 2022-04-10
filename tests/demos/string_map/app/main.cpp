@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <iostream>
 
-#include <feltpluginsystem/plugin.hpp>
+#include <feltpluginsystem/loader.hpp>
 
 #include "../host/client.hpp"
 #include "../host/service.hpp"
@@ -23,7 +23,7 @@ void execute()
 	std::cout << "Loading plugin at " << plugin_path << std::endl;
 
 	// Load the plugin DSO.
-	feltplugin::Plugin plugin{plugin_path.c_str()};
+	feltplugin::Loader loader{plugin_path.c_str()};
 
 	// Create a shared StringDict to be used by both host and plugin.
 	auto dict = feltplugin::make_shared<service::StringDict>(
@@ -31,7 +31,7 @@ void execute()
 
 	// Instantiate the Worker in the plugin and wrap it in a Worker wrapper here on the host.
 	auto worker =
-		plugin.load_adapter<feltpluginsystemdemohost::client::Worker>("fpdemo_Worker_suite", dict);
+		loader.load_adapter<feltpluginsystemdemohost::client::Worker>("fpdemo_Worker_suite", dict);
 
 	// Do some work with the worker.
 
