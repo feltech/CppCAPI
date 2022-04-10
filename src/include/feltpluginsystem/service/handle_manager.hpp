@@ -47,7 +47,7 @@ template <
 	class THandle,
 	class TServiceHandleMap,
 	class TClientHandleMap,
-	class TErrorMap = ErrorMap<>>
+	class TErrorMap>
 struct HandleManager
 {
 private:

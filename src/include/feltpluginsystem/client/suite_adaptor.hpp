@@ -19,7 +19,7 @@ namespace feltplugin::client
  * @tparam THandleMap HandleMap detailing mapping of handles to wrapper classes.
  * @tparam TErrorMap ErrorMap detailing mapping of exceptions to error codes.
  */
-template <class THandle, class THandleMap, class TErrorMap = ErrorMap<>>
+template <class THandle, class THandleMap, class TErrorMap>
 struct SuiteAdapter
 {
 	static constexpr std::size_t default_error_capacity = 500;
