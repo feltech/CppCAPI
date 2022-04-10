@@ -47,9 +47,9 @@ extern "C"
 		using Decorator = HandleWrapper::Decorator<fpdemo_Worker_h>;
 
 		return {
-			.create = &HandleWrapper::Converter<fpdemo_Worker_h>::make,
+			.create = &HandleWrapper::HandleManager<fpdemo_Worker_h>::make,
 
-			.release = &HandleWrapper::Converter<fpdemo_Worker_h>::release,
+			.release = &HandleWrapper::HandleManager<fpdemo_Worker_h>::release,
 
 			.work = Decorator::decorate(Decorator::mem_fn_ptr<&Worker::work>)};
 	}

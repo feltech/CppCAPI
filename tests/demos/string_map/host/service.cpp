@@ -24,7 +24,7 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
 		using Decorator = HandleWrapper::Decorator<fpdemo_String_h>;
-		using Converter = HandleWrapper::Converter<fpdemo_String_h>;
+		using Converter = HandleWrapper::HandleManager<fpdemo_String_h>;
 
 		return {
 			.create = &Converter::make,
@@ -70,7 +70,7 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
 		using Decorator = HandleWrapper::Decorator<fpdemo_StringDict_h>;
-		using Converter = HandleWrapper::Converter<fpdemo_StringDict_h>;
+		using Converter = HandleWrapper::HandleManager<fpdemo_StringDict_h>;
 
 		return {
 			.create = &Converter::make,

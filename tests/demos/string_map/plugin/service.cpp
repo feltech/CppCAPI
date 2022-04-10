@@ -56,9 +56,9 @@ extern "C"
 	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
 		return {
-			.create = &HandleWrapper::Converter<fpdemo_Worker_h>::make,
+			.create = &HandleWrapper::HandleManager<fpdemo_Worker_h>::make,
 
-			.release = &HandleWrapper::Converter<fpdemo_Worker_h>::release,
+			.release = &HandleWrapper::HandleManager<fpdemo_Worker_h>::release,
 
 			.update_dict = Decorator::decorate([](Worker & self, StringView const & key)
 											   { self.update_dict(String{key}); })};

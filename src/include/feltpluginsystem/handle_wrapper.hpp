@@ -29,8 +29,8 @@ struct HandleWrapper
 		service::SuiteDecorator<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	template <class THandle>
-	using Converter =
-		service::HandleConverter<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
+	using HandleManager =
+		service::HandleManager<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	template <class THandle>
 	using Adapter = client::SuiteAdapter<THandle, TClientHandleMap, TErrorMap>;

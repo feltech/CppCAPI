@@ -50,7 +50,7 @@ template <
 	class TServiceHandleMap,
 	class TClientHandleMap,
 	class TErrorMap = ErrorMap<>>
-struct HandleConverter
+struct HandleManager
 {
 private:
 	using Handle = THandle;
@@ -279,7 +279,7 @@ struct SuiteDecorator
 {
 private:
 	template <class Handle>
-	using Converter = HandleConverter<Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
+	using Converter = HandleManager<Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 	using Handle = THandle;
 	using Class = typename TServiceHandleMap::template class_from_handle<Handle>;
