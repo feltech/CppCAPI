@@ -11,8 +11,8 @@
 
 #include "../error_map.hpp"
 #include "../interface.h"
-#include "handle_map.hpp"
 #include "handle_manager.hpp"
+#include "handle_map.hpp"
 
 namespace feltplugin::service
 {
@@ -24,11 +24,7 @@ namespace feltplugin::service
  * @tparam TClientHandleMap client::HandleMap for mapping handles to client adapter classes.
  * @tparam TErrorMap ErrorMap for mapping exceptions to error codes.
  */
-template <
-	class THandle,
-	class TServiceHandleMap,
-	class TClientHandleMap,
-	class TErrorMap>
+template <class THandle, class TServiceHandleMap, class TClientHandleMap, class TErrorMap>
 struct SuiteDecorator
 {
 private:
@@ -60,19 +56,17 @@ public:
 	 * Adapt a suite function to have a more C++-like interface, automatically converting
 	 * handles.
 	 *
-	 * The arguments will be converted from handles to objects using `convert`, and the return
-	 * value converted from an object to a handle using `make_handle`, as appropriate.
+	 * The arguments will be converted from handles to objects and the return value converted from
+	 * an object to a handle using, as appropriate.
 	 *
-	 * @tparam Ret Return type of suite function.
-	 * @tparam Fn Type of wrapped callable.
-	 * @tparam Args Argument types to convert then pass to wrapped callable.
-	 * @param fn Wrapped callable to execute.
-	 * @param[out] err Storage for exception message, if any.
-	 * @param[out] out Return value destination.
-	 * @param handle Opaque handle to self.
-	 * @param args Arguments to pass along to wrapped callable, converting from opaque handles
-	 * to concrete types if necessary.
-	 * @return Error code.
+	 * This specialisation decorates a non-capturing lambda function (or other stateless callable),
+	 * converting its arguments and return value. The first parameter of the lambda must be (a
+	 * reference to) an instance of the (C++) type associated with the handle type that is
+	 * provided as a template argument to this `SuiteDecorator`.
+	 *
+	 * @tparam Lambda Stateless callable type to decorate.
+	 * @param lambda Stateless callable to decorate.
+	 * @return Non-capturing lambda satisfying C function signature.
 	 */
 	template <typename Lambda>
 	static auto decorate(Lambda && lambda)
@@ -176,25 +170,27 @@ public:
 	}
 
 	/**
+	 *
 	 * Adapt a suite function to have a more C++-like interface, automatically converting
 	 * handles.
 	 *
-	 * The arguments will be converted from handles to objects using `convert`, and the return
-	 * value converted from an object to a handle using `make_handle`, as appropriate.
+	 * The arguments will be converted from handles to objects and the return value converted from
+	 * an object to a handle using, as appropriate.
 	 *
-	 * @tparam Ret Return type of suite function.
-	 * @tparam Fn Type of wrapped callable.
-	 * @tparam Args Argument types to convert then pass to wrapped callable.
-	 * @param fn Wrapped callable to execute.
-	 * @param[out] err Storage for exception message, if any.
-	 * @param[out] out Return value destination.
-	 * @param handle Opaque handle to self.
-	 * @param args Arguments to pass along to wrapped callable, converting from opaque handles
-	 * to concrete types if necessary.
-	 * @return Error code.
+	 * This specialisation decorates a member function of the class associated with the handle type
+	 * provided as a template argument to this `SuiteDecorator`.
+	 *
+	 * The member function to decorate must be wrapped in a `mem_fn_ptr_t` before being passed to
+	 * this function. E.g. `decorate(mem_fn_ptr_t<&MyClass::my_method>)`, in order for compile-time
+	 * template deduction to work.
+	 *
+	 * @tparam fn Member function pointer, deduced from `mem_fn_ptr_const` function parameter.
+	 * @param mem_fn_ptr_const Not used directly, used instead to deduce the `fn` template
+	 * parameter.
+	 * @return Non-capturing lambda satisfying C function signature.
 	 */
 	template <auto fn>
-	static auto decorate(mem_fn_ptr_t<fn>)
+	static auto decorate([[maybe_unused]] mem_fn_ptr_t<fn> mem_fn_ptr_const)
 	{
 		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 
