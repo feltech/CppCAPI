@@ -12,7 +12,7 @@
 struct Worker;
 
 // Define C <-> C++ interface.
-using HandleWrapper = feltplugin::HandleWrapper<
+using Plugin = feltplugin::PluginDefinition<
 	// Service - nothing offered.
 	feltplugin::service::HandleMap<>,
 
@@ -21,7 +21,7 @@ using HandleWrapper = feltplugin::HandleWrapper<
 		// Worker
 		feltplugin::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, Worker>>>;
 
-struct Worker : HandleWrapper::SuiteAdapter<fpdemo_Worker_h>
+struct Worker : Plugin::SuiteAdapter<fpdemo_Worker_h>
 {
 	using Base::SuiteAdapter;
 

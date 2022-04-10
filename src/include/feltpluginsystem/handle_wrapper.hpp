@@ -22,7 +22,7 @@ namespace feltplugin
  * @tparam TErrorMap ErrorMap mapping exceptions to error codes.
  */
 template <class TServiceHandleMap, class TClientHandleMap, class TErrorMap = ErrorMap<>>
-struct HandleWrapper
+struct PluginDefinition
 {
 	template <class THandle>
 	using SuiteDecorator =

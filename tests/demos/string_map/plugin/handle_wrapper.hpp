@@ -21,7 +21,7 @@ struct StringView;
 struct StringDict;
 }  // namespace client
 
-using HandleWrapper = feltplugin::HandleWrapper<
+using Plugin = feltplugin::PluginDefinition<
 	// Service
 	feltplugin::service::HandleMap<
 		// Worker

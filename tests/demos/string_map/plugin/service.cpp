@@ -43,9 +43,9 @@ void Worker::update_dict(client::String const & key)
 
 extern "C"
 {
-	using feltpluginsystemdemoplugin::HandleWrapper;
-	using HandleManager = HandleWrapper::HandleManager<fpdemo_Worker_h>;
-	using SuiteDecorator = HandleWrapper::SuiteDecorator<fpdemo_Worker_h>;
+	using feltpluginsystemdemoplugin::Plugin;
+	using HandleManager = Plugin::HandleManager<fpdemo_Worker_h>;
+	using SuiteDecorator = Plugin::SuiteDecorator<fpdemo_Worker_h>;
 
 	using feltpluginsystemdemoplugin::client::String;
 	using feltpluginsystemdemoplugin::client::StringView;

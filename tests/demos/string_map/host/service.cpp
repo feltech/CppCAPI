@@ -16,15 +16,15 @@ using StringDict = feltpluginsystemdemohost::service::StringDict;
 
 extern "C"
 {
-	using HandleWrapper = feltpluginsystemdemohost::HandleWrapper;
+	using Plugin = feltpluginsystemdemohost::Plugin;
 
 	// String
 
 	using feltpluginsystemdemohost::service::String;
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
-		using SuiteDecorator = HandleWrapper::SuiteDecorator<fpdemo_String_h>;
-		using HandleManager = HandleWrapper::HandleManager<fpdemo_String_h>;
+		using SuiteDecorator = Plugin::SuiteDecorator<fpdemo_String_h>;
+		using HandleManager = Plugin::HandleManager<fpdemo_String_h>;
 
 		return {
 			.create = &HandleManager::make,
@@ -60,7 +60,7 @@ extern "C"
 
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
 	{
-		using Decorator = HandleWrapper::SuiteDecorator<fpdemo_StringView_h>;
+		using Decorator = Plugin::SuiteDecorator<fpdemo_StringView_h>;
 		return {
 			.data = Decorator::decorate(Decorator::mem_fn_ptr<&StringView::data>),
 
@@ -71,8 +71,8 @@ extern "C"
 
 	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
 	{
-		using Decorator = HandleWrapper::SuiteDecorator<fpdemo_StringDict_h>;
-		using Converter = HandleWrapper::HandleManager<fpdemo_StringDict_h>;
+		using Decorator = Plugin::SuiteDecorator<fpdemo_StringDict_h>;
+		using Converter = Plugin::HandleManager<fpdemo_StringDict_h>;
 
 		return {
 			.create = &Converter::make,

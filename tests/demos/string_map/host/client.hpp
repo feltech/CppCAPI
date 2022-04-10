@@ -7,7 +7,7 @@
 
 namespace feltpluginsystemdemohost::client
 {
-struct FELTPLUGINSYSTEM_DEMO_HOST_EXPORT Worker : HandleWrapper::SuiteAdapter<fpdemo_Worker_h>
+struct FELTPLUGINSYSTEM_DEMO_HOST_EXPORT Worker : Plugin::SuiteAdapter<fpdemo_Worker_h>
 {
 	Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<service::StringDict> dict);
 

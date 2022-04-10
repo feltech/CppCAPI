@@ -21,7 +21,7 @@ struct Worker
 };
 
 // Define C <-> C++ interface.
-using HandleWrapper = feltplugin::HandleWrapper<
+using Plugin = feltplugin::PluginDefinition<
 	// Service
 	feltplugin::service::HandleMap<
 		// Worker
@@ -37,19 +37,19 @@ using HandleWrapper = feltplugin::HandleWrapper<
 
 extern "C"
 {
-	using feltpluginsystemdemoplugin::HandleWrapper;
+	using feltpluginsystemdemoplugin::Plugin;
 	using feltpluginsystemdemoplugin::Worker;
 
 	// Plugin
 
 	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
-		using Decorator = HandleWrapper::SuiteDecorator<fpdemo_Worker_h>;
+		using Decorator = Plugin::SuiteDecorator<fpdemo_Worker_h>;
 
 		return {
-			.create = &HandleWrapper::HandleManager<fpdemo_Worker_h>::make,
+			.create = &Plugin::HandleManager<fpdemo_Worker_h>::make,
 
-			.release = &HandleWrapper::HandleManager<fpdemo_Worker_h>::release,
+			.release = &Plugin::HandleManager<fpdemo_Worker_h>::release,
 
 			.work = Decorator::decorate(Decorator::mem_fn_ptr<&Worker::work>)};
 	}

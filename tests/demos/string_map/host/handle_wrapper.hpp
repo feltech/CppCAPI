@@ -21,7 +21,7 @@ class String;
 class StringDict;
 }  // namespace service
 
-using HandleWrapper = feltplugin::HandleWrapper<
+using Plugin = feltplugin::PluginDefinition<
 	// Service
 	feltplugin::service::HandleMap<
 		// StringView
