@@ -13,9 +13,6 @@ struct Worker;
 
 // Define C <-> C++ interface.
 using Plugin = feltplugin::PluginDefinition<
-	// Service - nothing offered.
-	feltplugin::service::HandleMap<>,
-
 	// Client
 	feltplugin::client::HandleMap<
 		// Worker

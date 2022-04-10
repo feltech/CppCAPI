@@ -28,11 +28,7 @@ using Plugin = feltplugin::PluginDefinition<
 		feltplugin::service::HandleTraits<
 			fpdemo_Worker_h,
 			Worker,
-			feltplugin::service::HandleOwnershipTag::OwnedByClient>>,
-
-	// Client - nothing offered.
-	feltplugin::client::HandleMap<>>;
-
+			feltplugin::service::HandleOwnershipTag::OwnedByClient>>>;
 }  // namespace feltpluginsystemdemoplugin
 
 extern "C"
