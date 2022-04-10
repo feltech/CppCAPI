@@ -29,25 +29,22 @@ struct plugin_definition_args_t<>
 };
 
 template <typename... ArgArgs, class... OtherArgs>
-struct plugin_definition_args_t<
-	service::HandleMap<ArgArgs...>,
-	OtherArgs...> : plugin_definition_args_t<OtherArgs...>
+struct plugin_definition_args_t<service::HandleMap<ArgArgs...>, OtherArgs...>
+	: plugin_definition_args_t<OtherArgs...>
 {
 	using service_handle_map_t = service::HandleMap<ArgArgs...>;
 };
 
 template <typename... ArgArgs, class... OtherArgs>
-struct plugin_definition_args_t<
-	client::HandleMap<ArgArgs...>,
-	OtherArgs...> : plugin_definition_args_t<OtherArgs...>
+struct plugin_definition_args_t<client::HandleMap<ArgArgs...>, OtherArgs...>
+	: plugin_definition_args_t<OtherArgs...>
 {
 	using client_handle_map_t = client::HandleMap<ArgArgs...>;
 };
 
 template <typename... ArgArgs, class... OtherArgs>
-struct plugin_definition_args_t<
-	ErrorMap<ArgArgs...>,
-	OtherArgs...> : plugin_definition_args_t<OtherArgs...>
+struct plugin_definition_args_t<ErrorMap<ArgArgs...>, OtherArgs...>
+	: plugin_definition_args_t<OtherArgs...>
 {
 	using error_map_t = ErrorMap<ArgArgs...>;
 };
@@ -55,12 +52,15 @@ struct plugin_definition_args_t<
 }  // namespace detail
 
 /**
- * Convenience alias aggregation of service::SuiteDecorator, service::HandleManager and
- * client::SuiteAdapter and their common template parameters.
+ * Defines, via template parameters, the set of C++ types and their associated C API handles and
+ * converters between them.
  *
- * @tparam TServiceHandleMap service::HandleMap mapping handles to native classes.
- * @tparam TClientHandleMap client::HandleMap mapping handles to adapter classes.
- * @tparam TErrorMap ErrorMap mapping exceptions to error codes.
+ * Essentially a convenience alias aggregation of service::SuiteDecorator, service::HandleManager
+ * and client::SuiteAdapter and their common template parameters.
+ *
+ * @tparam Args service::HandleMap mapping handles to native classes, client::HandleMap mapping
+ * handles to adapter classes, and ErrorMap mapping exceptions to error codes, in any order. If any
+ * of those are missing, then an empty fallback is assumed.
  */
 template <class... Args>
 class PluginDefinition : detail::plugin_definition_args_t<Args...>
