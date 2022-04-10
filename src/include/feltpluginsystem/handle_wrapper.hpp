@@ -8,7 +8,7 @@
 #include "client/suite_adaptor.hpp"
 #include "client/handle_map.hpp"
 #include "error_map.hpp"
-#include "service/handle_factory.hpp"
+#include "service/suite_decorator.hpp"
 #include "service/handle_map.hpp"
 
 namespace feltplugin

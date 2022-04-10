@@ -6,8 +6,7 @@
 
 #include <feltpluginsystem-demo-string_map/interface.h>
 
-#include <feltpluginsystem/service/handle_factory.hpp>
-
+#include "handle_wrapper.hpp"
 #include "client.hpp"
 #include "plugin_export.h"
 
