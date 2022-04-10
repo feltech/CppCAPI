@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "client/handle_adaptor.hpp"
+#include "client/suite_adaptor.hpp"
 #include "client/handle_map.hpp"
 #include "error_map.hpp"
 #include "service/handle_factory.hpp"

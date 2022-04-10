@@ -3,7 +3,7 @@
 #pragma once
 #include <string>
 
-#include <feltpluginsystem/client/handle_adaptor.hpp>
+#include <feltpluginsystem/client/suite_adaptor.hpp>
 #include <feltpluginsystem/client/handle_map.hpp>
 
 #include <feltpluginsystem-demo-string_map/interface.h>
