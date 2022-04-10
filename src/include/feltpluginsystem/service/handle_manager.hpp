@@ -43,11 +43,7 @@ struct assert_is_valid_handle_type
  * @tparam TClientHandleMap client::HandleMap for mapping handles to client adapter classes.
  * @tparam TErrorMap ErrorMap for mapping exceptions to error codes.
  */
-template <
-	class THandle,
-	class TServiceHandleMap,
-	class TClientHandleMap,
-	class TErrorMap>
+template <class THandle, class TServiceHandleMap, class TClientHandleMap, class TErrorMap>
 struct HandleManager
 {
 private:
@@ -140,7 +136,8 @@ public:
 	/**
 	 * Create a handle associated with a pre-existing instance.
 	 *
-	 * This function is only valid if the HandlePtrTag in the HandleTraits is `OwnedByService`.
+	 * This function is only valid if the HandleOwnershipTag in the HandleTraits is
+	 * `OwnedByService`.
 	 *
 	 * @param obj Object to reference.
 	 * @return Newly minted opaque handle.
