@@ -55,8 +55,8 @@ struct plugin_definition_args_t<
 }  // namespace detail
 
 /**
- * Convenience alias aggregation of service::HandleConverter, service::SuiteDecorator and
- * client::HandleAdapter and their common template parameters.
+ * Convenience alias aggregation of service::SuiteDecorator, service::HandleManager and
+ * client::SuiteAdapter and their common template parameters.
  *
  * @tparam TServiceHandleMap service::HandleMap mapping handles to native classes.
  * @tparam TClientHandleMap client::HandleMap mapping handles to adapter classes.

@@ -38,8 +38,6 @@ private:
 	using Handle = THandle;
 	using Class = typename TServiceHandleMap::template class_from_handle<Handle>;
 	using Adapter = typename TClientHandleMap::template class_from_handle<Handle>;
-	static constexpr HandleOwnershipTag ptr_type_tag =
-		TServiceHandleMap::template ownersihp_tag_from_handle<Handle>();
 
 	static_assert(
 		std::is_same_v<Handle, Class> | std::is_same_v<Adapter, std::false_type>,
@@ -350,22 +348,22 @@ private:
 	{
 		if constexpr (is_nth_arg_handle_v<0, Args...>)
 		{
-			// fn(handle, args...)
+			// fn(handle, args...) -> T
 			return out_param_sig::cannot_return_cannot_error;
 		}
 		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<1, Args...>)
 		{
-			// fn(err, handle, args...)
+			// fn(err, handle, args...) -> code
 			return out_param_sig::cannot_return_can_error;
 		}
 		else if constexpr (!is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<1, Args...>)
 		{
-			// fn(out, handle, args...)
+			// fn(out, handle, args...) -> void
 			return out_param_sig::can_return_cannot_error;
 		}
 		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<2, Args...>)
 		{
-			// fn(err, out, handle, args...)
+			// fn(err, out, handle, args...) -> code
 			return out_param_sig::can_return_can_error;
 		}
 		return out_param_sig::unrecognised;
