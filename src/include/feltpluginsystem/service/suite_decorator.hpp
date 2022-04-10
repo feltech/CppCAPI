@@ -57,7 +57,7 @@ public:
 	 * handles.
 	 *
 	 * The arguments will be converted from handles to objects and the return value converted from
-	 * an object to a handle using, as appropriate.
+	 * an object to a handle, as appropriate.
 	 *
 	 * This specialisation decorates a non-capturing lambda function (or other stateless callable),
 	 * converting its arguments and return value. The first parameter of the lambda must be (a
@@ -175,13 +175,13 @@ public:
 	 * handles.
 	 *
 	 * The arguments will be converted from handles to objects and the return value converted from
-	 * an object to a handle using, as appropriate.
+	 * an object to a handle, as appropriate.
 	 *
 	 * This specialisation decorates a member function of the class associated with the handle type
 	 * provided as a template argument to this `SuiteDecorator`.
 	 *
 	 * The member function to decorate must be wrapped in a `mem_fn_ptr_t` before being passed to
-	 * this function. E.g. `decorate(mem_fn_ptr_t<&MyClass::my_method>)`, in order for compile-time
+	 * this function, e.g. `decorate(mem_fn_ptr_t<&MyClass::my_method>)`, in order for compile-time
 	 * template deduction to work.
 	 *
 	 * @tparam fn Member function pointer, deduced from `mem_fn_ptr_const` function parameter.
