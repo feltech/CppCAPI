@@ -56,9 +56,9 @@ extern "C"
 
 		fp_ErrorCode (*at)(
 			fp_ErrorMessage *, fpdemo_String_h *, fpdemo_StringDict_h, fpdemo_String_h);
-	} fp_StringDict_s;
+	} fpdemo_StringDict_s;
 
-	fp_StringDict_s fpdemo_StringDict_suite();
+	fpdemo_StringDict_s fpdemo_StringDict_suite();
 
 	// Worker
 

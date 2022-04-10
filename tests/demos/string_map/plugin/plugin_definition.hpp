@@ -49,7 +49,7 @@ using Plugin = feltplugin::PluginDefinition<
 		// StringDict
 		feltplugin::client::HandleTraits<
 			fpdemo_StringDict_h,
-			fp_StringDict_s,
+			fpdemo_StringDict_s,
 			feltpluginsystemdemoplugin::client::StringDict,
 			&fpdemo_StringDict_suite>>,
 

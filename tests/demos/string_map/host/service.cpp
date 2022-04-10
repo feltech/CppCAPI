@@ -69,7 +69,7 @@ extern "C"
 
 	// StringDict
 
-	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fp_StringDict_s fpdemo_StringDict_suite()
+	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_StringDict_s fpdemo_StringDict_suite()
 	{
 		using Decorator = Plugin::SuiteDecorator<fpdemo_StringDict_h>;
 		using Converter = Plugin::HandleManager<fpdemo_StringDict_h>;
