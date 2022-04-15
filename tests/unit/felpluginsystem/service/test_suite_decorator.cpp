@@ -51,6 +51,9 @@ TEMPLATE_TEST_CASE(
 	GIVEN("A C++ service type its C client handle and function suite")
 	{
 		using Handle = TestType;  // Magic from Catch2 TEMPLATE_TEST_CASE
+		using Suite = FakeSuite<Handle>;
+		using SuiteDecorator = typename FakePlugin::SuiteDecorator<Handle>;
+		using HandleManager = FakePlugin::HandleManager<Handle>;
 
 		Handle handle;
 		MockAPI * service_api;
@@ -58,22 +61,28 @@ TEMPLATE_TEST_CASE(
 		if constexpr (std::is_same_v<Handle, FakeOwnedByServiceHandle>)
 		{
 			service_api = new MockAPI;
-			handle = FakePlugin::HandleManager<Handle>::create(*service_api);
+			handle = HandleManager::create(*service_api);
 		}
 		else if constexpr (std::is_same_v<Handle, FakeOwnedByClientHandle>)
 		{
-			handle = FakePlugin::HandleManager<Handle>::make_handle();
-			service_api = FakePlugin::HandleManager<Handle>::convert(handle);
+			handle = HandleManager::make_handle();
+			service_api = HandleManager::convert(handle);
 		}
 		else if constexpr (std::is_same_v<Handle, FakeSharedHandle>)
 		{
-			handle = FakePlugin::HandleManager<Handle>::make_handle();
-			service_api = FakePlugin::HandleManager<Handle>::convert(handle).get();
+			handle = HandleManager::make_handle();
+			service_api = HandleManager::convert(handle).get();
 		}
 
-		FakeSuite<Handle> suite{// simplest_possible
-								FakePlugin::SuiteDecorator<Handle>::decorate(
-									[](MockAPI const & api) { api.simplest_possible(); })};
+		Suite suite = GENERATE(
+			// Lambdas
+			Suite{// simplest_possible
+				  SuiteDecorator::decorate([](MockAPI const & api) { api.simplest_possible(); })},
+
+			// Member functions.
+			Suite{// simplest_possible
+				  SuiteDecorator::decorate(
+					  SuiteDecorator::template mem_fn_ptr<&MockAPI::simplest_possible>)});
 
 		AND_GIVEN("simplest_possible service function expects to be called")
 		{
