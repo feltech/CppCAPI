@@ -87,27 +87,14 @@ public:
 			{
 				return [](Handle handle, auto... args)
 				{
-					const auto do_call = [&]
-					{
-						return fn(
-							*HandleManager<Handle>::convert(handle),
-							*HandleManager<decltype(args)>::convert(
-								std::forward<decltype(args)>(args))...);
-					};
-					using Ret = decltype(do_call());
-
 					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
 					// function that cannot error is free to use its return value for something
-					// other than an error code. So detect if the wrapped function returns a value
-					// and if so attempt to return it from the C function.
-					if constexpr (std::is_void_v<Ret>)
-					{
-						do_call();
-					}
-					else
-					{
-						return HandleManager<Ret>::make_handle(do_call());
-					}
+					// other than an error code. Note that class types will not be auto-converted
+					// to return values (see can_return_* signatures for that).
+					return fn(
+						*HandleManager<Handle>::convert(handle),
+						*HandleManager<decltype(args)>::convert(
+							std::forward<decltype(args)>(args))...);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_return_can_error)
