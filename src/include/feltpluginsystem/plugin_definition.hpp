@@ -63,7 +63,7 @@ struct plugin_definition_args_t<ErrorMap<ArgArgs...>, OtherArgs...>
  * of those are missing, then an empty fallback is assumed.
  */
 template <class... Args>
-class PluginDefinition : detail::plugin_definition_args_t<Args...>
+class PluginDefinition
 {
 	using arg_parse_t = detail::plugin_definition_args_t<Args...>;
 	using ServiceHandleMap = typename arg_parse_t::service_handle_map_t;
