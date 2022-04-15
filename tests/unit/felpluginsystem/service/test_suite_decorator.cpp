@@ -1,112 +1,216 @@
-#include <catch2/catch.hpp>
 #include <memory>
-#include <trompeloeil.hpp>
+
+#include <catch2/catch.hpp>
+#include <catch2/trompeloeil.hpp>
 
 #include <feltpluginsystem/interface.h>
 #include <feltpluginsystem/plugin_definition.hpp>
 #include <feltpluginsystem/service/handle_map.hpp>
 
-class MockAPI
+using trompeloeil::_;
+
+using StubOwnedByServiceHandle = struct StubOwnedByService_t *;
+using StubOwnedByClientHandle = struct StubOwnedByClient_t *;
+using StubSharedHandle = struct StubShared_t *;
+
+struct Stub
 {
-public:
-	MAKE_CONST_MOCK0(simplest_possible, void());
 };
 
-using FakeOwnedByServiceHandle = struct FakeOwnedByService_t *;
-using FakeOwnedByClientHandle = struct FakeOwnedByClient_t *;
-using FakeSharedHandle = struct FakeShared_t *;
+using MockAPIOwnedByServiceHandle = struct MockAPIOwnedByService_t *;
+using MockAPIOwnedByClientHandle = struct MockAPIOwnedByClient_t *;
+using MockAPISharedHandle = struct MockAPIShared_t *;
+
+template <typename>
+struct MockAPI
+{
+	MAKE_CONST_MOCK0(no_return_no_error_no_out_no_args, void());
+	MAKE_CONST_MOCK6(
+		no_return_no_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
+};
 
 template <class Handle>
-struct FakeSuite
+struct MockAPISuite
 {
-	void (*simplest_possible)(Handle);
+	void (*no_return_no_error_no_out_no_args)(Handle);
+	void (*no_return_no_error_no_out_with_args)(
+		Handle,
+		int,
+		StubOwnedByServiceHandle,
+		float,
+		StubOwnedByClientHandle,
+		bool,
+		StubSharedHandle);
 };
 
-using FakePlugin = feltplugin::PluginDefinition<
+using MockAPIPlugin = feltplugin::PluginDefinition<
 	// Service
 	feltplugin::service::HandleMap<
+		// MockAPI:
 		// Owned by service.
 		feltplugin::service::HandleTraits<
-			FakeOwnedByServiceHandle,
-			MockAPI,
+			MockAPIOwnedByServiceHandle,
+			MockAPI<MockAPIOwnedByServiceHandle>,
 			feltplugin::service::HandleOwnershipTag::OwnedByService>,
 		// Owned by client.
 		feltplugin::service::HandleTraits<
-			FakeOwnedByClientHandle,
-			MockAPI,
+			MockAPIOwnedByClientHandle,
+			MockAPI<MockAPIOwnedByClientHandle>,
 			feltplugin::service::HandleOwnershipTag::OwnedByClient>,
-		// Shared between service and client..
-		feltplugin::service::
-			HandleTraits<FakeSharedHandle, MockAPI, feltplugin::service::HandleOwnershipTag::Shared>
+		// Shared between service and client.
+		feltplugin::service::HandleTraits<
+			MockAPISharedHandle,
+			MockAPI<MockAPISharedHandle>,
+			feltplugin::service::HandleOwnershipTag::Shared>,
 
-		>>;
+		// Stub:
+		// Owned by service.
+		feltplugin::service::HandleTraits<
+			StubOwnedByServiceHandle,
+			Stub,
+			feltplugin::service::HandleOwnershipTag::OwnedByService>,
+		// Owned by client.
+		feltplugin::service::HandleTraits<
+			StubOwnedByClientHandle,
+			Stub,
+			feltplugin::service::HandleOwnershipTag::OwnedByClient>,
+		// Shared between service and client.
+		feltplugin::service::
+			HandleTraits<StubSharedHandle, Stub, feltplugin::service::HandleOwnershipTag::Shared>>>;
 
 TEMPLATE_TEST_CASE(
 	"Decorating C++ functions for a C function pointer suite",
 	"",
-	FakeOwnedByServiceHandle,
-	FakeOwnedByClientHandle,
-	FakeSharedHandle)
+	MockAPIOwnedByServiceHandle,
+	MockAPIOwnedByClientHandle,
+	MockAPISharedHandle)
 {
 	GIVEN("A C++ service type its C client handle and function suite")
 	{
 		using Handle = TestType;  // Magic from Catch2 TEMPLATE_TEST_CASE
-		using Suite = FakeSuite<Handle>;
-		using SuiteDecorator = typename FakePlugin::SuiteDecorator<Handle>;
-		using HandleManager = FakePlugin::HandleManager<Handle>;
+		using MockAPI = MockAPI<Handle>;
+		using Suite = MockAPISuite<Handle>;
+		using SuiteDecorator = typename MockAPIPlugin::SuiteDecorator<Handle>;
 
 		Handle handle;
 		MockAPI * service_api;
 
-		if constexpr (std::is_same_v<Handle, FakeOwnedByServiceHandle>)
-		{
-			service_api = new MockAPI;
-			handle = HandleManager::create(*service_api);
-		}
-		else if constexpr (std::is_same_v<Handle, FakeOwnedByClientHandle>)
-		{
-			handle = HandleManager::make_handle();
-			service_api = HandleManager::convert(handle);
-		}
-		else if constexpr (std::is_same_v<Handle, FakeSharedHandle>)
-		{
-			handle = HandleManager::make_handle();
-			service_api = HandleManager::convert(handle).get();
-		}
+		using DescriptionAndSuite = std::pair<std::string_view, Suite>;
 
-		Suite suite = GENERATE(
+		auto const [description, suite] = GENERATE(
 			// Lambdas
-			Suite{// simplest_possible
-				  SuiteDecorator::decorate([](MockAPI const & api) { api.simplest_possible(); })},
+			DescriptionAndSuite{
+				"lambdas",
+				{
+					// no_return_no_error_no_out_no_args
+					SuiteDecorator::decorate([](MockAPI & api)
+											 { api.no_return_no_error_no_out_no_args(); }),
+
+					// no_return_no_error_no_out_primitive_args
+					SuiteDecorator::decorate(
+						[](MockAPI & api, int i, Stub & s1, float f, Stub & s2, bool b, Stub & s3)
+						{ api.no_return_no_error_no_out_with_args(i, s1, f, s2, b, s3); }),
+
+				}},
 
 			// Member functions.
-			Suite{// simplest_possible
-				  SuiteDecorator::decorate(
-					  SuiteDecorator::template mem_fn_ptr<&MockAPI::simplest_possible>)});
+			DescriptionAndSuite{
+				"member functions",
+				{// no_return_no_error_no_out_no_args
+				 SuiteDecorator::decorate(SuiteDecorator::template mem_fn_ptr<
+										  &MockAPI::no_return_no_error_no_out_no_args>),
 
-		AND_GIVEN("simplest_possible service function expects to be called")
+				 // no_return_no_error_no_out_primitive_args
+				 SuiteDecorator::decorate(SuiteDecorator::template mem_fn_ptr<
+										  &MockAPI::no_return_no_error_no_out_with_args>)}});
+
+		INFO("Suite type: " << description);
+
+		if constexpr (std::is_same_v<Handle, MockAPIOwnedByServiceHandle>)
 		{
-			REQUIRE_CALL(*service_api, simplest_possible());
+			service_api = new MockAPI;
+			handle = MockAPIPlugin::HandleManager<Handle>::create(*service_api);
+		}
+		else if constexpr (std::is_same_v<Handle, MockAPIOwnedByClientHandle>)
+		{
+			handle = MockAPIPlugin::HandleManager<Handle>::make_handle();
+			service_api = MockAPIPlugin::HandleManager<Handle>::convert(handle);
+		}
+		else if constexpr (std::is_same_v<Handle, MockAPISharedHandle>)
+		{
+			handle = MockAPIPlugin::HandleManager<Handle>::make_handle();
+			service_api = MockAPIPlugin::HandleManager<Handle>::convert(handle).get();
+		}
+
+		AND_GIVEN("no_return_no_error_no_out_no_args service function expects to be called")
+		{
+			REQUIRE_CALL(*service_api, no_return_no_error_no_out_no_args());
 
 			WHEN("the corresponding suite function is called")
 			{
-				suite.simplest_possible(handle);
+				suite.no_return_no_error_no_out_no_args(handle);
 
 				THEN("service function was called") {}
 			}
 		}
 
-		if constexpr (std::is_same_v<Handle, FakeOwnedByServiceHandle>)
+		AND_GIVEN("stub instances and associated handles to use as convertible parameters")
+		{
+			// Stub instance owned by the service.
+			Stub stubOwnedByService{};
+			StubOwnedByServiceHandle stubOwnedByServiceHandle =
+				MockAPIPlugin::HandleManager<StubOwnedByServiceHandle>::create(stubOwnedByService);
+
+			// Stub instance owned by the client.
+			StubOwnedByClientHandle stubOwnedByClientHandle =
+				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::make_handle();
+			Stub & stubOwnedByClient =
+				*MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+					stubOwnedByClientHandle);
+
+			// Stub instance shared between service and client.
+			feltplugin::SharedPtr<Stub> ptrStubShared = feltplugin::make_shared<Stub>();
+			StubSharedHandle stubSharedHandle =
+				MockAPIPlugin::HandleManager<StubSharedHandle>::create(ptrStubShared);
+			Stub & stubShared = *ptrStubShared;
+
+			AND_GIVEN("no_return_no_error_no_out_with_args service function expects to be called")
+			{
+				REQUIRE_CALL(
+					*service_api, no_return_no_error_no_out_with_args(123, _, 0.234f, _, true, _))
+					.LR_WITH(&_2 == &stubOwnedByService)
+					.LR_WITH(&_4 == &stubOwnedByClient)
+					.LR_WITH(&_6 == &stubShared);
+
+				WHEN("the corresponding suite function is called")
+				{
+					suite.no_return_no_error_no_out_with_args(
+						handle,
+						123,
+						stubOwnedByServiceHandle,
+						0.234f,
+						stubOwnedByClientHandle,
+						true,
+						stubSharedHandle);
+
+					THEN("service function was called") {}
+				}
+			}
+
+			MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(stubOwnedByClientHandle);
+			MockAPIPlugin::HandleManager<StubSharedHandle>::release(stubSharedHandle);
+		}
+		if constexpr (std::is_same_v<Handle, MockAPIOwnedByServiceHandle>)
 		{
 			delete service_api;
 		}
-		else if constexpr (std::is_same_v<Handle, FakeOwnedByClientHandle>)
+		else if constexpr (std::is_same_v<Handle, MockAPIOwnedByClientHandle>)
 		{
-			FakePlugin::HandleManager<Handle>::release(handle);
+			MockAPIPlugin::HandleManager<Handle>::release(handle);
 		}
-		else if constexpr (std::is_same_v<Handle, FakeSharedHandle>)
+		else if constexpr (std::is_same_v<Handle, MockAPISharedHandle>)
 		{
-			FakePlugin::HandleManager<Handle>::release(handle);
+			MockAPIPlugin::HandleManager<Handle>::release(handle);
 		}
 	}
 }

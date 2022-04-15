@@ -164,7 +164,7 @@ public:
 	 */
 	static Handle create(SharedPtr<Class> const & ptr)
 	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
 		static_assert(
 			ptr_type_tag == HandleOwnershipTag::Shared,
 			"Cannot create a shared handle for a non-shared type");
