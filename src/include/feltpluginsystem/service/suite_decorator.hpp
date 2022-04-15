@@ -315,7 +315,7 @@ private:
 	};
 
 	template <std::size_t N, typename... Args>
-	static constexpr auto is_nth_arg_handle_v = is_nth_arg_handle<N, Args...>::value;
+	static constexpr bool is_nth_arg_handle_v = is_nth_arg_handle<N, Args...>::value;
 
 	template <typename... Args>
 	struct is_0th_arg_error : std::false_type
@@ -328,7 +328,7 @@ private:
 	};
 
 	template <typename... Args>
-	static constexpr auto is_0th_arg_error_v = is_0th_arg_error<Args...>::value;
+	static constexpr bool is_0th_arg_error_v = is_0th_arg_error<Args...>::value;
 
 	enum class out_param_sig
 	{
