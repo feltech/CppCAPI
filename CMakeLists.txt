@@ -1,7 +1,52 @@
 # Copyright 2022 David Feltell
 # SPDX-License-Identifier: MIT
 cmake_minimum_required(VERSION 3.21)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 11)
+
+#------------------------------------------------------------
+# Install CPM package manager
+
+set(CPM_DOWNLOAD_VERSION 0.34.0)
+set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+
+if (NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
+	message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
+	file(DOWNLOAD
+		https://github.com/TheLartians/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake
+		${CPM_DOWNLOAD_LOCATION}
+		)
+endif ()
+
+include(${CPM_DOWNLOAD_LOCATION})
+
+
+#------------------------------------------------------------
+# Add project_options CMake library v0.21.0
+
+CPMAddPackage("gh:cpp-best-practices/project_options@0.21.0")
+include(${project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake)
+
+#------------------------------------------------------------
+# Begin project definition.
+
 project(FeltPluginSystem VERSION 1.0.0)
+
+if (FELTPLUGIN_ENABLE_TESTS)
+	# Tests install the project first, so default the install directory to be relative to the build
+	# root. This must come before `dynamic_project_options()`
+	if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND PROJECT_IS_TOP_LEVEL)
+		set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/dist"
+			CACHE PATH "Installation location" FORCE)
+	endif ()
+endif ()
+
+# Too many false positives, especially with templated code.
+set(ENABLE_CPPCHECK_DEFAULT OFF)
+# Generate project_options and project_warnings INTERFACE targets.
+dynamic_project_options()
+
+set(CMAKE_CXX_STANDARD 17)
 
 # For `generate_export_header`.
 include(GenerateExportHeader)
@@ -38,17 +83,9 @@ add_subdirectory(src)
 # Demos/tests
 
 if (FELTPLUGIN_ENABLE_TESTS)
-	# Tests install the project first, so default the install directory to be relative to the build
-	# root.
-	if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND PROJECT_IS_TOP_LEVEL)
-		set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/dist"
-			CACHE PATH "Installation location" FORCE)
-	endif ()
-
 	# Enable CTest target support (`add_test()`).
 	enable_testing()
-
-	add_subdirectory(tests/demos)
+	add_subdirectory(tests)
 endif ()
 
 
