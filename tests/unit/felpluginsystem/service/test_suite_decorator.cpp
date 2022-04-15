@@ -15,6 +15,11 @@ using StubSharedHandle = struct StubShared_t *;
 
 struct Stub
 {
+	int value{0};
+	bool operator==(Stub const & other) const
+	{
+		return other.value == value;
+	}
 };
 
 using MockAPIOwnedByServiceHandle = struct MockAPIOwnedByService_t *;
@@ -72,6 +77,7 @@ struct MockAPI
 {
 	MAKE_CONST_MOCK0(no_return_no_error_no_out_no_args, void());
 	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
+	MAKE_CONST_MOCK0(no_return_no_error_with_out_no_args, Stub());
 	MAKE_CONST_MOCK6(
 		no_return_no_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
 	MAKE_CONST_MOCK6(
@@ -84,6 +90,8 @@ struct MockAPISuite
 	void (*no_return_no_error_no_out_no_args)(Handle);
 
 	int (*with_return_no_error_no_out_no_args)(Handle);
+
+	void (*no_return_no_error_with_out_no_args)(StubOwnedByClientHandle *, Handle);
 
 	void (*no_return_no_error_no_out_with_args)(
 		Handle,
@@ -119,6 +127,10 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_type_t>
 		SuiteDecorator::decorate([](MockAPI & api)
 								 { return api.with_return_no_error_no_out_no_args(); }),
 
+		// no_return_no_error_with_out_no_args
+		SuiteDecorator::decorate([](MockAPI & api)
+								 { return api.no_return_no_error_with_out_no_args(); }),
+
 		// no_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
 			[](MockAPI & api, int i, Stub & s1, float f, Stub & s2, bool b, Stub & s3)
@@ -145,6 +157,10 @@ struct MockAPISuiteImplFixture<THandle, member_function_suite_type_t>
 		// with_return_no_error_no_out_no_args
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_no_args>),
+
+		// no_return_no_error_with_out_no_args
+		SuiteDecorator::decorate(
+			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_with_out_no_args>),
 
 		// no_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
@@ -252,6 +268,31 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				{
 					CHECK(actualReturnValue == expectedReturnValue);
 				}
+			}
+		}
+
+		AND_GIVEN("no_return_no_error_with_out_no_args service function expects to be called")
+		{
+			Stub const expectedReturnValue{789};
+			REQUIRE_CALL(*service_api, no_return_no_error_with_out_no_args())
+				.RETURN(expectedReturnValue);
+
+			WHEN("the corresponding suite function is called")
+			{
+				StubOwnedByClientHandle actualReturnValue;
+				suite.no_return_no_error_with_out_no_args(&actualReturnValue, handle);
+
+				THEN("suite function returns expected value")
+				{
+					Stub const& actualUnpackedReturnValue =
+						*MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+							actualReturnValue);
+					CHECK(actualUnpackedReturnValue == expectedReturnValue);
+					// Check copied not just pointed to.
+					CHECK(&actualUnpackedReturnValue != &expectedReturnValue);
+				}
+
+				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(actualReturnValue);
 			}
 		}
 
