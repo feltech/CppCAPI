@@ -73,6 +73,7 @@ struct MockAPI
 {
 	MAKE_CONST_MOCK0(no_return_no_error_no_out_no_args, void());
 	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
+	MAKE_CONST_MOCK0(no_return_with_error_no_out_no_args, void());
 	MAKE_CONST_MOCK0(no_return_no_error_with_out_no_args, Stub());
 	MAKE_CONST_MOCK6(
 		no_return_no_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
@@ -86,6 +87,8 @@ struct MockAPISuite
 	void (*no_return_no_error_no_out_no_args)(Handle);
 
 	int (*with_return_no_error_no_out_no_args)(Handle);
+
+	fp_ErrorCode (*no_return_with_error_no_out_no_args)(fp_ErrorMessage *, Handle);
 
 	void (*no_return_no_error_with_out_no_args)(StubOwnedByClientHandle *, Handle);
 
@@ -124,6 +127,9 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_type_t>
 		SuiteDecorator::decorate([](MockAPI & api)
 								 { return api.with_return_no_error_no_out_no_args(); }),
 
+		// no_return_with_error_no_out_no_args
+		SuiteDecorator::decorate([](MockAPI & api) { api.no_return_with_error_no_out_no_args(); }),
+
 		// no_return_no_error_with_out_no_args
 		SuiteDecorator::decorate([](MockAPI & api)
 								 { return api.no_return_no_error_with_out_no_args(); }),
@@ -155,6 +161,9 @@ struct MockAPISuiteImplFixture<THandle, member_function_suite_type_t>
 		// with_return_no_error_no_out_no_args
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_no_args>),
+
+		SuiteDecorator::decorate(
+			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_no_out_no_args>),
 
 		// no_return_no_error_with_out_no_args
 		SuiteDecorator::decorate(
@@ -267,6 +276,25 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					CHECK(actualReturnValue == expectedReturnValue);
 				}
 			}
+		}
+
+		AND_GIVEN("no_return_with_error_no_out_no_args service function expects to be called")
+		{
+			REQUIRE_CALL(*service_api, no_return_with_error_no_out_no_args());
+
+			WHEN("the corresponding suite function is called")
+			{
+				std::string storage(500, '\0');
+				fp_ErrorMessage err{storage.capacity(), 0, storage.data()};
+				fp_ErrorCode code = suite.no_return_with_error_no_out_no_args(&err, handle);
+
+				THEN("error is OK")
+				{
+					CHECK(code == fp_ok);
+					CHECK(std::string_view{err.data, err.size}.empty());
+				}
+			}
+
 		}
 
 		AND_GIVEN("no_return_no_error_with_out_no_args service function expects to be called")
