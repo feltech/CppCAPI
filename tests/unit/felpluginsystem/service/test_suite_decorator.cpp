@@ -281,7 +281,6 @@ TEMPLATE_PRODUCT_TEST_CASE(
 		AND_GIVEN("no_return_with_error_no_out_no_args service function expects to be called")
 		{
 			REQUIRE_CALL(*service_api, no_return_with_error_no_out_no_args());
-
 			WHEN("the corresponding suite function is called")
 			{
 				std::string storage(500, '\0');
@@ -294,7 +293,25 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					CHECK(std::string_view{err.data, err.size}.empty());
 				}
 			}
+		}
 
+		GIVEN("no_return_with_error_no_out_no_args service function throws an exception")
+		{
+			REQUIRE_CALL(*service_api, no_return_with_error_no_out_no_args())
+				.THROW(std::domain_error{"Mock domain_error"});
+
+			WHEN("the corresponding suite function is called")
+			{
+				std::string storage(500, '\0');
+				fp_ErrorMessage err{storage.capacity(), 0, storage.data()};
+				fp_ErrorCode code = suite.no_return_with_error_no_out_no_args(&err, handle);
+
+				THEN("error is reported")
+				{
+					CHECK(code == fp_error);
+					CHECK(std::string_view{err.data, err.size} == "Mock domain_error");
+				}
+			}
 		}
 
 		AND_GIVEN("no_return_no_error_with_out_no_args service function expects to be called")
