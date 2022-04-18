@@ -63,12 +63,8 @@ using MockAPIPlugin = feltplugin::PluginDefinition<
 		feltplugin::service::
 			HandleTraits<StubSharedHandle, Stub, feltplugin::service::HandleOwnershipTag::Shared>>>;
 
-struct lambda_suite_type_t
-{
-};
-struct member_function_suite_type_t
-{
-};
+struct lambda_suite_type_t;
+struct member_function_suite_type_t;
 
 template <class, class>
 struct MockAPISuiteImplFixture;
@@ -115,9 +111,10 @@ struct MockAPISuite
 template <class THandle>
 struct MockAPISuiteImplFixture<THandle, lambda_suite_type_t>
 {
+	static constexpr std::string_view suite_type_name = "lambda";
+
 	using Handle = THandle;
 	using SuiteDecorator = typename MockAPIPlugin::SuiteDecorator<Handle>;
-	static constexpr std::string_view suite_type_name = "lambda";
 
 	MockAPISuite<Handle> const suite{
 		// no_return_no_error_no_out_no_args
@@ -145,9 +142,10 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_type_t>
 template <class THandle>
 struct MockAPISuiteImplFixture<THandle, member_function_suite_type_t>
 {
+	static constexpr std::string_view suite_type_name = "member function";
+
 	using Handle = THandle;
 	using SuiteDecorator = typename MockAPIPlugin::SuiteDecorator<Handle>;
-	static constexpr std::string_view suite_type_name = "member function";
 
 	MockAPISuite<Handle> const suite{
 		// no_return_no_error_no_out_no_args
@@ -284,7 +282,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 				THEN("suite function returns expected value")
 				{
-					Stub const& actualUnpackedReturnValue =
+					Stub const & actualUnpackedReturnValue =
 						*MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
 							actualReturnValue);
 					CHECK(actualUnpackedReturnValue == expectedReturnValue);
