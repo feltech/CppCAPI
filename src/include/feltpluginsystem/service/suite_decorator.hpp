@@ -89,8 +89,13 @@ public:
 				{
 					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
 					// function that cannot error is free to use its return value for something
-					// other than an error code. Note that class types will not be auto-converted
-					// to return values (see can_return_* signatures for that).
+					// other than an error code.
+					// Note that class types will not be auto-converted to return values (see
+					// can_return_* signatures for that), since we cannot know for certain the
+					// expected return handle type (the same C++ return type could be associated
+					// with multiple C handle types).
+					// TODO(DF): is there a way around this? One solution would be a (optional)
+					// 	return type template param.
 					return fn(
 						*HandleManager<Handle>::convert(handle),
 						*HandleManager<decltype(args)>::convert(
