@@ -71,7 +71,7 @@ public:
 	template <typename Lambda>
 	static auto decorate(Lambda && lambda)
 	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
 			std::is_empty_v<Lambda>,
 			"Stateful callables (e.g. capturing lambdas) are not supported");
@@ -83,7 +83,7 @@ public:
 			static constexpr out_param_sig sig_type = suite_func_sig_type<decltype(args)...>();
 			static_assert(sig_type != out_param_sig::unrecognised, "Ill-formed C suite function");
 
-			if constexpr (sig_type == out_param_sig::cannot_return_cannot_error)
+			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
 			{
 				return [](Handle handle, auto... args)
 				{
@@ -102,7 +102,7 @@ public:
 							std::forward<decltype(args)>(args))...);
 				}(std::forward<decltype(args)>(args)...);
 			}
-			else if constexpr (sig_type == out_param_sig::cannot_return_can_error)
+			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
 				return [](fp_ErrorMessage * err, Handle handle, auto... args)
 				{
@@ -125,7 +125,7 @@ public:
 					return TErrorMap::wrap_exception(*err, do_call);
 				}(std::forward<decltype(args)>(args)...);
 			}
-			else if constexpr (sig_type == out_param_sig::can_return_cannot_error)
+			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
 			{
 				return [](auto * out, Handle handle, auto... args)
 				{
@@ -139,7 +139,7 @@ public:
 					*out = HandleManager<Out>::make_handle(ret);
 				}(std::forward<decltype(args)>(args)...);
 			}
-			else if constexpr (sig_type == out_param_sig::can_return_can_error)
+			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
 				return [](fp_ErrorMessage * err, auto * out, Handle handle, auto... args)
 				{
@@ -184,14 +184,14 @@ public:
 	template <auto fn>
 	static auto decorate([[maybe_unused]] mem_fn_ptr_t<fn> mem_fn_ptr_const)
 	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		assert_is_valid_handle_type<Handle, Class, Adapter>();
 
 		return [](auto... args)
 		{
 			static constexpr out_param_sig sig_type = suite_func_sig_type<decltype(args)...>();
 			static_assert(sig_type != out_param_sig::unrecognised, "Ill-formed C suite function");
 
-			if constexpr (sig_type == out_param_sig::cannot_return_cannot_error)
+			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
 			{
 				return [](Handle handle, auto... args)
 				{
@@ -216,7 +216,7 @@ public:
 					}
 				}(std::forward<decltype(args)>(args)...);
 			}
-			else if constexpr (sig_type == out_param_sig::cannot_return_can_error)
+			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
 				return [](fp_ErrorMessage * err, Handle handle, auto... args)
 				{
@@ -246,7 +246,7 @@ public:
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
-			else if constexpr (sig_type == out_param_sig::can_return_cannot_error)
+			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
 			{
 				return [](auto * out, Handle handle, auto... args)
 				{
@@ -260,7 +260,7 @@ public:
 					*out = HandleManager<Out>::make_handle(ret);
 				}(std::forward<decltype(args)>(args)...);
 			}
-			else if constexpr (sig_type == out_param_sig::can_return_can_error)
+			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
 				return [](fp_ErrorMessage * err, auto out, Handle handle, auto... args)
 				{
@@ -324,10 +324,10 @@ private:
 
 	enum class out_param_sig
 	{
-		cannot_return_cannot_error,
-		cannot_return_can_error,
-		can_return_cannot_error,
-		can_return_can_error,
+		cannot_output_cannot_error,
+		cannot_output_can_error,
+		can_output_cannot_error,
+		can_output_can_error,
 		unrecognised
 	};
 
@@ -337,22 +337,22 @@ private:
 		if constexpr (is_nth_arg_handle_v<0, Args...>)
 		{
 			// fn(handle, args...) -> T
-			return out_param_sig::cannot_return_cannot_error;
+			return out_param_sig::cannot_output_cannot_error;
 		}
 		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<1, Args...>)
 		{
 			// fn(err, handle, args...) -> code
-			return out_param_sig::cannot_return_can_error;
+			return out_param_sig::cannot_output_can_error;
 		}
 		else if constexpr (!is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<1, Args...>)
 		{
 			// fn(out, handle, args...) -> void
-			return out_param_sig::can_return_cannot_error;
+			return out_param_sig::can_output_cannot_error;
 		}
 		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_v<2, Args...>)
 		{
 			// fn(err, out, handle, args...) -> code
-			return out_param_sig::can_return_can_error;
+			return out_param_sig::can_output_can_error;
 		}
 		return out_param_sig::unrecognised;
 	}

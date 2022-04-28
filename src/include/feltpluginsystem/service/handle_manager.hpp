@@ -20,14 +20,15 @@ namespace feltplugin::service
  *
  * If the Handle type is not found in the service::HandleMap, then Class resolves to Handle
  * (pass-through). If the Handle type is not found in the client::HandleMap, then the
- * Adapter resolves to `std::false_type`.
+ * Adapter resolves to `std::false_type`. These two facts can be used to assert that the Handle
+ * is in the service xor client handle map.
  *
  * @tparam Handle Handle type to check.
  * @tparam Class Native class type that the handle is associated with, if any.
  * @tparam Adapter Adapter class that the handle is associated with, if any.
  */
 template <class Handle, class Class, class Adapter>
-struct assert_is_valid_handle_type
+constexpr void assert_is_valid_handle_type()
 {
 	static_assert(
 		!(std::is_same_v<Handle, Class> && std::is_same_v<Adapter, std::false_type>),
@@ -144,7 +145,7 @@ public:
 	 */
 	static Handle create(Class & obj)
 	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
 			ptr_type_tag == HandleOwnershipTag::OwnedByService,
 			"Cannot create a non-shared non-transferred handle for shared / transferred types");
@@ -164,7 +165,7 @@ public:
 	 */
 	static Handle create(SharedPtr<Class> const & ptr)
 	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
 			ptr_type_tag == HandleOwnershipTag::Shared,
 			"Cannot create a shared handle for a non-shared type");
@@ -184,7 +185,7 @@ public:
 	 */
 	static Handle create(SharedPtr<Class> && ptr)
 	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
 			ptr_type_tag == HandleOwnershipTag::Shared,
 			"Cannot create a shared handle for a non-shared type");
@@ -208,7 +209,7 @@ public:
 	template <typename... Args>
 	static fp_ErrorCode make(fp_ErrorMessage * err, Handle * out, Args... args)
 	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		return TErrorMap::wrap_exception(*err, [&out, &args...] { *out = make_handle(args...); });
 	}
 
@@ -225,7 +226,7 @@ public:
 	 */
 	static void release(Handle handle)
 	{
-		(void)assert_is_valid_handle_type<Handle, Class, Adapter>{};
+		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
 			ptr_type_tag != HandleOwnershipTag::OwnedByService,
 			"Cannot release a handle not owned by client");

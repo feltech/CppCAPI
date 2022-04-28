@@ -63,8 +63,8 @@ using MockAPIPlugin = feltplugin::PluginDefinition<
 		feltplugin::service::
 			HandleTraits<StubSharedHandle, Stub, feltplugin::service::HandleOwnershipTag::Shared>>>;
 
-struct lambda_suite_type_t;
-struct member_function_suite_type_t;
+struct lambda_suite_t;
+struct member_function_suite_t;
 
 template <class, class>
 struct MockAPISuiteImplFixture;
@@ -72,11 +72,11 @@ struct MockAPISuiteImplFixture;
 struct MockAPI
 {
 	MAKE_CONST_MOCK0(no_return_no_error_no_out_no_args, void());
-	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
-	MAKE_CONST_MOCK0(no_return_with_error_no_out_no_args, void());
-	MAKE_CONST_MOCK0(no_return_no_error_with_out_no_args, Stub());
 	MAKE_CONST_MOCK6(
 		no_return_no_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
+	MAKE_CONST_MOCK0(no_return_no_error_with_out_no_args, Stub());
+	MAKE_CONST_MOCK0(no_return_with_error_no_out_no_args, void());
+	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
 	MAKE_CONST_MOCK6(
 		with_return_no_error_no_out_with_args, int(int, Stub &, float, Stub &, bool, Stub &));
 };
@@ -86,12 +86,6 @@ struct MockAPISuite
 {
 	void (*no_return_no_error_no_out_no_args)(Handle);
 
-	int (*with_return_no_error_no_out_no_args)(Handle);
-
-	fp_ErrorCode (*no_return_with_error_no_out_no_args)(fp_ErrorMessage *, Handle);
-
-	void (*no_return_no_error_with_out_no_args)(StubOwnedByClientHandle *, Handle);
-
 	void (*no_return_no_error_no_out_with_args)(
 		Handle,
 		int,
@@ -100,6 +94,12 @@ struct MockAPISuite
 		StubOwnedByClientHandle,
 		bool,
 		StubSharedHandle);
+
+	void (*no_return_no_error_with_out_no_args)(StubOwnedByClientHandle *, Handle);
+
+	fp_ErrorCode (*no_return_with_error_no_out_no_args)(fp_ErrorMessage *, Handle);
+
+	int (*with_return_no_error_no_out_no_args)(Handle);
 
 	int (*with_return_no_error_no_out_with_args)(
 		Handle,
@@ -112,7 +112,7 @@ struct MockAPISuite
 };
 
 template <class THandle>
-struct MockAPISuiteImplFixture<THandle, lambda_suite_type_t>
+struct MockAPISuiteImplFixture<THandle, lambda_suite_t>
 {
 	static constexpr std::string_view suite_type_name = "lambda";
 
@@ -123,21 +123,21 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_type_t>
 		// no_return_no_error_no_out_no_args
 		SuiteDecorator::decorate([](MockAPI & api) { api.no_return_no_error_no_out_no_args(); }),
 
-		// with_return_no_error_no_out_no_args
-		SuiteDecorator::decorate([](MockAPI & api)
-								 { return api.with_return_no_error_no_out_no_args(); }),
-
-		// no_return_with_error_no_out_no_args
-		SuiteDecorator::decorate([](MockAPI & api) { api.no_return_with_error_no_out_no_args(); }),
+		// no_return_no_error_no_out_with_args
+		SuiteDecorator::decorate(
+			[](MockAPI & api, int i, Stub & s1, float f, Stub & s2, bool b, Stub & s3)
+			{ api.no_return_no_error_no_out_with_args(i, s1, f, s2, b, s3); }),
 
 		// no_return_no_error_with_out_no_args
 		SuiteDecorator::decorate([](MockAPI & api)
 								 { return api.no_return_no_error_with_out_no_args(); }),
 
-		// no_return_no_error_no_out_with_args
-		SuiteDecorator::decorate(
-			[](MockAPI & api, int i, Stub & s1, float f, Stub & s2, bool b, Stub & s3)
-			{ api.no_return_no_error_no_out_with_args(i, s1, f, s2, b, s3); }),
+		// no_return_with_error_no_out_no_args
+		SuiteDecorator::decorate([](MockAPI & api) { api.no_return_with_error_no_out_no_args(); }),
+
+		// with_return_no_error_no_out_no_args
+		SuiteDecorator::decorate([](MockAPI & api)
+								 { return api.with_return_no_error_no_out_no_args(); }),
 
 		// with_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
@@ -146,7 +146,7 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_type_t>
 };
 
 template <class THandle>
-struct MockAPISuiteImplFixture<THandle, member_function_suite_type_t>
+struct MockAPISuiteImplFixture<THandle, member_function_suite_t>
 {
 	static constexpr std::string_view suite_type_name = "member function";
 
@@ -158,20 +158,20 @@ struct MockAPISuiteImplFixture<THandle, member_function_suite_type_t>
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_no_out_no_args>),
 
-		// with_return_no_error_no_out_no_args
+		// no_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
-			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_no_args>),
-
-		SuiteDecorator::decorate(
-			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_no_out_no_args>),
+			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_no_out_with_args>),
 
 		// no_return_no_error_with_out_no_args
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_with_out_no_args>),
 
-		// no_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
-			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_no_out_with_args>),
+			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_no_out_no_args>),
+
+		// with_return_no_error_no_out_no_args
+		SuiteDecorator::decorate(
+			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_no_args>),
 
 		// with_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
@@ -229,16 +229,18 @@ struct MockAPIFixture<MockAPISharedHandle, suite_type>
 	}
 };
 
+template <class suite_type>
+using owned_by_service_t = MockAPIFixture<MockAPIOwnedByServiceHandle, suite_type>;
+template <class suite_type>
+using owned_by_client_t = MockAPIFixture<MockAPIOwnedByClientHandle, suite_type>;
+template <class suite_type>
+using owned_by_shared_t = MockAPIFixture<MockAPISharedHandle, suite_type>;
+
 TEMPLATE_PRODUCT_TEST_CASE(
 	"Decorating C++ functions for a C function pointer suite",
 	"",
-	MockAPIFixture,
-	((MockAPIOwnedByServiceHandle, lambda_suite_type_t),
-	 (MockAPIOwnedByServiceHandle, member_function_suite_type_t),
-	 (MockAPIOwnedByClientHandle, lambda_suite_type_t),
-	 (MockAPIOwnedByClientHandle, member_function_suite_type_t),
-	 (MockAPISharedHandle, lambda_suite_type_t),
-	 (MockAPISharedHandle, member_function_suite_type_t)))
+	(owned_by_service_t, owned_by_client_t, owned_by_shared_t),
+	(lambda_suite_t, member_function_suite_t))
 {
 	GIVEN("A C++ service type its C client handle and function suite")
 	{
