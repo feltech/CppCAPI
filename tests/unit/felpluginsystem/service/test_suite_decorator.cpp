@@ -31,7 +31,7 @@ struct MockAPI;
 using MockAPIPlugin = feltplugin::PluginDefinition<
 	// Service
 	feltplugin::service::HandleMap<
-		// MockAPI:
+		// MockAPI - bound to C API for signature tests:
 		// Owned by service.
 		feltplugin::service::HandleTraits<
 			MockAPIOwnedByServiceHandle,
@@ -48,7 +48,7 @@ using MockAPIPlugin = feltplugin::PluginDefinition<
 			MockAPI,
 			feltplugin::service::HandleOwnershipTag::Shared>,
 
-		// Stub:
+		// Stub - used as a (auto-converted) parameter in signature tests:
 		// Owned by service.
 		feltplugin::service::HandleTraits<
 			StubOwnedByServiceHandle,
@@ -75,10 +75,20 @@ struct MockAPI
 	MAKE_CONST_MOCK6(
 		no_return_no_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
 	MAKE_CONST_MOCK0(no_return_no_error_with_out_no_args, Stub());
+	// no_return_no_error_with_out_with_args
 	MAKE_CONST_MOCK0(no_return_with_error_no_out_no_args, void());
+	// no_return_with_error_no_out_with_args
+	// no_return_with_error_with_out_no_args
+	// no_return_with_error_with_out_with_args
 	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
 	MAKE_CONST_MOCK6(
 		with_return_no_error_no_out_with_args, int(int, Stub &, float, Stub &, bool, Stub &));
+	// with_return_no_error_with_out_no_args - N/A mutually exclusive: return/out
+	// with_return_no_error_with_out_with_args - N/A mutually exclusive: return/out
+	// with_return_with_error_no_out_no_args - N/A mutually exclusive: return/error
+	// with_return_with_error_no_out_with_args - N/A mutually exclusive: return/error
+	// with_return_with_error_with_out_no_args - N/A mutually exclusive: return/error/out
+	// with_return_with_error_with_out_with_args - N/A mutually exclusive: return/error/out
 };
 
 template <class Handle>
