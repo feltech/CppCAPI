@@ -85,7 +85,7 @@ public:
 
 			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
 			{
-				return [](Handle handle, auto... args)
+				return [](Handle handle, auto... args) -> auto
 				{
 					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
 					// function that cannot error is free to use its return value for something
@@ -100,11 +100,12 @@ public:
 						*HandleManager<Handle>::convert(handle),
 						*HandleManager<decltype(args)>::convert(
 							std::forward<decltype(args)>(args))...);
-				}(std::forward<decltype(args)>(args)...);
+				}
+				(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
-				return [](fp_ErrorMessage * err, Handle handle, auto... args)
+				return [](fp_ErrorMessage * err, Handle handle, auto... args) -> fp_ErrorCode
 				{
 					const auto do_call = [&]
 					{
@@ -127,7 +128,7 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
 			{
-				return [](auto * out, Handle handle, auto... args)
+				return [](auto * out, Handle handle, auto... args) -> void
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
@@ -142,6 +143,7 @@ public:
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
 				return [](fp_ErrorMessage * err, auto * out, Handle handle, auto... args)
+						   -> fp_ErrorCode
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
