@@ -76,7 +76,9 @@ struct MockAPI
 		no_return_no_error_no_out_with_args,
 		void(int, Stub &, float, Stub &, bool, feltplugin::SharedPtr<Stub> &));
 	MAKE_CONST_MOCK0(no_return_no_error_with_out_no_args, Stub());
-	// no_return_no_error_with_out_with_args
+	MAKE_CONST_MOCK6(
+		no_return_no_error_with_out_with_args,
+		Stub(int, Stub &, float, Stub &, bool, feltplugin::SharedPtr<Stub> &));
 	MAKE_CONST_MOCK0(no_return_with_error_no_out_no_args, void());
 	MAKE_CONST_MOCK6(
 		no_return_with_error_no_out_with_args,
@@ -84,6 +86,9 @@ struct MockAPI
 	// no_return_with_error_no_out_with_args
 	// no_return_with_error_with_out_no_args
 	// no_return_with_error_with_out_with_args
+	MAKE_CONST_MOCK6(
+		no_return_with_error_with_out_with_args,
+		Stub(int, Stub &, float, Stub &, bool, feltplugin::SharedPtr<Stub> &));
 	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
 	MAKE_CONST_MOCK6(
 		with_return_no_error_no_out_with_args,
@@ -112,10 +117,31 @@ struct MockAPISuite
 
 	void (*no_return_no_error_with_out_no_args)(StubOwnedByClientHandle *, Handle);
 
+	void (*no_return_no_error_with_out_with_args)(
+		StubOwnedByClientHandle *,
+		Handle,
+		int,
+		StubOwnedByServiceHandle,
+		float,
+		StubOwnedByClientHandle,
+		bool,
+		StubSharedHandle);
+
 	fp_ErrorCode (*no_return_with_error_no_out_no_args)(fp_ErrorMessage *, Handle);
 
 	fp_ErrorCode (*no_return_with_error_no_out_with_args)(
 		fp_ErrorMessage *,
+		Handle,
+		int,
+		StubOwnedByServiceHandle,
+		float,
+		StubOwnedByClientHandle,
+		bool,
+		StubSharedHandle);
+
+	fp_ErrorCode (*no_return_with_error_with_out_with_args)(
+		fp_ErrorMessage *,
+		StubOwnedByClientHandle *,
 		Handle,
 		int,
 		StubOwnedByServiceHandle,
@@ -162,6 +188,17 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_t>
 		SuiteDecorator::decorate([](MockAPI & api)
 								 { return api.no_return_no_error_with_out_no_args(); }),
 
+		// no_return_no_error_with_out_with_args
+		SuiteDecorator::decorate(
+			[](MockAPI & api,
+			   int i,
+			   Stub & s1,
+			   float f,
+			   Stub & s2,
+			   bool b,
+			   feltplugin::SharedPtr<Stub> & s3)
+			{ return api.no_return_no_error_with_out_with_args(i, s1, f, s2, b, s3); }),
+
 		// no_return_with_error_no_out_no_args
 		SuiteDecorator::decorate([](MockAPI & api) { api.no_return_with_error_no_out_no_args(); }),
 
@@ -175,6 +212,17 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_t>
 			   bool b,
 			   feltplugin::SharedPtr<Stub> & s3)
 			{ api.no_return_with_error_no_out_with_args(i, s1, f, s2, b, s3); }),
+
+		// no_return_with_error_with_out_with_args
+		SuiteDecorator::decorate(
+			[](MockAPI & api,
+			   int i,
+			   Stub & s1,
+			   float f,
+			   Stub & s2,
+			   bool b,
+			   feltplugin::SharedPtr<Stub> & s3)
+			{ return api.no_return_with_error_with_out_with_args(i, s1, f, s2, b, s3); }),
 
 		// with_return_no_error_no_out_no_args
 		SuiteDecorator::decorate([](MockAPI & api)
@@ -220,6 +268,17 @@ struct MockAPISuiteImplFixture<MockAPISharedHandle, lambda_suite_t>
 		SuiteDecorator::decorate([](feltplugin::SharedPtr<MockAPI> & api)
 								 { return api->no_return_no_error_with_out_no_args(); }),
 
+		// no_return_no_error_with_out_with_args
+		SuiteDecorator::decorate(
+			[](feltplugin::SharedPtr<MockAPI> & api,
+			   int i,
+			   Stub & s1,
+			   float f,
+			   Stub & s2,
+			   bool b,
+			   feltplugin::SharedPtr<Stub> & s3)
+			{ return api->no_return_no_error_with_out_with_args(i, s1, f, s2, b, s3); }),
+
 		// no_return_with_error_no_out_no_args
 		SuiteDecorator::decorate([](feltplugin::SharedPtr<MockAPI> & api)
 								 { api->no_return_with_error_no_out_no_args(); }),
@@ -234,6 +293,17 @@ struct MockAPISuiteImplFixture<MockAPISharedHandle, lambda_suite_t>
 			   bool b,
 			   feltplugin::SharedPtr<Stub> & s3)
 			{ api->no_return_with_error_no_out_with_args(i, s1, f, s2, b, s3); }),
+
+		// no_return_with_error_with_out_with_args
+		SuiteDecorator::decorate(
+			[](feltplugin::SharedPtr<MockAPI> & api,
+			   int i,
+			   Stub & s1,
+			   float f,
+			   Stub & s2,
+			   bool b,
+			   feltplugin::SharedPtr<Stub> & s3)
+			{ return api->no_return_with_error_with_out_with_args(i, s1, f, s2, b, s3); }),
 
 		// with_return_no_error_no_out_no_args
 		SuiteDecorator::decorate([](feltplugin::SharedPtr<MockAPI> & api)
@@ -260,17 +330,17 @@ struct MockAPISuiteImplFixture<THandle, member_function_suite_t>
 	using SuiteDecorator = typename MockAPIPlugin::SuiteDecorator<Handle>;
 
 	MockAPISuite<Handle> const suite{
-		// no_return_no_error_no_out_no_args
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_no_out_no_args>),
 
-		// no_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_no_out_with_args>),
 
-		// no_return_no_error_with_out_no_args
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_with_out_no_args>),
+
+		SuiteDecorator::decorate(
+			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_no_error_with_out_with_args>),
 
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_no_out_no_args>),
@@ -278,7 +348,9 @@ struct MockAPISuiteImplFixture<THandle, member_function_suite_t>
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_no_out_with_args>),
 
-		// with_return_no_error_no_out_no_args
+		SuiteDecorator::decorate(
+			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_with_out_with_args>),
+
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_no_args>),
 
@@ -330,8 +402,7 @@ struct MockAPIFixture<MockAPISharedHandle, suite_type>
 	using Handle = typename MockAPISuiteImplFixture<MockAPISharedHandle, suite_type>::Handle;
 
 	Handle handle = MockAPIPlugin::HandleManager<Handle>::make_handle();
-	MockAPI & service_api =
-		*MockAPIPlugin::HandleManager<Handle>::convert(handle);
+	MockAPI & service_api = *MockAPIPlugin::HandleManager<Handle>::convert(handle);
 
 	~MockAPIFixture()
 	{
@@ -494,6 +565,44 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				}
 			}
 
+			AND_GIVEN("no_return_no_error_with_out_with_args service function expects to be called")
+			{
+				Stub const expectedReturnValue{789};
+				REQUIRE_CALL(
+					service_api, no_return_no_error_with_out_with_args(123, _, 0.234f, _, true, _))
+					.LR_WITH(&_2 == &stubOwnedByService)
+					.LR_WITH(&_4 == &stubOwnedByClient)
+					.LR_WITH(&_6 == &ptrStubShared)
+					.RETURN(expectedReturnValue);
+
+				WHEN("the corresponding suite function is called")
+				{
+					StubOwnedByClientHandle actualReturnValue;
+					suite.no_return_no_error_with_out_with_args(
+						&actualReturnValue,
+						handle,
+						123,
+						stubOwnedByServiceHandle,
+						0.234f,
+						stubOwnedByClientHandle,
+						true,
+						stubSharedHandle);
+
+					THEN("suite function returns expected value")
+					{
+						Stub const & actualUnpackedReturnValue =
+							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+								actualReturnValue);
+						CHECK(actualUnpackedReturnValue == expectedReturnValue);
+						// Check copied not just pointed to.
+						CHECK(&actualUnpackedReturnValue != &expectedReturnValue);
+					}
+
+					MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(
+						actualReturnValue);
+				}
+			}
+
 			AND_GIVEN("no_return_with_error_no_out_with_args service function expects to be called")
 			{
 				REQUIRE_CALL(
@@ -525,6 +634,54 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				}
 			}
 
+			AND_GIVEN(
+				"no_return_with_error_with_out_with_args service function expects to be called")
+			{
+				Stub const expectedReturnValue{789};
+				REQUIRE_CALL(
+					service_api,
+					no_return_with_error_with_out_with_args(123, _, 0.234f, _, true, _))
+					.LR_WITH(&_2 == &stubOwnedByService)
+					.LR_WITH(&_4 == &stubOwnedByClient)
+					.LR_WITH(&_6 == &ptrStubShared)
+					.RETURN(expectedReturnValue);
+
+				WHEN("the corresponding suite function is called")
+				{
+					std::string storage(500, '\0');
+					fp_ErrorMessage err{storage.size(), 0, storage.data()};
+					StubOwnedByClientHandle actualReturnValue;
+
+					fp_ErrorCode code = suite.no_return_with_error_with_out_with_args(
+						&err,
+						&actualReturnValue,
+						handle,
+						123,
+						stubOwnedByServiceHandle,
+						0.234f,
+						stubOwnedByClientHandle,
+						true,
+						stubSharedHandle);
+
+					THEN("suite function returns expected value")
+					{
+						// No error.
+						CHECK(code == fp_ok);
+						CHECK(std::string_view{err.data, err.size}.empty());
+						// Return value.
+						Stub const & actualUnpackedReturnValue =
+							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+								actualReturnValue);
+						CHECK(actualUnpackedReturnValue == expectedReturnValue);
+						// Check copied not just pointed to.
+						CHECK(&actualUnpackedReturnValue != &expectedReturnValue);
+					}
+
+					MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(
+						actualReturnValue);
+				}
+			}
+
 			AND_GIVEN("with_return_no_error_no_out_with_args service function expects to be called")
 			{
 				constexpr int expectedReturnValue = 123;
@@ -534,7 +691,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					.LR_WITH(&_2 == &stubOwnedByService)
 					.LR_WITH(&_4 == &stubOwnedByClient)
 					.LR_WITH(&_6 == &ptrStubShared)
-				.RETURN(expectedReturnValue);
+					.RETURN(expectedReturnValue);
 
 				WHEN("the corresponding suite function is called")
 				{
