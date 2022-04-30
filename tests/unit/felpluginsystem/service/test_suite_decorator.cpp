@@ -446,17 +446,17 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 		AND_GIVEN("with_return_no_error_no_out_no_args service function expects to be called")
 		{
-			constexpr int expectedReturnValue = 123;
+			constexpr int expected_return_value = 123;
 			REQUIRE_CALL(service_api, with_return_no_error_no_out_no_args())
-				.RETURN(expectedReturnValue);
+				.RETURN(expected_return_value);
 
 			WHEN("the corresponding suite function is called")
 			{
-				const int actualReturnValue = suite.with_return_no_error_no_out_no_args(handle);
+				const int actual_return_value = suite.with_return_no_error_no_out_no_args(handle);
 
 				THEN("suite function returns expected value")
 				{
-					CHECK(actualReturnValue == expectedReturnValue);
+					CHECK(actual_return_value == expected_return_value);
 				}
 			}
 		}
@@ -499,67 +499,69 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 		AND_GIVEN("no_return_no_error_with_out_no_args service function expects to be called")
 		{
-			Stub const expectedReturnValue{789};
+			Stub const expected_return_value{789};
 			REQUIRE_CALL(service_api, no_return_no_error_with_out_no_args())
-				.RETURN(expectedReturnValue);
+				.RETURN(expected_return_value);
 
 			WHEN("the corresponding suite function is called")
 			{
-				StubOwnedByClientHandle actualReturnValue;
-				suite.no_return_no_error_with_out_no_args(&actualReturnValue, handle);
+				StubOwnedByClientHandle actual_return_value;
+				suite.no_return_no_error_with_out_no_args(&actual_return_value, handle);
 
 				THEN("suite function returns expected value")
 				{
-					Stub const & actualUnpackedReturnValue =
+					Stub const & actual_unpacked_return_value =
 						MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
-							actualReturnValue);
-					CHECK(actualUnpackedReturnValue == expectedReturnValue);
+							actual_return_value);
+					CHECK(actual_unpacked_return_value == expected_return_value);
 					// Check copied not just pointed to.
-					CHECK(&actualUnpackedReturnValue != &expectedReturnValue);
+					CHECK(&actual_unpacked_return_value != &expected_return_value);
 				}
 
-				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(actualReturnValue);
+				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(actual_return_value);
 			}
 		}
 
 		AND_GIVEN("stub instances and associated handles to use as convertible parameters")
 		{
 			// Stub instance owned by the service.
-			Stub stubOwnedByService{};
-			StubOwnedByServiceHandle stubOwnedByServiceHandle =
-				MockAPIPlugin::HandleManager<StubOwnedByServiceHandle>::create(stubOwnedByService);
+			Stub stub_owned_by_service{};
+			StubOwnedByServiceHandle handle_for_stub_owned_by_service =
+				MockAPIPlugin::HandleManager<StubOwnedByServiceHandle>::create(
+					stub_owned_by_service);
 
 			// Stub instance owned by the client.
-			StubOwnedByClientHandle stubOwnedByClientHandle =
+			StubOwnedByClientHandle handle_for_stub_owned_by_client =
 				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::make_handle();
-			Stub & stubOwnedByClient =
+			Stub & stub_owned_by_client =
 				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
-					stubOwnedByClientHandle);
+					handle_for_stub_owned_by_client);
 
 			// Stub instance shared between service and client.
-			StubSharedHandle stubSharedHandle =
+			StubSharedHandle handle_for_stub_owned_by_shared =
 				MockAPIPlugin::HandleManager<StubSharedHandle>::make_handle();
-			feltplugin::SharedPtr<Stub> & ptrStubShared =
-				MockAPIPlugin::HandleManager<StubSharedHandle>::convert(stubSharedHandle);
+			feltplugin::SharedPtr<Stub> & ptr_stub_owned_by_shared =
+				MockAPIPlugin::HandleManager<StubSharedHandle>::convert(
+					handle_for_stub_owned_by_shared);
 
 			AND_GIVEN("no_return_no_error_no_out_with_args service function expects to be called")
 			{
 				REQUIRE_CALL(
 					service_api, no_return_no_error_no_out_with_args(123, _, 0.234f, _, true, _))
-					.LR_WITH(&_2 == &stubOwnedByService)
-					.LR_WITH(&_4 == &stubOwnedByClient)
-					.LR_WITH(&_6 == &ptrStubShared);
+					.LR_WITH(&_2 == &stub_owned_by_service)
+					.LR_WITH(&_4 == &stub_owned_by_client)
+					.LR_WITH(&_6 == &ptr_stub_owned_by_shared);
 
 				WHEN("the corresponding suite function is called")
 				{
 					suite.no_return_no_error_no_out_with_args(
 						handle,
 						123,
-						stubOwnedByServiceHandle,
+						handle_for_stub_owned_by_service,
 						0.234f,
-						stubOwnedByClientHandle,
+						handle_for_stub_owned_by_client,
 						true,
-						stubSharedHandle);
+						handle_for_stub_owned_by_shared);
 
 					THEN("service function was called") {}
 				}
@@ -567,39 +569,39 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 			AND_GIVEN("no_return_no_error_with_out_with_args service function expects to be called")
 			{
-				Stub const expectedReturnValue{789};
+				Stub const expected_return_value{789};
 				REQUIRE_CALL(
 					service_api, no_return_no_error_with_out_with_args(123, _, 0.234f, _, true, _))
-					.LR_WITH(&_2 == &stubOwnedByService)
-					.LR_WITH(&_4 == &stubOwnedByClient)
-					.LR_WITH(&_6 == &ptrStubShared)
-					.RETURN(expectedReturnValue);
+					.LR_WITH(&_2 == &stub_owned_by_service)
+					.LR_WITH(&_4 == &stub_owned_by_client)
+					.LR_WITH(&_6 == &ptr_stub_owned_by_shared)
+					.RETURN(expected_return_value);
 
 				WHEN("the corresponding suite function is called")
 				{
-					StubOwnedByClientHandle actualReturnValue;
+					StubOwnedByClientHandle actual_return_value;
 					suite.no_return_no_error_with_out_with_args(
-						&actualReturnValue,
+						&actual_return_value,
 						handle,
 						123,
-						stubOwnedByServiceHandle,
+						handle_for_stub_owned_by_service,
 						0.234f,
-						stubOwnedByClientHandle,
+						handle_for_stub_owned_by_client,
 						true,
-						stubSharedHandle);
+						handle_for_stub_owned_by_shared);
 
 					THEN("suite function returns expected value")
 					{
-						Stub const & actualUnpackedReturnValue =
+						Stub const & actual_unpacked_return_value =
 							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
-								actualReturnValue);
-						CHECK(actualUnpackedReturnValue == expectedReturnValue);
+								actual_return_value);
+						CHECK(actual_unpacked_return_value == expected_return_value);
 						// Check copied not just pointed to.
-						CHECK(&actualUnpackedReturnValue != &expectedReturnValue);
+						CHECK(&actual_unpacked_return_value != &expected_return_value);
 					}
 
 					MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(
-						actualReturnValue);
+						actual_return_value);
 				}
 			}
 
@@ -607,9 +609,9 @@ TEMPLATE_PRODUCT_TEST_CASE(
 			{
 				REQUIRE_CALL(
 					service_api, no_return_with_error_no_out_with_args(123, _, 0.234f, _, true, _))
-					.LR_WITH(&_2 == &stubOwnedByService)
-					.LR_WITH(&_4 == &stubOwnedByClient)
-					.LR_WITH(&_6 == &ptrStubShared);
+					.LR_WITH(&_2 == &stub_owned_by_service)
+					.LR_WITH(&_4 == &stub_owned_by_client)
+					.LR_WITH(&_6 == &ptr_stub_owned_by_shared);
 
 				WHEN("the corresponding suite function is called")
 				{
@@ -620,11 +622,11 @@ TEMPLATE_PRODUCT_TEST_CASE(
 						&err,
 						handle,
 						123,
-						stubOwnedByServiceHandle,
+						handle_for_stub_owned_by_service,
 						0.234f,
-						stubOwnedByClientHandle,
+						handle_for_stub_owned_by_client,
 						true,
-						stubSharedHandle);
+						handle_for_stub_owned_by_shared);
 
 					THEN("error is OK")
 					{
@@ -637,31 +639,31 @@ TEMPLATE_PRODUCT_TEST_CASE(
 			AND_GIVEN(
 				"no_return_with_error_with_out_with_args service function expects to be called")
 			{
-				Stub const expectedReturnValue{789};
+				Stub const expected_return_value{789};
 				REQUIRE_CALL(
 					service_api,
 					no_return_with_error_with_out_with_args(123, _, 0.234f, _, true, _))
-					.LR_WITH(&_2 == &stubOwnedByService)
-					.LR_WITH(&_4 == &stubOwnedByClient)
-					.LR_WITH(&_6 == &ptrStubShared)
-					.RETURN(expectedReturnValue);
+					.LR_WITH(&_2 == &stub_owned_by_service)
+					.LR_WITH(&_4 == &stub_owned_by_client)
+					.LR_WITH(&_6 == &ptr_stub_owned_by_shared)
+					.RETURN(expected_return_value);
 
 				WHEN("the corresponding suite function is called")
 				{
 					std::string storage(500, '\0');
 					fp_ErrorMessage err{storage.size(), 0, storage.data()};
-					StubOwnedByClientHandle actualReturnValue;
+					StubOwnedByClientHandle actual_return_value;
 
 					fp_ErrorCode code = suite.no_return_with_error_with_out_with_args(
 						&err,
-						&actualReturnValue,
+						&actual_return_value,
 						handle,
 						123,
-						stubOwnedByServiceHandle,
+						handle_for_stub_owned_by_service,
 						0.234f,
-						stubOwnedByClientHandle,
+						handle_for_stub_owned_by_client,
 						true,
-						stubSharedHandle);
+						handle_for_stub_owned_by_shared);
 
 					THEN("suite function returns expected value")
 					{
@@ -669,50 +671,52 @@ TEMPLATE_PRODUCT_TEST_CASE(
 						CHECK(code == fp_ok);
 						CHECK(std::string_view{err.data, err.size}.empty());
 						// Return value.
-						Stub const & actualUnpackedReturnValue =
+						Stub const & actual_unpacked_return_value =
 							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
-								actualReturnValue);
-						CHECK(actualUnpackedReturnValue == expectedReturnValue);
+								actual_return_value);
+						CHECK(actual_unpacked_return_value == expected_return_value);
 						// Check copied not just pointed to.
-						CHECK(&actualUnpackedReturnValue != &expectedReturnValue);
+						CHECK(&actual_unpacked_return_value != &expected_return_value);
 					}
 
 					MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(
-						actualReturnValue);
+						actual_return_value);
 				}
 			}
 
 			AND_GIVEN("with_return_no_error_no_out_with_args service function expects to be called")
 			{
-				constexpr int expectedReturnValue = 123;
+				constexpr int expected_return_value = 123;
 
 				REQUIRE_CALL(
 					service_api, with_return_no_error_no_out_with_args(123, _, 0.234f, _, true, _))
-					.LR_WITH(&_2 == &stubOwnedByService)
-					.LR_WITH(&_4 == &stubOwnedByClient)
-					.LR_WITH(&_6 == &ptrStubShared)
-					.RETURN(expectedReturnValue);
+					.LR_WITH(&_2 == &stub_owned_by_service)
+					.LR_WITH(&_4 == &stub_owned_by_client)
+					.LR_WITH(&_6 == &ptr_stub_owned_by_shared)
+					.RETURN(expected_return_value);
 
 				WHEN("the corresponding suite function is called")
 				{
-					const int actualReturnValue = suite.with_return_no_error_no_out_with_args(
+					const int actual_return_value = suite.with_return_no_error_no_out_with_args(
 						handle,
 						123,
-						stubOwnedByServiceHandle,
+						handle_for_stub_owned_by_service,
 						0.234f,
-						stubOwnedByClientHandle,
+						handle_for_stub_owned_by_client,
 						true,
-						stubSharedHandle);
+						handle_for_stub_owned_by_shared);
 
 					THEN("suite function returns expected value")
 					{
-						CHECK(actualReturnValue == expectedReturnValue);
+						CHECK(actual_return_value == expected_return_value);
 					}
 				}
 			}
 
-			MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(stubOwnedByClientHandle);
-			MockAPIPlugin::HandleManager<StubSharedHandle>::release(stubSharedHandle);
+			MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(
+				handle_for_stub_owned_by_client);
+			MockAPIPlugin::HandleManager<StubSharedHandle>::release(
+				handle_for_stub_owned_by_shared);
 		}
 	}
 }
