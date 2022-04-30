@@ -444,20 +444,28 @@ TEMPLATE_PRODUCT_TEST_CASE(
 			}
 		}
 
-		AND_GIVEN("with_return_no_error_no_out_no_args service function expects to be called")
+		AND_GIVEN("no_return_no_error_with_out_no_args service function expects to be called")
 		{
-			constexpr int expected_return_value = 123;
-			REQUIRE_CALL(service_api, with_return_no_error_no_out_no_args())
+			Stub const expected_return_value{789};
+			REQUIRE_CALL(service_api, no_return_no_error_with_out_no_args())
 				.RETURN(expected_return_value);
 
 			WHEN("the corresponding suite function is called")
 			{
-				const int actual_return_value = suite.with_return_no_error_no_out_no_args(handle);
+				StubOwnedByClientHandle actual_return_value;
+				suite.no_return_no_error_with_out_no_args(&actual_return_value, handle);
 
 				THEN("suite function returns expected value")
 				{
-					CHECK(actual_return_value == expected_return_value);
+					Stub const & actual_unpacked_return_value =
+						MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+							actual_return_value);
+					CHECK(actual_unpacked_return_value == expected_return_value);
+					// Check copied not just pointed to.
+					CHECK(&actual_unpacked_return_value != &expected_return_value);
 				}
+
+				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(actual_return_value);
 			}
 		}
 
@@ -497,28 +505,20 @@ TEMPLATE_PRODUCT_TEST_CASE(
 			}
 		}
 
-		AND_GIVEN("no_return_no_error_with_out_no_args service function expects to be called")
+		AND_GIVEN("with_return_no_error_no_out_no_args service function expects to be called")
 		{
-			Stub const expected_return_value{789};
-			REQUIRE_CALL(service_api, no_return_no_error_with_out_no_args())
+			constexpr int expected_return_value = 123;
+			REQUIRE_CALL(service_api, with_return_no_error_no_out_no_args())
 				.RETURN(expected_return_value);
 
 			WHEN("the corresponding suite function is called")
 			{
-				StubOwnedByClientHandle actual_return_value;
-				suite.no_return_no_error_with_out_no_args(&actual_return_value, handle);
+				const int actual_return_value = suite.with_return_no_error_no_out_no_args(handle);
 
 				THEN("suite function returns expected value")
 				{
-					Stub const & actual_unpacked_return_value =
-						MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
-							actual_return_value);
-					CHECK(actual_unpacked_return_value == expected_return_value);
-					// Check copied not just pointed to.
-					CHECK(&actual_unpacked_return_value != &expected_return_value);
+					CHECK(actual_return_value == expected_return_value);
 				}
-
-				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(actual_return_value);
 			}
 		}
 
