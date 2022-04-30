@@ -97,8 +97,8 @@ public:
 					// TODO(DF): is there a way around this? One solution would be a (optional)
 					// 	return type template param.
 					return fn(
-						*HandleManager<Handle>::convert(handle),
-						*HandleManager<decltype(args)>::convert(
+						HandleManager<Handle>::convert(handle),
+						HandleManager<decltype(args)>::convert(
 							std::forward<decltype(args)>(args))...);
 				}
 				(std::forward<decltype(args)>(args)...);
@@ -110,8 +110,8 @@ public:
 					const auto do_call = [&]
 					{
 						return fn(
-							*HandleManager<Handle>::convert(handle),
-							*HandleManager<decltype(args)>::convert(
+							HandleManager<Handle>::convert(handle),
+							HandleManager<decltype(args)>::convert(
 								std::forward<decltype(args)>(args))...);
 					};
 
@@ -133,8 +133,8 @@ public:
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					auto const ret =
-						fn(*HandleManager<Handle>::convert(handle),
-						   *HandleManager<decltype(args)>::convert(
+						fn(HandleManager<Handle>::convert(handle),
+						   HandleManager<decltype(args)>::convert(
 							   std::forward<decltype(args)>(args))...);
 
 					*out = HandleManager<Out>::make_handle(ret);
@@ -152,8 +152,8 @@ public:
 						[handle, &out, &args...]
 						{
 							auto const ret =
-								fn(*HandleManager<Handle>::convert(handle),
-								   *HandleManager<decltype(args)>::convert(
+								fn(HandleManager<Handle>::convert(handle),
+								   HandleManager<decltype(args)>::convert(
 									   std::forward<decltype(args)>(args))...);
 
 							*out = HandleManager<Out>::make_handle(ret);
@@ -200,8 +200,8 @@ public:
 					const auto do_call = [&]
 					{
 						return std::mem_fn(fn)(
-							*HandleManager<Handle>::convert(handle),
-							*HandleManager<decltype(args)>::convert(
+							HandleManager<Handle>::convert(handle),
+							HandleManager<decltype(args)>::convert(
 								std::forward<decltype(args)>(args))...);
 					};
 					using Ret = decltype(do_call());
@@ -225,8 +225,8 @@ public:
 					const auto do_call = [&]
 					{
 						return std::mem_fn(fn)(
-							*HandleManager<Handle>::convert(handle),
-							*HandleManager<decltype(args)>::convert(
+							HandleManager<Handle>::convert(handle),
+							HandleManager<decltype(args)>::convert(
 								std::forward<decltype(args)>(args))...);
 					};
 					return TErrorMap::wrap_exception(
@@ -255,8 +255,8 @@ public:
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					auto const ret = std::mem_fn(fn)(
-						*HandleManager<Handle>::convert(handle),
-						*HandleManager<decltype(args)>::convert(
+						HandleManager<Handle>::convert(handle),
+						HandleManager<decltype(args)>::convert(
 							std::forward<decltype(args)>(args))...);
 
 					*out = HandleManager<Out>::make_handle(ret);
@@ -273,8 +273,8 @@ public:
 						[handle, &out, &args...]
 						{
 							auto const ret = std::mem_fn(fn)(
-								*HandleManager<Handle>::convert(handle),
-								*HandleManager<decltype(args)>::convert(
+								HandleManager<Handle>::convert(handle),
+								HandleManager<decltype(args)>::convert(
 									std::forward<decltype(args)>(args))...);
 
 							*out = HandleManager<Out>::make_handle(ret);

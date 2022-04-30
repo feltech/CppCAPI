@@ -4,8 +4,8 @@
 
 #include <feltpluginsystem-demo-string_map/interface.h>
 
-#include "plugin_definition.hpp"
 #include "host_export.h"
+#include "plugin_definition.hpp"
 
 namespace
 {
@@ -79,12 +79,12 @@ extern "C"
 
 			.release = &Converter::release,
 
-			.insert =
-				Decorator::decorate([](StringDict & self, String key, String value)
-									{ self.insert_or_assign(std::move(key), std::move(value)); }),
+			.insert = Decorator::decorate(
+				[](feltplugin::SharedPtr<StringDict> & self, String key, String value)
+				{ self->insert_or_assign(std::move(key), std::move(value)); }),
 
-			.at = Decorator::decorate([](StringDict const & self, String const & key)
-									  { return self.at(key); })
+			.at = Decorator::decorate([](feltplugin::SharedPtr<StringDict> const & self,
+										 String const & key) { return self->at(key); })
 
 		};
 	}

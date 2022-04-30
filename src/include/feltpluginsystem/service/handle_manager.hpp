@@ -59,9 +59,10 @@ public:
 	 * Convert an opaque handle to a concrete instance.
 	 *
 	 * The behaviour of this function varies depending on `ptr_type_tag` in our HandleTraits.
-	 * However, a dereferencable object is always returned, which when dereferenced yields the
-	 * concrete object. This can be either the original object that is associated with the handle,
-	 * or a client adapter class that wraps the handle.
+	 * However, (a reference to) a concrete object is always returned. This can be either the
+	 * original object that is associated with the handle, or a client adapter class that wraps the
+	 * handle, or failing that will pass through the handle unconverted (i.e. assume it's a native
+	 * C type).
 	 *
 	 * @tparam Handle Type of handle. Required to enable forwarding references.
 	 * @param handle Opaque handle to convert.
@@ -75,7 +76,7 @@ public:
 			ptr_type_tag == HandleOwnershipTag::OwnedByClient ||
 			ptr_type_tag == HandleOwnershipTag::OwnedByService)
 		{
-			return reinterpret_cast<Class *>(handle);
+			return *reinterpret_cast<Class *>(handle);
 		}
 		else if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{
@@ -86,14 +87,12 @@ public:
 			if constexpr (std::is_same_v<Adapter, std::false_type>)
 			{
 				// Native C type.
-				return &handle;
+				return std::forward<Handle>(handle);
 			}
 			else
 			{
-				// Client handle type. Create adapter object and return a dereferencable object that
-				// resolves to the adapter. Messy, but necessary to be consistent with other code
-				// paths.
-				return Dereferenceable<Adapter>{Adapter{handle}};
+				// Client handle type.
+				return Adapter{handle};
 			}
 		}
 	}
@@ -244,17 +243,5 @@ public:
 			delete reinterpret_cast<Class *>(handle);
 		}
 	}
-
-private:
-	template <class T>
-	struct Dereferenceable
-	{
-		Dereferenceable(Dereferenceable const &) = delete;
-		T t;
-		T operator*() &&
-		{
-			return std::move(t);
-		}
-	};
 };
 }  // namespace feltplugin::service
