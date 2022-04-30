@@ -48,6 +48,20 @@ private:
 			"mem_fn_ptr must only be used with member function pointers");
 	};
 
+	template <typename Fn, typename... Args>
+	static constexpr void assert_is_invokable(Fn fn, Handle handle, Args... args)
+	{
+		using is_callable_invokable_with_converted_args = std::is_invocable<
+			decltype(std::forward<Fn>(fn)),
+			decltype(HandleManager<Handle>::convert(std::forward<Handle>(handle))),
+			decltype(HandleManager<decltype(args)>::convert(
+				std::forward<decltype(args)>(args)))...>;
+
+		static_assert(
+			is_callable_invokable_with_converted_args::value,
+			"Callable cannot be invoked with resolved suite function args");
+	}
+
 public:
 	template <auto fn>
 	static constexpr mem_fn_ptr_t<fn> mem_fn_ptr{};
@@ -87,6 +101,9 @@ public:
 			{
 				return [](Handle handle, auto... args) -> auto
 				{
+					assert_is_invokable(
+						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
+
 					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
 					// function that cannot error is free to use its return value for something
 					// other than an error code.
@@ -107,6 +124,9 @@ public:
 			{
 				return [](fp_ErrorMessage * err, Handle handle, auto... args) -> fp_ErrorCode
 				{
+					assert_is_invokable(
+						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
+
 					const auto do_call = [&]
 					{
 						return fn(
@@ -130,6 +150,8 @@ public:
 			{
 				return [](auto * out, Handle handle, auto... args) -> void
 				{
+					assert_is_invokable(
+						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					auto const ret =
@@ -145,6 +167,9 @@ public:
 				return [](fp_ErrorMessage * err, auto * out, Handle handle, auto... args)
 						   -> fp_ErrorCode
 				{
+					assert_is_invokable(
+						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
+
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					return TErrorMap::wrap_exception(
