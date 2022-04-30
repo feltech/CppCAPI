@@ -6,7 +6,7 @@
 #ifndef feltplugin_handles_h
 #define feltplugin_handles_h
 
-#include <cstddef>
+#include <stddef.h> // NOLINT(modernize-deprecated-headers)
 
 #ifdef __cplusplus
 extern "C"
