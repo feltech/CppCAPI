@@ -608,6 +608,43 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				}
 			}
 
+			AND_GIVEN(
+				"no_return_with_error_with_out_with_args service function throws an exception")
+			{
+				REQUIRE_CALL(
+					service_api,
+					no_return_with_error_with_out_with_args(123, _, 0.234f, _, true, _))
+					.LR_WITH(&_2 == &stub_owned_by_service)
+					.LR_WITH(&_4 == &stub_owned_by_client)
+					.LR_WITH(&_6 == &stub_owned_by_shared)
+					.THROW(std::domain_error{"Mock domain_error"});
+
+				WHEN("the corresponding suite function is called")
+				{
+					std::string storage(500, '\0');
+					fp_ErrorMessage err{storage.size(), 0, storage.data()};
+					StubOwnedByClientHandle actual_return_value;
+
+					fp_ErrorCode code = suite.no_return_with_error_with_out_with_args(
+						&err,
+						&actual_return_value,
+						handle,
+						123,
+						handle_for_stub_owned_by_service,
+						0.234f,
+						handle_for_stub_owned_by_client,
+						true,
+						handle_for_stub_owned_by_shared);
+
+					THEN("suite function returns expected value")
+					{
+						// No error.
+						CHECK(code == fp_error);
+						CHECK(std::string_view{err.data, err.size} == "Mock domain_error");
+					}
+				}
+			}
+
 			AND_GIVEN("with_return_no_error_no_out_with_args service function expects to be called")
 			{
 				constexpr int expected_return_value = 123;
