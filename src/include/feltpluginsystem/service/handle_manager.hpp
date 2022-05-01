@@ -80,7 +80,7 @@ public:
 		}
 		else if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{
-			return *reinterpret_cast<SharedPtr<Class> *>(handle);
+			return **reinterpret_cast<SharedPtr<Class> *>(handle);
 		}
 		else if constexpr (ptr_type_tag == HandleOwnershipTag::Unrecognized)
 		{
