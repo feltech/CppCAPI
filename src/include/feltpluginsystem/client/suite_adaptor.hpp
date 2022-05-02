@@ -151,7 +151,7 @@ protected:
 		//				"Cannot `create` a handle adapter when no function pointer suite is
 		// assigned."};
 		fp_ErrorCode code;
-		fp_ErrorMessage err{err_storage_.capacity(), 0, err_storage_.data()};
+		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
 
 		code = suite_.create(&err, &handle_, std::forward<Args>(args)...);
 		throw_on_error(code, err);
@@ -177,7 +177,7 @@ protected:
 	{
 		Ret ret;
 		fp_ErrorCode code;
-		fp_ErrorMessage err{err_storage_.capacity(), 0, err_storage_.data()};
+		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
 
 		code = fn(&err, &ret, handle_, std::forward<Rest>(args)...);
 		throw_on_error(code, err);
@@ -201,7 +201,7 @@ protected:
 	void call(fp_ErrorCode (*fn)(fp_ErrorMessage *, Handle, Args...), Rest &&... args) const
 	{
 		fp_ErrorCode code;
-		fp_ErrorMessage err{err_storage_.capacity(), 0, err_storage_.data()};
+		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
 
 		code = fn(&err, handle_, std::forward<Rest>(args)...);
 		throw_on_error(code, err);
