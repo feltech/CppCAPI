@@ -3,7 +3,7 @@
 #ifndef feltplugin_demo_handles_h
 #define feltplugin_demo_handles_h
 
-#include <cstddef>
+#include <stddef.h> // NOLINT(modernize-deprecated-headers)
 
 #include <feltpluginsystem/interface.h>
 
