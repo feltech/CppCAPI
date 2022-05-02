@@ -80,9 +80,7 @@ struct MockAPI
 	MAKE_CONST_MOCK0(no_return_with_error_no_out_no_args, void());
 	MAKE_CONST_MOCK6(
 		no_return_with_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
-	// no_return_with_error_no_out_with_args
 	// no_return_with_error_with_out_no_args
-	// no_return_with_error_with_out_with_args
 	MAKE_CONST_MOCK6(
 		no_return_with_error_with_out_with_args, Stub(int, Stub &, float, Stub &, bool, Stub &));
 	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
