@@ -7,8 +7,10 @@
 
 #include <stdexcept>
 
-#include <feltpluginsystem/interface.h>
-#include <feltpluginsystem/error_map.hpp>
+#include "../interface.h"
+#include "../error_map.hpp"
+#include "../service/handle_manager.hpp"
+
 
 namespace feltplugin::client
 {
@@ -16,23 +18,28 @@ namespace feltplugin::client
  * Base class for adapters wrapping opaque handles on the client.
  *
  * @tparam THandle Opaque handle type.
- * @tparam THandleMap HandleMap detailing mapping of handles to wrapper classes.
+ * @tparam TServiceHandleMap HandleMap detailing mapping of handles to instances.
+ * @tparam TClientHandleMap HandleMap detailing mapping of handles to wrapper classes.
  * @tparam TErrorMap ErrorMap detailing mapping of exceptions to error codes.
  */
-template <class THandle, class THandleMap, class TErrorMap>
+template <class THandle, class TServiceHandleMap, class TClientHandleMap, class TErrorMap>
 struct SuiteAdapter
 {
 	static constexpr std::size_t default_error_capacity = 500;
 
+	template <class Handle>
+	using HandleManager = service::HandleManager<
+	        Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
+
 protected:
 	/// Convenience for referring to this base class in subclasses.
-	using Base = SuiteAdapter<THandle, THandleMap, TErrorMap>;
+	using Base = SuiteAdapter<THandle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 public:
 	/// Opaque handle type.
 	using Handle = THandle;
 	/// C function pointer suite associated with the handle.
-	using Suite = typename THandleMap::template suite_from_handle<THandle>;
+	using Suite = typename TClientHandleMap::template suite_from_handle<THandle>;
 	/// Signature of function used to construct a function pointer suite for the handle.
 	using SuiteFactory = Suite (*)();
 
@@ -44,7 +51,7 @@ protected:
 	 * constructor.
 	 */
 	static constexpr SuiteFactory ksuite_factory =
-		THandleMap::template suite_factory_from_handle<THandle>();
+		TClientHandleMap::template suite_factory_from_handle<THandle>();
 
 public:
 	/**
@@ -150,11 +157,7 @@ protected:
 		//			throw std::invalid_argument{
 		//				"Cannot `create` a handle adapter when no function pointer suite is
 		// assigned."};
-		fp_ErrorCode code;
-		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
-
-		code = suite_.create(&err, &handle_, std::forward<Args>(args)...);
-		throw_on_error(code, err);
+		call(suite_.create, std::forward<Args>(args)...);
 	}
 
 	/**
@@ -179,7 +182,7 @@ protected:
 		fp_ErrorCode code;
 		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
 
-		code = fn(&err, &ret, handle_, std::forward<Rest>(args)...);
+		code = fn(&err, &ret, handle_, as_handle<Args>(std::forward<Rest>(args))...);
 		throw_on_error(code, err);
 		return ret;
 	}
@@ -203,7 +206,7 @@ protected:
 		fp_ErrorCode code;
 		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
 
-		code = fn(&err, handle_, std::forward<Rest>(args)...);
+		code = fn(&err, handle_, as_handle<Args>(std::forward<Rest>(args))...);
 		throw_on_error(code, err);
 	}
 
@@ -221,11 +224,11 @@ protected:
 	template <class... Args, class... Rest>
 	void call(void (*fn)(Handle, Args...), Rest &&... args) const
 	{
-		fn(handle_, std::forward<Rest>(args)...);
+		fn(handle_, as_handle<Args>(std::forward<Rest>(args))...);
 	}
 
 	/**
-	 * Call a suite function that has arguments nor return value and cannot error.
+	 * Call a suite function that has no arguments nor return value and cannot error.
 	 *
 	 * The handle is injected.
 	 *
@@ -286,5 +289,44 @@ private:
 	struct has_release_t<T, decltype(T::release, void())> : std::true_type
 	{
 	};
+
+
+	template <class ToRef, class FromRef>
+	static constexpr decltype(auto) as_handle(FromRef&& obj)
+	{
+		using From = std::decay_t<FromRef>;
+		using To = std::decay_t<ToRef>;
+
+		if constexpr (std::is_constructible_v<To, From> && HandleManager<To>::is_client())
+		{
+			// Adapter class with (explicit) conversion operator back to handle that it wraps.
+			return static_cast<To>(obj);
+		}
+		else if constexpr (HandleManager<From>::is_managed())
+		{
+			// Is already a handle.
+			return obj;
+		}
+		else if constexpr (HandleManager<To>::is_managed())
+		{
+			// Is not a handle, but can be.
+			return HandleManager<To>::create(std::forward<FromRef>(obj));
+		}
+		else
+		{
+			// Is not a handle, and cannot be converted to one.
+			return std::forward<FromRef>(obj);
+		}
+	}
+
+	template <class... Args, class... Rest>
+	void call(fp_ErrorCode (*fn)(fp_ErrorMessage *, Handle*, Args...), Rest &&... args)
+	{
+		fp_ErrorCode code;
+		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
+
+		code = fn(&err, &handle_, as_handle<Args>(std::forward<Rest>(args))...);
+		throw_on_error(code, err);
+	}
 };
 }  // namespace feltplugin::client

@@ -55,6 +55,17 @@ private:
 		TServiceHandleMap::template ownersihp_tag_from_handle<Handle>();
 
 public:
+
+	static constexpr bool is_managed()
+	{
+		return ptr_type_tag != HandleOwnershipTag::Unrecognized;
+	}
+
+	static constexpr bool is_client()
+	{
+		return !std::is_same_v<Adapter, std::false_type>;
+	}
+
 	/**
 	 * Convert an opaque handle to a concrete instance.
 	 *
@@ -84,15 +95,15 @@ public:
 		}
 		else if constexpr (ptr_type_tag == HandleOwnershipTag::Unrecognized)
 		{
-			if constexpr (std::is_same_v<Adapter, std::false_type>)
-			{
-				// Native C type.
-				return std::forward<Handle>(handle);
-			}
-			else
+			if constexpr (is_client())
 			{
 				// Client handle type.
 				return Adapter{handle};
+			}
+			else
+			{
+				// Native C type.
+				return std::forward<Handle>(handle);
 			}
 		}
 	}

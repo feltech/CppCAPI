@@ -10,7 +10,7 @@ namespace feltpluginsystemdemoplugin::client
 String::String(client::StringView const & str)
 {
 	Base::create();
-	call(suite_.assign_StringView, static_cast<fpdemo_StringView_h>(str));
+	call(suite_.assign_StringView, str);
 }
 
 String::String(char const * str)
@@ -62,11 +62,11 @@ StringDict::StringDict()
 
 String StringDict::at(String const & key)
 {
-	return String{call(suite_.at, static_cast<fpdemo_String_h>(key))};
+	return String{call(suite_.at, key)};
 }
 
 void StringDict::insert(String const & key, String const & value)
 {
-	call(suite_.insert, static_cast<fpdemo_String_h>(key), static_cast<fpdemo_String_h>(value));
+	call(suite_.insert, key, value);
 }
 }  // namespace feltpluginsystemdemoplugin::client

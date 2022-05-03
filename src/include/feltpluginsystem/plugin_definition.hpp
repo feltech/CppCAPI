@@ -80,6 +80,6 @@ public:
 		service::HandleManager<Handle, ServiceHandleMap, ClientHandleMap, ErrorMap>;
 
 	template <class Handle>
-	using SuiteAdapter = client::SuiteAdapter<Handle, ClientHandleMap, ErrorMap>;
+	using SuiteAdapter = client::SuiteAdapter<Handle, ServiceHandleMap, ClientHandleMap, ErrorMap>;
 };
 }  // namespace feltplugin
