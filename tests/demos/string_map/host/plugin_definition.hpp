@@ -3,11 +3,11 @@
 #pragma once
 #include <stdexcept>
 
-#include <feltpluginsystem/plugin_definition.hpp>
+#include <cppcapi/plugin_definition.hpp>
 
-#include <feltpluginsystem-demo-string_map/interface.h>
+#include <cppcapi-demo-string_map/interface.h>
 
-namespace feltpluginsystemdemohost
+namespace cppcapidemohost
 {
 namespace client
 {
@@ -21,38 +21,38 @@ class String;
 class StringDict;
 }  // namespace service
 
-using Plugin = feltplugin::PluginDefinition<
+using Plugin = cppcapi::PluginDefinition<
 	// Service
-	feltplugin::service::HandleMap<
+	cppcapi::service::HandleMap<
 		// StringView
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			fpdemo_StringView_h,
 			service::StringView,
-			feltplugin::service::HandleOwnershipTag::OwnedByService>,
+			cppcapi::service::HandleOwnershipTag::OwnedByService>,
 
 		// String
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			fpdemo_String_h,
 			service::String,
-			feltplugin::service::HandleOwnershipTag::OwnedByClient>,
+			cppcapi::service::HandleOwnershipTag::OwnedByClient>,
 
 		// StringDict
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			fpdemo_StringDict_h,
 			service::StringDict,
-			feltplugin::service::HandleOwnershipTag::Shared>>,
+			cppcapi::service::HandleOwnershipTag::Shared>>,
 
 	// Client
-	feltplugin::client::HandleMap<
+	cppcapi::client::HandleMap<
 		// Worker
-		feltplugin::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, client::Worker>>,
+		cppcapi::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, client::Worker>>,
 
 	// Errors
-	feltplugin::ErrorMap<
+	cppcapi::ErrorMap<
 		// Out of range - e.g. map.at(...).
-		feltplugin::ErrorTraits<std::out_of_range, 100>,
+		cppcapi::ErrorTraits<std::out_of_range, 100>,
 
 		// Invalid argument.
-		feltplugin::ErrorTraits<std::invalid_argument, 101>>>;
+		cppcapi::ErrorTraits<std::invalid_argument, 101>>>;
 
-}  // namespace feltpluginsystemdemohost
+}  // namespace cppcapidemohost

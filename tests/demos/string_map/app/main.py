@@ -8,9 +8,9 @@ import ctypes
 import os
 from ctypes import CFUNCTYPE, c_char_p, c_int, c_void_p, c_char
 
-lib_path = os.getenv("FELTPLUGINSYSTEM_HOST_PATH")
-assert lib_path is not None, "FELTPLUGINSYSTEM_HOST_PATH must be set"
-lib_path = os.path.join(lib_path, "libfeltpluginsystem-demo-string_map-host.so")
+lib_path = os.getenv("CPPCAPI_HOST_PATH")
+assert lib_path is not None, "CPPCAPI_HOST_PATH must be set"
+lib_path = os.path.join(lib_path, "libcppcapi-demo-string_map-host.so")
 
 host = None
 

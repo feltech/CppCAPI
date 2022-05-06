@@ -52,7 +52,7 @@ function(set_default_standalone_host_target_properties target_name)
 	target_link_libraries(
 		${target_name}
 		PUBLIC
-		feltpluginsystem
+		cppcapi
 	)
 	install(
 		TARGETS ${target_name}
@@ -69,7 +69,7 @@ function(set_default_host_lib_target_properties target_name)
 
 	generate_export_header(
 		${target_name}
-		BASE_NAME FELTPLUGINSYSTEM_DEMO_HOST
+		BASE_NAME CPPCAPI_DEMO_HOST
 		EXPORT_FILE_NAME host_export.h
 	)
 endfunction()
@@ -92,11 +92,11 @@ function(set_default_plugin_lib_target_properties target_name)
 	target_link_libraries(
 		${target_name}
 		PRIVATE
-		feltpluginsystem
+		cppcapi
 	)
 	generate_export_header(
 		${target_name}
-		BASE_NAME FELTPLUGINSYSTEM_DEMO_PLUGIN
+		BASE_NAME CPPCAPI_DEMO_PLUGIN
 		EXPORT_FILE_NAME plugin_export.h
 	)
 	install(
@@ -114,12 +114,12 @@ function(add_demo_test_target target_name)
 		${target_name}.test
 		COMMAND ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${exe}
 	)
-	add_dependencies(${target_name}.test feltpluginsystem.install)
+	add_dependencies(${target_name}.test cppcapi.install)
 
 	add_test(
 		NAME ${target_name}.test
 		COMMAND
-		env FELTPLUGINSYSTEM_PLUGIN_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
+		env CPPCAPI_PLUGIN_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
 		${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target ${target_name}.test
 	)
 endfunction()

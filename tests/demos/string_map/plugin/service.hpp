@@ -4,7 +4,7 @@
 
 #include "client.hpp"
 
-namespace feltpluginsystemdemoplugin::service
+namespace cppcapidemoplugin::service
 {
 class Worker
 {
@@ -18,4 +18,4 @@ private:
 	client::StringDict service_dict_;
 	client::StringDict client_dict_;
 };
-}  // namespace feltpluginsystemdemoplugin::service
+}  // namespace cppcapidemoplugin::service

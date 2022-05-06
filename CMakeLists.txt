@@ -30,9 +30,9 @@ include(${project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake)
 #------------------------------------------------------------
 # Begin project definition.
 
-project(FeltPluginSystem VERSION 1.0.0)
+project(CppCAPI VERSION 1.0.0)
 
-if (FELTPLUGIN_ENABLE_TESTS)
+if (CPPCAPI_ENABLE_TESTS)
 	# Tests install the project first, so default the install directory to be relative to the build
 	# root. This must come before `dynamic_project_options()`
 	if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND PROJECT_IS_TOP_LEVEL)
@@ -63,7 +63,7 @@ endif ()
 #------------------------------------------------------------
 # Options
 
-option(FELTPLUGIN_ENABLE_TESTS "Build/install tests and demos" OFF)
+option(CPPCAPI_ENABLE_TESTS "Build/install tests and demos" OFF)
 
 
 #------------------------------------------------------------
@@ -72,7 +72,7 @@ option(FELTPLUGIN_ENABLE_TESTS "Build/install tests and demos" OFF)
 # Convenience install target.
 
 add_custom_target(
-	feltpluginsystem.install
+	cppcapi.install
 	COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR}
 )
 
@@ -82,7 +82,7 @@ add_subdirectory(src)
 
 # Demos/tests
 
-if (FELTPLUGIN_ENABLE_TESTS)
+if (CPPCAPI_ENABLE_TESTS)
 	# Enable CTest target support (`add_test()`).
 	enable_testing()
 	add_subdirectory(tests)

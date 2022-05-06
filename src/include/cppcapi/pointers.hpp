@@ -9,7 +9,7 @@
 #pragma once
 #include <memory>
 
-namespace feltplugin
+namespace cppcapi
 {
 /// Wrap `shared_ptr`.
 template <class Class>
@@ -21,4 +21,4 @@ SharedPtr<Class> make_shared(Args &&... args)
 {
 	return std::make_shared<Class>(std::forward<Args>(args)...);
 }
-}  // namespace feltplugin
+}  // namespace cppcapi

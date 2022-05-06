@@ -5,13 +5,13 @@
 #include "plugin_definition.hpp"
 #include "host_export.h"
 
-namespace feltpluginsystemdemohost::client
+namespace cppcapidemohost::client
 {
-struct FELTPLUGINSYSTEM_DEMO_HOST_EXPORT Worker : Plugin::SuiteAdapter<fpdemo_Worker_h>
+struct CPPCAPI_DEMO_HOST_EXPORT Worker : Plugin::SuiteAdapter<fpdemo_Worker_h>
 {
-	Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<service::StringDict> dict);
+	Worker(SuiteFactory suite_factory, cppcapi::SharedPtr<service::StringDict> dict);
 
 	void update_dict(service::StringView key);
 };
 
-}  // namespace feltpluginsystemdemohost::client
+}  // namespace cppcapidemohost::client

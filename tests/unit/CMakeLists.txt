@@ -14,19 +14,19 @@ CPMAddPackage("gh:rollbear/trompeloeil@42")
 # Test executable target
 
 add_executable(
-	feltpluginsystem.test
+	cppcapi.test
 	main.cpp
-	felpluginsystem/service/test_suite_decorator.cpp
+	cppcapi/service/test_suite_decorator.cpp
 	main.cpp
 )
 
-target_link_libraries(feltpluginsystem.test
+target_link_libraries(cppcapi.test
 	PRIVATE
 	project_options project_warnings
-	feltpluginsystem)
+	cppcapi)
 
-target_link_system_libraries(feltpluginsystem.test
+target_link_system_libraries(cppcapi.test
 	PRIVATE
 	Catch2 trompeloeil)
 
-catch_discover_tests(feltpluginsystem.test)
+catch_discover_tests(cppcapi.test)

@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace feltpluginsystemdemoplugin::client
+namespace cppcapidemoplugin::client
 {
 
 String::String(client::StringView const & str)
@@ -69,4 +69,4 @@ void StringDict::insert(String const & key, String const & value)
 {
 	call(suite_.insert, key, value);
 }
-}  // namespace feltpluginsystemdemoplugin::client
+}  // namespace cppcapidemoplugin::client

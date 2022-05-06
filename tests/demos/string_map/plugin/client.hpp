@@ -3,14 +3,14 @@
 #pragma once
 #include <string>
 
-#include <feltpluginsystem/client/suite_adaptor.hpp>
-#include <feltpluginsystem/client/handle_map.hpp>
+#include <cppcapi/client/suite_adaptor.hpp>
+#include <cppcapi/client/handle_map.hpp>
 
-#include <feltpluginsystem-demo-string_map/interface.h>
+#include <cppcapi-demo-string_map/interface.h>
 
 #include "plugin_definition.hpp"
 
-namespace feltpluginsystemdemoplugin::client
+namespace cppcapidemoplugin::client
 {
 struct StringView : Plugin::SuiteAdapter<fpdemo_StringView_h>
 {
@@ -46,4 +46,4 @@ struct StringDict : Plugin::SuiteAdapter<fpdemo_StringDict_h>
 
 	void insert(String const & key, String const & value);
 };
-}  // namespace feltpluginsystemdemoplugin::client
+}  // namespace cppcapidemoplugin::client

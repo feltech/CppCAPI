@@ -3,8 +3,8 @@
 /**
  * Contains some common C types and values to be used by C interfaces.
  */
-#ifndef feltplugin_handles_h
-#define feltplugin_handles_h
+#ifndef cppcapi_handles_h
+#define cppcapi_handles_h
 
 #include <stddef.h> // NOLINT(modernize-deprecated-headers)
 

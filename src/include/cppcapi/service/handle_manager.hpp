@@ -12,7 +12,7 @@
 #include "../pointers.hpp"
 #include "handle_map.hpp"
 
-namespace feltplugin::service
+namespace cppcapi::service
 {
 
 /**
@@ -132,7 +132,7 @@ public:
 
 		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{
-			return create(feltplugin::make_shared<Class>(std::forward<Args>(args)...));
+			return create(cppcapi::make_shared<Class>(std::forward<Args>(args)...));
 		}
 		else if constexpr (ptr_type_tag == HandleOwnershipTag::OwnedByClient)
 		{
@@ -255,4 +255,4 @@ public:
 		}
 	}
 };
-}  // namespace feltplugin::service
+}  // namespace cppcapi::service

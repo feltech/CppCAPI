@@ -5,7 +5,7 @@
  */
 #pragma once
 
-namespace feltplugin::service
+namespace cppcapi::service
 {
 
 /// Tag enum to indicate ownership of a handle.
@@ -182,4 +182,4 @@ struct HandleMap<>
 	template <class HandleToLookup>
 	using class_from_handle = typename fallback_class_t<HandleToLookup>::type;
 };
-}  // namespace feltplugin::service
+}  // namespace cppcapi::service

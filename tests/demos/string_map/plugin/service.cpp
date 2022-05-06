@@ -4,13 +4,13 @@
 
 #include <iostream>
 
-#include <feltpluginsystem-demo-string_map/interface.h>
+#include <cppcapi-demo-string_map/interface.h>
 
 #include "plugin_definition.hpp"
 #include "client.hpp"
 #include "plugin_export.h"
 
-namespace feltpluginsystemdemoplugin::service
+namespace cppcapidemoplugin::service
 {
 
 Worker::Worker(client::StringDict service_dict) : service_dict_{std::move(service_dict)} {}
@@ -39,21 +39,21 @@ void Worker::update_dict(client::String const & key)
 		throw std::invalid_argument{"Couldn't find key plugin expects to exist"};
 	}
 }
-}  // namespace feltpluginsystemdemoplugin::service
+}  // namespace cppcapidemoplugin::service
 
 extern "C"
 {
-	using feltpluginsystemdemoplugin::Plugin;
+	using cppcapidemoplugin::Plugin;
 	using HandleManager = Plugin::HandleManager<fpdemo_Worker_h>;
 	using SuiteDecorator = Plugin::SuiteDecorator<fpdemo_Worker_h>;
 
-	using feltpluginsystemdemoplugin::client::String;
-	using feltpluginsystemdemoplugin::client::StringView;
-	using feltpluginsystemdemoplugin::service::Worker;
+	using cppcapidemoplugin::client::String;
+	using cppcapidemoplugin::client::StringView;
+	using cppcapidemoplugin::service::Worker;
 
 	// Plugin
 
-	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
+	CPPCAPI_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
 		return {
 			.create = &HandleManager::make,

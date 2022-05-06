@@ -11,7 +11,7 @@
 #include "service/handle_map.hpp"
 #include "service/suite_decorator.hpp"
 
-namespace feltplugin
+namespace cppcapi
 {
 
 namespace detail
@@ -82,4 +82,4 @@ public:
 	template <class Handle>
 	using SuiteAdapter = client::SuiteAdapter<Handle, ServiceHandleMap, ClientHandleMap, ErrorMap>;
 };
-}  // namespace feltplugin
+}  // namespace cppcapi

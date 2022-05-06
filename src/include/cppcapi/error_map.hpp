@@ -13,7 +13,7 @@
 #include <utility>
 #include "interface.h"
 
-namespace feltplugin
+namespace cppcapi
 {
 
 /**
@@ -276,4 +276,4 @@ struct ErrorMap
 		(detail::throw_if_matches<Traits>(err, code), ..., ErrorMap<>::throw_exception(err, code));
 	};
 };
-}  // namespace feltplugin
+}  // namespace cppcapi

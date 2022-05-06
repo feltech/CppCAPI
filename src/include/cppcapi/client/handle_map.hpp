@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-namespace feltplugin::client
+namespace cppcapi::client
 {
 /**
  * Client-specific traits for a particular opaque handle type.
@@ -216,4 +216,4 @@ struct HandleMap<>
 		return fallback_suite_factory_t::type;
 	};
 };
-}  // namespace feltplugin::client
+}  // namespace cppcapi::client

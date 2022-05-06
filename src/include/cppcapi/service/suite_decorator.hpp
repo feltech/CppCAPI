@@ -14,7 +14,7 @@
 #include "handle_manager.hpp"
 #include "handle_map.hpp"
 
-namespace feltplugin::service
+namespace cppcapi::service
 {
 /**
  * Utility class for decorating callables to be used in function pointer suites.
@@ -385,4 +385,4 @@ private:
 	}
 };
 
-}  // namespace feltplugin::service
+}  // namespace cppcapi::service

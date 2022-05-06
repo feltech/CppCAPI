@@ -3,10 +3,10 @@
 #include "client.hpp"
 #include "service.hpp"
 
-namespace feltpluginsystemdemohost::client
+namespace cppcapidemohost::client
 {
 
-Worker::Worker(SuiteFactory suite_factory, feltplugin::SharedPtr<service::StringDict> dict)
+Worker::Worker(SuiteFactory suite_factory, cppcapi::SharedPtr<service::StringDict> dict)
 	: Base{suite_factory}
 {
 	create(std::move(dict));
@@ -16,4 +16,4 @@ void Worker::update_dict(service::StringView key)
 {
 	call(suite_.update_dict, key);
 }
-}  // namespace feltpluginsystemdemohost::client
+}  // namespace cppcapidemohost::client

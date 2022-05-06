@@ -9,7 +9,7 @@
 #include <filesystem>
 #include <string>
 
-namespace feltplugin
+namespace cppcapi
 {
 /// Result of calling `dlopen`.
 using PluginHandle = decltype(dlopen("", 0));
@@ -88,4 +88,4 @@ private:
 	std::string file_path_;
 	PluginHandle handle_;
 };
-}  // namespace feltplugin
+}  // namespace cppcapi

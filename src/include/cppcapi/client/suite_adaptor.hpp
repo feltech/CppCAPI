@@ -12,7 +12,7 @@
 #include "../service/handle_manager.hpp"
 
 
-namespace feltplugin::client
+namespace cppcapi::client
 {
 /**
  * Base class for adapters wrapping opaque handles on the client.
@@ -329,4 +329,4 @@ private:
 		throw_on_error(code, err);
 	}
 };
-}  // namespace feltplugin::client
+}  // namespace cppcapi::client

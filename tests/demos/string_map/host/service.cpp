@@ -2,26 +2,26 @@
 // SPDX-License-Identifier: MIT
 #include "service.hpp"
 
-#include <feltpluginsystem-demo-string_map/interface.h>
+#include <cppcapi-demo-string_map/interface.h>
 
 #include "host_export.h"
 #include "plugin_definition.hpp"
 
 namespace
 {
-using String = feltpluginsystemdemohost::service::String;
-using StringView = feltpluginsystemdemohost::service::StringView;
-using StringDict = feltpluginsystemdemohost::service::StringDict;
+using String = cppcapidemohost::service::String;
+using StringView = cppcapidemohost::service::StringView;
+using StringDict = cppcapidemohost::service::StringDict;
 }  // namespace
 
 extern "C"
 {
-	using Plugin = feltpluginsystemdemohost::Plugin;
+	using Plugin = cppcapidemohost::Plugin;
 
 	// String
 
-	using feltpluginsystemdemohost::service::String;
-	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
+	using cppcapidemohost::service::String;
+	CPPCAPI_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
 	{
 		using SuiteDecorator = Plugin::SuiteDecorator<fpdemo_String_h>;
 		using HandleManager = Plugin::HandleManager<fpdemo_String_h>;
@@ -56,9 +56,9 @@ extern "C"
 
 	// StringView
 
-	using feltpluginsystemdemohost::service::StringView;
+	using cppcapidemohost::service::StringView;
 
-	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
+	CPPCAPI_DEMO_HOST_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
 	{
 		using Decorator = Plugin::SuiteDecorator<fpdemo_StringView_h>;
 		return {
@@ -69,7 +69,7 @@ extern "C"
 
 	// StringDict
 
-	FELTPLUGINSYSTEM_DEMO_HOST_EXPORT fpdemo_StringDict_s fpdemo_StringDict_suite()
+	CPPCAPI_DEMO_HOST_EXPORT fpdemo_StringDict_s fpdemo_StringDict_suite()
 	{
 		using Decorator = Plugin::SuiteDecorator<fpdemo_StringDict_h>;
 		using Converter = Plugin::HandleManager<fpdemo_StringDict_h>;

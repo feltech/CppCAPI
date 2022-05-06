@@ -3,9 +3,9 @@
 #include <catch2/catch.hpp>
 #include <catch2/trompeloeil.hpp>
 
-#include <feltpluginsystem/interface.h>
-#include <feltpluginsystem/plugin_definition.hpp>
-#include <feltpluginsystem/service/handle_map.hpp>
+#include <cppcapi/interface.h>
+#include <cppcapi/plugin_definition.hpp>
+#include <cppcapi/service/handle_map.hpp>
 
 using trompeloeil::_;  // NOLINT(bugprone-reserved-identifier)
 
@@ -28,40 +28,40 @@ using MockAPISharedHandle = struct MockAPIShared_t *;
 
 struct MockAPI;
 
-using MockAPIPlugin = feltplugin::PluginDefinition<
+using MockAPIPlugin = cppcapi::PluginDefinition<
 	// Service
-	feltplugin::service::HandleMap<
+	cppcapi::service::HandleMap<
 		// MockAPI - bound to C API for signature tests:
 		// Owned by service.
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			MockAPIOwnedByServiceHandle,
 			MockAPI,
-			feltplugin::service::HandleOwnershipTag::OwnedByService>,
+			cppcapi::service::HandleOwnershipTag::OwnedByService>,
 		// Owned by client.
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			MockAPIOwnedByClientHandle,
 			MockAPI,
-			feltplugin::service::HandleOwnershipTag::OwnedByClient>,
+			cppcapi::service::HandleOwnershipTag::OwnedByClient>,
 		// Shared between service and client.
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			MockAPISharedHandle,
 			MockAPI,
-			feltplugin::service::HandleOwnershipTag::Shared>,
+			cppcapi::service::HandleOwnershipTag::Shared>,
 
 		// Stub - used as a (auto-converted) parameter in signature tests:
 		// Owned by service.
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			StubOwnedByServiceHandle,
 			Stub,
-			feltplugin::service::HandleOwnershipTag::OwnedByService>,
+			cppcapi::service::HandleOwnershipTag::OwnedByService>,
 		// Owned by client.
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			StubOwnedByClientHandle,
 			Stub,
-			feltplugin::service::HandleOwnershipTag::OwnedByClient>,
+			cppcapi::service::HandleOwnershipTag::OwnedByClient>,
 		// Shared between service and client.
-		feltplugin::service::
-			HandleTraits<StubSharedHandle, Stub, feltplugin::service::HandleOwnershipTag::Shared>>>;
+		cppcapi::service::
+			HandleTraits<StubSharedHandle, Stub, cppcapi::service::HandleOwnershipTag::Shared>>>;
 
 struct lambda_suite_t;
 struct member_function_suite_t;

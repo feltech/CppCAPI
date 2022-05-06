@@ -3,11 +3,11 @@
 #pragma once
 #include <stdexcept>
 
-#include <feltpluginsystem/plugin_definition.hpp>
+#include <cppcapi/plugin_definition.hpp>
 
-#include <feltpluginsystem-demo-string_map/interface.h>
+#include <cppcapi-demo-string_map/interface.h>
 
-namespace feltpluginsystemdemoplugin
+namespace cppcapidemoplugin
 {
 namespace service
 {
@@ -21,43 +21,43 @@ struct StringView;
 struct StringDict;
 }  // namespace client
 
-using Plugin = feltplugin::PluginDefinition<
+using Plugin = cppcapi::PluginDefinition<
 	// Service
-	feltplugin::service::HandleMap<
+	cppcapi::service::HandleMap<
 		// Worker
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			fpdemo_Worker_h,
-			feltpluginsystemdemoplugin::service::Worker,
-			feltplugin::service::HandleOwnershipTag::OwnedByClient>>,
+			cppcapidemoplugin::service::Worker,
+			cppcapi::service::HandleOwnershipTag::OwnedByClient>>,
 
 	// Client
-	feltplugin::client::HandleMap<
+	cppcapi::client::HandleMap<
 		// String.
-		feltplugin::client::HandleTraits<
+		cppcapi::client::HandleTraits<
 			fpdemo_String_h,
 			fpdemo_String_s,
-			feltpluginsystemdemoplugin::client::String,
+			cppcapidemoplugin::client::String,
 			&fpdemo_String_suite>,
 
 		// StringView.
-		feltplugin::client::HandleTraits<
+		cppcapi::client::HandleTraits<
 			fpdemo_StringView_h,
 			fpdemo_StringView_s,
-			feltpluginsystemdemoplugin::client::StringView,
+			cppcapidemoplugin::client::StringView,
 			&fpdemo_StringView_suite>,
 
 		// StringDict
-		feltplugin::client::HandleTraits<
+		cppcapi::client::HandleTraits<
 			fpdemo_StringDict_h,
 			fpdemo_StringDict_s,
-			feltpluginsystemdemoplugin::client::StringDict,
+			cppcapidemoplugin::client::StringDict,
 			&fpdemo_StringDict_suite>>,
 
 	// Errors
-	feltplugin::ErrorMap<
+	cppcapi::ErrorMap<
 		// Invalid argument.
-		feltplugin::ErrorTraits<std::invalid_argument, 101>,
+		cppcapi::ErrorTraits<std::invalid_argument, 101>,
 
 		// Out of range - e.g. map.at(...).
-		feltplugin::ErrorTraits<std::out_of_range, 100>>>;
-}  // namespace feltpluginsystemdemoplugin
+		cppcapi::ErrorTraits<std::out_of_range, 100>>>;
+}  // namespace cppcapidemoplugin

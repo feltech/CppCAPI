@@ -1,9 +1,9 @@
 // Copyright 2022 David Feltell
 // SPDX-License-Identifier: MIT
-#ifndef feltplugin_demo_handles_h
-#define feltplugin_demo_handles_h
+#ifndef cppcapi_demo_handles_h
+#define cppcapi_demo_handles_h
 
-#include <feltpluginsystem/interface.h>
+#include <cppcapi/interface.h>
 
 #ifdef __cplusplus
 extern "C"

@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 #include <iostream>
 
-#include <feltpluginsystem/plugin_definition.hpp>
+#include <cppcapi/plugin_definition.hpp>
 
-#include <feltpluginsystem-demo-hello_plugin/interface.h>
+#include <cppcapi-demo-hello_plugin/interface.h>
 
 #include "plugin_export.h"
 
-namespace feltpluginsystemdemoplugin
+namespace cppcapidemoplugin
 {
 
 // The worker that will be instantiated then called by the host.
@@ -21,24 +21,24 @@ struct Worker
 };
 
 // Define C <-> C++ interface.
-using Plugin = feltplugin::PluginDefinition<
+using Plugin = cppcapi::PluginDefinition<
 	// Service
-	feltplugin::service::HandleMap<
+	cppcapi::service::HandleMap<
 		// Worker
-		feltplugin::service::HandleTraits<
+		cppcapi::service::HandleTraits<
 			fpdemo_Worker_h,
 			Worker,
-			feltplugin::service::HandleOwnershipTag::OwnedByClient>>>;
-}  // namespace feltpluginsystemdemoplugin
+			cppcapi::service::HandleOwnershipTag::OwnedByClient>>>;
+}  // namespace cppcapidemoplugin
 
 extern "C"
 {
-	using feltpluginsystemdemoplugin::Plugin;
-	using feltpluginsystemdemoplugin::Worker;
+	using cppcapidemoplugin::Plugin;
+	using cppcapidemoplugin::Worker;
 
 	// Plugin
 
-	FELTPLUGINSYSTEM_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
+	CPPCAPI_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
 	{
 		using Decorator = Plugin::SuiteDecorator<fpdemo_Worker_h>;
 
