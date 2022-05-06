@@ -155,12 +155,12 @@ public:
 						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
 					using Out = std::remove_pointer_t<decltype(out)>;
 
-					auto const ret =
+					auto ret =
 						fn(HandleManager<Handle>::convert(handle),
 						   HandleManager<decltype(args)>::convert(
 							   std::forward<decltype(args)>(args))...);
 
-					*out = HandleManager<Out>::make_handle(ret);
+					*out = HandleManager<Out>::make_handle(std::move(ret));
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
@@ -177,12 +177,12 @@ public:
 						*err,
 						[handle, &out, &args...]
 						{
-							auto const ret =
+							auto ret =
 								fn(HandleManager<Handle>::convert(handle),
 								   HandleManager<decltype(args)>::convert(
 									   std::forward<decltype(args)>(args))...);
 
-							*out = HandleManager<Out>::make_handle(ret);
+							*out = HandleManager<Out>::make_handle(std::move(ret));
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -280,12 +280,12 @@ public:
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
-					auto const ret = std::mem_fn(fn)(
+					auto ret = std::mem_fn(fn)(
 						HandleManager<Handle>::convert(handle),
 						HandleManager<decltype(args)>::convert(
 							std::forward<decltype(args)>(args))...);
 
-					*out = HandleManager<Out>::make_handle(ret);
+					*out = HandleManager<Out>::make_handle(std::move(ret));
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
@@ -298,12 +298,12 @@ public:
 						*err,
 						[handle, &out, &args...]
 						{
-							auto const ret = std::mem_fn(fn)(
+							auto ret = std::mem_fn(fn)(
 								HandleManager<Handle>::convert(handle),
 								HandleManager<decltype(args)>::convert(
 									std::forward<decltype(args)>(args))...);
 
-							*out = HandleManager<Out>::make_handle(ret);
+							*out = HandleManager<Out>::make_handle(std::move(ret));
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
