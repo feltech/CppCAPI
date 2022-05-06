@@ -9,17 +9,17 @@
 extern "C"
 {
 #endif
-	typedef struct fpdemo_Worker_t * fpdemo_Worker_h;
+	typedef struct cppcapidemo_Worker_t * cppcapidemo_Worker_h;
 
 	typedef struct
 	{
-		fp_ErrorCode (*create)(fp_ErrorMessage *, fpdemo_Worker_h *);
-		void (*release)(fpdemo_Worker_h);
-		void (*work)(fpdemo_Worker_h);	// noexcept
-	} fpdemo_Worker_s;
+		cppcapi_ErrorCode (*create)(cppcapi_ErrorMessage *, cppcapidemo_Worker_h *);
+		void (*release)(cppcapidemo_Worker_h);
+		void (*work)(cppcapidemo_Worker_h);	 // noexcept
+	} cppcapidemo_Worker_s;
 
 	// Host will expect plugin to define:
-	// fpdemo_Worker_s fpdemo_Worker_suite();
+	// cppcapidemo_Worker_s cppcapidemo_Worker_suite();
 
 #ifdef __cplusplus
 }

@@ -26,7 +26,7 @@ using Plugin = cppcapi::PluginDefinition<
 	cppcapi::service::HandleMap<
 		// Worker
 		cppcapi::service::HandleTraits<
-			fpdemo_Worker_h,
+			cppcapidemo_Worker_h,
 			Worker,
 			cppcapi::service::HandleOwnershipTag::OwnedByClient>>>;
 }  // namespace cppcapidemoplugin
@@ -38,14 +38,14 @@ extern "C"
 
 	// Plugin
 
-	CPPCAPI_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
+	CPPCAPI_DEMO_PLUGIN_EXPORT cppcapidemo_Worker_s cppcapidemo_Worker_suite()
 	{
-		using Decorator = Plugin::SuiteDecorator<fpdemo_Worker_h>;
+		using Decorator = Plugin::SuiteDecorator<cppcapidemo_Worker_h>;
 
 		return {
-			.create = &Plugin::HandleManager<fpdemo_Worker_h>::make,
+			.create = &Plugin::HandleManager<cppcapidemo_Worker_h>::make,
 
-			.release = &Plugin::HandleManager<fpdemo_Worker_h>::release,
+			.release = &Plugin::HandleManager<cppcapidemo_Worker_h>::release,
 
 			.work = Decorator::decorate(Decorator::mem_fn_ptr<&Worker::work>)};
 	}

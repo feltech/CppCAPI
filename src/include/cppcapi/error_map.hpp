@@ -22,11 +22,11 @@ namespace cppcapi
  * @tparam TException Exception class.
  * @tparam Tcode Error code.
  */
-template <class TException, fp_ErrorCode Tcode>
+template <class TException, cppcapi_ErrorCode Tcode>
 struct ErrorTraits
 {
 	using Exception = TException;
-	static constexpr fp_ErrorCode code = Tcode;
+	static constexpr cppcapi_ErrorCode code = Tcode;
 };
 
 /**
@@ -53,25 +53,26 @@ struct ErrorMap;
 namespace detail
 {
 
-inline void extract_message(fp_ErrorMessage & err, const std::string_view msg) noexcept
+inline void extract_message(cppcapi_ErrorMessage & err, const std::string_view msg) noexcept
 {
 	err.size = std::min(msg.size(), err.capacity);
 	strncpy(err.data, msg.data(), err.size);
 	err.data[err.capacity - 1] = '\0';
 }
 
-inline void extract_exception_message(fp_ErrorMessage & err, std::exception const & ex) noexcept
+inline void extract_exception_message(
+	cppcapi_ErrorMessage & err, std::exception const & ex) noexcept
 {
 	extract_message(err, ex.what());
 }
 
-inline void non_exception_message(fp_ErrorMessage & err) noexcept
+inline void non_exception_message(cppcapi_ErrorMessage & err) noexcept
 {
 	extract_message(err, "Unknown non-exception error caught");
 }
 
 template <class Traits>
-void throw_if_matches(fp_ErrorMessage const & err, fp_ErrorCode const code)
+void throw_if_matches(cppcapi_ErrorMessage const & err, cppcapi_ErrorCode const code)
 {
 	if (code == Traits::code)
 		throw typename Traits::Exception{{err.data, err.size}};
@@ -96,7 +97,7 @@ static decltype(auto) decorate(Outer && outer, Inners &&... inners)
  * This is the default error map unless overridden when specialising HandleConverter/SuiteDecorator.
  *
  * Catches `std::exception` (and derived), raises `UnknownError`, and associates with error
- * code fp_error.
+ * code cppcapi_error.
  */
 template <>
 struct ErrorMap<>
@@ -104,15 +105,15 @@ struct ErrorMap<>
 	/**
 	 * Execute a callable, converting any thrown exception to an error code and message.
 	 *
-	 * This default implementation catches all exceptions and returns fp_error on error.
+	 * This default implementation catches all exceptions and returns cppcapi_error on error.
 	 *
 	 * @tparam Fn Callable type to execute.
 	 * @param err Storage for error message.
 	 * @param fn Callback to execute.
-	 * @return fp_ok if no exception was raised, fp_error otherwise.
+	 * @return cppcapi_ok if no exception was raised, cppcapi_error otherwise.
 	 */
 	template <typename Fn>
-	static fp_ErrorCode wrap_exception(fp_ErrorMessage & err, Fn && fn)
+	static cppcapi_ErrorCode wrap_exception(cppcapi_ErrorMessage & err, Fn && fn)
 	{
 		try
 		{
@@ -121,23 +122,24 @@ struct ErrorMap<>
 		catch (std::exception const & ex)
 		{
 			detail::extract_exception_message(err, ex);
-			return fp_error;
+			return cppcapi_error;
 		}
-		return fp_ok;
+		return cppcapi_ok;
 	}
 
 	/**
 	 * Throw exception if given error code matches.
 	 *
 	 * This default implementation throws UnknownError with given message if code is anything
-	 * other than fp_ok.
+	 * other than cppcapi_ok.
 	 *
 	 * @param err Storage for error message.
 	 * @param code Error code.
 	 */
-	static constexpr void throw_exception(fp_ErrorMessage const & err, fp_ErrorCode const code)
+	static constexpr void throw_exception(
+		cppcapi_ErrorMessage const & err, cppcapi_ErrorCode const code)
 	{
-		if (code != fp_ok)
+		if (code != cppcapi_ok)
 			throw UnknownError{{err.data, err.size}};
 	};
 };
@@ -156,15 +158,15 @@ struct ErrorMap<Traits>
 	 * Execute a callable, converting any thrown exception to an error code and message.
 	 *
 	 * If thrown exception matches Traits::Exception then returns Traits::code, otherwise returns
-	 * fp_error.
+	 * cppcapi_error.
 	 *
 	 * @tparam Fn Callable type to execute.
 	 * @param err Storage for error message.
 	 * @param fn Callback to execute.
-	 * @return fp_ok if no exception was raised, error code otherwise.
+	 * @return cppcapi_ok if no exception was raised, error code otherwise.
 	 */
 	template <typename Fn>
-	static fp_ErrorCode wrap_exception(fp_ErrorMessage & err, Fn && fn)
+	static cppcapi_ErrorCode wrap_exception(cppcapi_ErrorMessage & err, Fn && fn)
 	{
 		try
 		{
@@ -178,14 +180,14 @@ struct ErrorMap<Traits>
 		catch (std::exception const & ex)
 		{
 			detail::extract_exception_message(err, ex);
-			return fp_error;
+			return cppcapi_error;
 		}
 		catch (...)
 		{
 			detail::non_exception_message(err);
-			return fp_error;
+			return cppcapi_error;
 		}
-		return fp_ok;
+		return cppcapi_ok;
 	}
 
 	/**
@@ -196,7 +198,8 @@ struct ErrorMap<Traits>
 	 * @param err Storage for error message.
 	 * @param code Error code.
 	 */
-	static constexpr void throw_exception(fp_ErrorMessage const & err, fp_ErrorCode const code)
+	static constexpr void throw_exception(
+		cppcapi_ErrorMessage const & err, cppcapi_ErrorCode const code)
 	{
 		detail::throw_if_matches<Traits>(err, code);
 		ErrorMap<>::throw_exception(err, code);
@@ -223,10 +226,10 @@ struct ErrorMap
 	 * @tparam Fn Callable type to execute.
 	 * @param err Storage for error message.
 	 * @param fn Callback to execute.
-	 * @return fp_ok if no exception was raised, error code otherwise.
+	 * @return cppcapi_ok if no exception was raised, error code otherwise.
 	 */
 	template <typename Fn>
-	static fp_ErrorCode wrap_exception(fp_ErrorMessage & err, Fn && fn)
+	static cppcapi_ErrorCode wrap_exception(cppcapi_ErrorMessage & err, Fn && fn)
 	{
 		try
 		{
@@ -242,7 +245,7 @@ struct ErrorMap
 						detail::extract_exception_message(err, ex);
 						return Traits::code;
 					}
-					return fp_ok;
+					return cppcapi_ok;
 				}...,
 				fn)();
 		}
@@ -250,12 +253,12 @@ struct ErrorMap
 		catch (std::exception const & ex)
 		{
 			detail::extract_exception_message(err, ex);
-			return fp_error;
+			return cppcapi_error;
 		}
 		catch (...)
 		{
 			detail::non_exception_message(err);
-			return fp_error;
+			return cppcapi_error;
 		}
 	}
 
@@ -268,9 +271,10 @@ struct ErrorMap
 	 * @param err Storage for error message.
 	 * @param code Error code.
 	 */
-	static constexpr void throw_exception(fp_ErrorMessage const & err, fp_ErrorCode const code)
+	static constexpr void throw_exception(
+		cppcapi_ErrorMessage const & err, cppcapi_ErrorCode const code)
 	{
-		if (code == fp_ok)
+		if (code == cppcapi_ok)
 			return;
 
 		(detail::throw_if_matches<Traits>(err, code), ..., ErrorMap<>::throw_exception(err, code));

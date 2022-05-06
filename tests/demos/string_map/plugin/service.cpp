@@ -6,8 +6,8 @@
 
 #include <cppcapi-demo-string_map/interface.h>
 
-#include "plugin_definition.hpp"
 #include "client.hpp"
+#include "plugin_definition.hpp"
 #include "plugin_export.h"
 
 namespace cppcapidemoplugin::service
@@ -44,8 +44,8 @@ void Worker::update_dict(client::String const & key)
 extern "C"
 {
 	using cppcapidemoplugin::Plugin;
-	using HandleManager = Plugin::HandleManager<fpdemo_Worker_h>;
-	using SuiteDecorator = Plugin::SuiteDecorator<fpdemo_Worker_h>;
+	using HandleManager = Plugin::HandleManager<cppcapidemo_Worker_h>;
+	using SuiteDecorator = Plugin::SuiteDecorator<cppcapidemo_Worker_h>;
 
 	using cppcapidemoplugin::client::String;
 	using cppcapidemoplugin::client::StringView;
@@ -53,7 +53,7 @@ extern "C"
 
 	// Plugin
 
-	CPPCAPI_DEMO_PLUGIN_EXPORT fpdemo_Worker_s fpdemo_Worker_suite()
+	CPPCAPI_DEMO_PLUGIN_EXPORT cppcapidemo_Worker_s cppcapidemo_Worker_suite()
 	{
 		return {
 			.create = &HandleManager::make,
@@ -61,6 +61,6 @@ extern "C"
 			.release = &HandleManager::release,
 
 			.update_dict = SuiteDecorator::decorate([](Worker & self, StringView const & key)
-											   { self.update_dict(String{key}); })};
+													{ self.update_dict(String{key}); })};
 	}
 }

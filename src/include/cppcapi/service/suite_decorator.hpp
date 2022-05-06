@@ -122,7 +122,8 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
-				return [](fp_ErrorMessage * err, Handle handle, auto... args) -> fp_ErrorCode
+				return
+					[](cppcapi_ErrorMessage * err, Handle handle, auto... args) -> cppcapi_ErrorCode
 				{
 					assert_is_invokable(
 						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
@@ -164,8 +165,8 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
-				return [](fp_ErrorMessage * err, auto * out, Handle handle, auto... args)
-						   -> fp_ErrorCode
+				return [](cppcapi_ErrorMessage * err, auto * out, Handle handle, auto... args)
+						   -> cppcapi_ErrorCode
 				{
 					assert_is_invokable(
 						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
@@ -245,7 +246,7 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
-				return [](fp_ErrorMessage * err, Handle handle, auto... args)
+				return [](cppcapi_ErrorMessage * err, Handle handle, auto... args)
 				{
 					const auto do_call = [&]
 					{
@@ -289,7 +290,7 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
-				return [](fp_ErrorMessage * err, auto out, Handle handle, auto... args)
+				return [](cppcapi_ErrorMessage * err, auto out, Handle handle, auto... args)
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
@@ -342,7 +343,7 @@ private:
 	};
 
 	template <typename Arg, typename... Args>
-	struct is_0th_arg_error<Arg, Args...> : std::is_same<Arg, fp_ErrorMessage *>
+	struct is_0th_arg_error<Arg, Args...> : std::is_same<Arg, cppcapi_ErrorMessage *>
 	{
 	};
 

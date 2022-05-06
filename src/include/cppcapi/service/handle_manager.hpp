@@ -127,8 +127,7 @@ public:
 			ptr_type_tag != HandleOwnershipTag::OwnedByService,
 			"Cannot make a handle to a new instance for non-shared non-transferred types");
 		static_assert(
-			!is_client_handle(),
-			"Cannot make a handle to a new instance from the client.");
+			!is_client_handle(), "Cannot make a handle to a new instance from the client.");
 
 		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{
@@ -217,7 +216,7 @@ public:
 	 * @return Error code.
 	 */
 	template <typename... Args>
-	static fp_ErrorCode make(fp_ErrorMessage * err, Handle * out, Args... args)
+	static cppcapi_ErrorCode make(cppcapi_ErrorMessage * err, Handle * out, Args... args)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		return TErrorMap::wrap_exception(*err, [&out, &args...] { *out = make_handle(args...); });

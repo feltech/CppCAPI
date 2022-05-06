@@ -4,8 +4,8 @@
 #include <filesystem>
 #include <iostream>
 
-#include <cppcapi/plugin_definition.hpp>
 #include <cppcapi/loader.hpp>
+#include <cppcapi/plugin_definition.hpp>
 
 #include <cppcapi-demo-hello_plugin/interface.h>
 
@@ -16,9 +16,9 @@ using Plugin = cppcapi::PluginDefinition<
 	// Client
 	cppcapi::client::HandleMap<
 		// Worker
-		cppcapi::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, Worker>>>;
+		cppcapi::client::HandleTraits<cppcapidemo_Worker_h, cppcapidemo_Worker_s, Worker>>>;
 
-struct Worker : Plugin::SuiteAdapter<fpdemo_Worker_h>
+struct Worker : Plugin::SuiteAdapter<cppcapidemo_Worker_h>
 {
 	using Base::SuiteAdapter;
 
@@ -42,7 +42,7 @@ int main()
 	// Load the plugin DSO.
 	cppcapi::Loader loader{plugin_path.c_str()};
 
-	auto worker = loader.load_adapter<Worker>("fpdemo_Worker_suite");
+	auto worker = loader.load_adapter<Worker>("cppcapidemo_Worker_suite");
 
 	std::cout << "Host client telling plugin service to do work..." << std::endl;
 

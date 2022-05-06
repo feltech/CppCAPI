@@ -26,26 +26,26 @@ using Plugin = cppcapi::PluginDefinition<
 	cppcapi::service::HandleMap<
 		// StringView
 		cppcapi::service::HandleTraits<
-			fpdemo_StringView_h,
+			cppcapidemo_StringView_h,
 			service::StringView,
 			cppcapi::service::HandleOwnershipTag::OwnedByService>,
 
 		// String
 		cppcapi::service::HandleTraits<
-			fpdemo_String_h,
+			cppcapidemo_String_h,
 			service::String,
 			cppcapi::service::HandleOwnershipTag::OwnedByClient>,
 
 		// StringDict
 		cppcapi::service::HandleTraits<
-			fpdemo_StringDict_h,
+			cppcapidemo_StringDict_h,
 			service::StringDict,
 			cppcapi::service::HandleOwnershipTag::Shared>>,
 
 	// Client
 	cppcapi::client::HandleMap<
 		// Worker
-		cppcapi::client::HandleTraits<fpdemo_Worker_h, fpdemo_Worker_s, client::Worker>>,
+		cppcapi::client::HandleTraits<cppcapidemo_Worker_h, cppcapidemo_Worker_s, client::Worker>>,
 
 	// Errors
 	cppcapi::ErrorMap<

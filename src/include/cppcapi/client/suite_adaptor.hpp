@@ -7,10 +7,9 @@
 
 #include <stdexcept>
 
-#include "../interface.h"
 #include "../error_map.hpp"
+#include "../interface.h"
 #include "../service/handle_manager.hpp"
-
 
 namespace cppcapi::client
 {
@@ -28,8 +27,8 @@ struct SuiteAdapter
 	static constexpr std::size_t default_error_capacity = 500;
 
 	template <class Handle>
-	using HandleManager = service::HandleManager<
-	        Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
+	using HandleManager =
+		service::HandleManager<Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
 
 protected:
 	/// Convenience for referring to this base class in subclasses.
@@ -63,7 +62,7 @@ public:
 	 *
 	 * @param handle Opaque handle to service type.
 	 */
-	SuiteAdapter(Handle handle)  // NOLINT(google-explicit-constructor)
+	SuiteAdapter(Handle handle)	 // NOLINT(google-explicit-constructor)
 		: SuiteAdapter{ksuite_factory, handle}
 	{
 		static_assert(ksuite_factory != nullptr, "Attempting to construct with null suite factory");
@@ -135,7 +134,7 @@ protected:
 	 * Call our suite's `create` function, updating our opaque handle with the result.
 	 *
 	 * Assumes `create` is defined in the function pointer suite with signature
-	 * `(fp_ErrorMessage*, Handle*, Args...) -> fp_ErrorCode`.
+	 * `(cppcapi_ErrorMessage*, Handle*, Args...) -> cppcapi_ErrorCode`.
 	 *
 	 * No conversion to opaque handles is performed - if these are required by the `create` function
 	 * then conversion must happen in the caller.
@@ -176,11 +175,13 @@ protected:
 	 * @return Value of suite function's out parameter after invocation.
 	 */
 	template <class Ret, class... Args, class... Rest>
-	Ret call(fp_ErrorCode (*fn)(fp_ErrorMessage *, Ret *, Handle, Args...), Rest &&... args) const
+	Ret call(
+		cppcapi_ErrorCode (*fn)(cppcapi_ErrorMessage *, Ret *, Handle, Args...),
+		Rest &&... args) const
 	{
 		Ret ret;
-		fp_ErrorCode code;
-		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
+		cppcapi_ErrorCode code;
+		cppcapi_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
 
 		code = fn(&err, &ret, handle_, as_handle<Args>(std::forward<Rest>(args))...);
 		throw_on_error(code, err);
@@ -201,10 +202,11 @@ protected:
 	 * @param args Additional arguments given to the suite function.
 	 */
 	template <class... Args, class... Rest>
-	void call(fp_ErrorCode (*fn)(fp_ErrorMessage *, Handle, Args...), Rest &&... args) const
+	void call(
+		cppcapi_ErrorCode (*fn)(cppcapi_ErrorMessage *, Handle, Args...), Rest &&... args) const
 	{
-		fp_ErrorCode code;
-		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
+		cppcapi_ErrorCode code;
+		cppcapi_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
 
 		code = fn(&err, handle_, as_handle<Args>(std::forward<Rest>(args))...);
 		throw_on_error(code, err);
@@ -248,9 +250,9 @@ protected:
 	 * @param code Code to look up.
 	 * @param err Error message to pass to constructor of exception.
 	 */
-	static void throw_on_error(fp_ErrorCode const code, fp_ErrorMessage const & err)
+	static void throw_on_error(cppcapi_ErrorCode const code, cppcapi_ErrorMessage const & err)
 	{
-		if (code == fp_ok)
+		if (code == cppcapi_ok)
 			return;
 
 		TErrorMap::throw_exception(err, code);
@@ -290,9 +292,8 @@ private:
 	{
 	};
 
-
 	template <class ToRef, class FromRef>
-	static constexpr decltype(auto) as_handle(FromRef&& obj)
+	static constexpr decltype(auto) as_handle(FromRef && obj)
 	{
 		using From = std::decay_t<FromRef>;
 		using To = std::decay_t<ToRef>;
@@ -320,10 +321,10 @@ private:
 	}
 
 	template <class... Args, class... Rest>
-	void call(fp_ErrorCode (*fn)(fp_ErrorMessage *, Handle*, Args...), Rest &&... args)
+	void call(cppcapi_ErrorCode (*fn)(cppcapi_ErrorMessage *, Handle *, Args...), Rest &&... args)
 	{
-		fp_ErrorCode code;
-		fp_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
+		cppcapi_ErrorCode code;
+		cppcapi_ErrorMessage err{err_storage_.size(), 0, err_storage_.data()};
 
 		code = fn(&err, &handle_, as_handle<Args>(std::forward<Rest>(args))...);
 		throw_on_error(code, err);

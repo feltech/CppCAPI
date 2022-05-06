@@ -21,10 +21,10 @@ extern "C"
 	// String
 
 	using cppcapidemohost::service::String;
-	CPPCAPI_DEMO_HOST_EXPORT fpdemo_String_s fpdemo_String_suite()
+	CPPCAPI_DEMO_HOST_EXPORT cppcapidemo_String_s cppcapidemo_String_suite()
 	{
-		using SuiteDecorator = Plugin::SuiteDecorator<fpdemo_String_h>;
-		using HandleManager = Plugin::HandleManager<fpdemo_String_h>;
+		using SuiteDecorator = Plugin::SuiteDecorator<cppcapidemo_String_h>;
+		using HandleManager = Plugin::HandleManager<cppcapidemo_String_h>;
 
 		return {
 			.create = &HandleManager::make,
@@ -58,9 +58,9 @@ extern "C"
 
 	using cppcapidemohost::service::StringView;
 
-	CPPCAPI_DEMO_HOST_EXPORT fpdemo_StringView_s fpdemo_StringView_suite()
+	CPPCAPI_DEMO_HOST_EXPORT cppcapidemo_StringView_s cppcapidemo_StringView_suite()
 	{
-		using Decorator = Plugin::SuiteDecorator<fpdemo_StringView_h>;
+		using Decorator = Plugin::SuiteDecorator<cppcapidemo_StringView_h>;
 		return {
 			.data = Decorator::decorate(Decorator::mem_fn_ptr<&StringView::data>),
 
@@ -69,10 +69,10 @@ extern "C"
 
 	// StringDict
 
-	CPPCAPI_DEMO_HOST_EXPORT fpdemo_StringDict_s fpdemo_StringDict_suite()
+	CPPCAPI_DEMO_HOST_EXPORT cppcapidemo_StringDict_s cppcapidemo_StringDict_suite()
 	{
-		using Decorator = Plugin::SuiteDecorator<fpdemo_StringDict_h>;
-		using Converter = Plugin::HandleManager<fpdemo_StringDict_h>;
+		using Decorator = Plugin::SuiteDecorator<cppcapidemo_StringDict_h>;
+		using Converter = Plugin::HandleManager<cppcapidemo_StringDict_h>;
 
 		return {
 			.create = &Converter::make,

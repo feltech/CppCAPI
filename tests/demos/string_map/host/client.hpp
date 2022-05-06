@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "plugin_definition.hpp"
 #include "host_export.h"
+#include "plugin_definition.hpp"
 
 namespace cppcapidemohost::client
 {
-struct CPPCAPI_DEMO_HOST_EXPORT Worker : Plugin::SuiteAdapter<fpdemo_Worker_h>
+struct CPPCAPI_DEMO_HOST_EXPORT Worker : Plugin::SuiteAdapter<cppcapidemo_Worker_h>
 {
 	Worker(SuiteFactory suite_factory, cppcapi::SharedPtr<service::StringDict> dict);
 

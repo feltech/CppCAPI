@@ -26,7 +26,7 @@ using Plugin = cppcapi::PluginDefinition<
 	cppcapi::service::HandleMap<
 		// Worker
 		cppcapi::service::HandleTraits<
-			fpdemo_Worker_h,
+			cppcapidemo_Worker_h,
 			cppcapidemoplugin::service::Worker,
 			cppcapi::service::HandleOwnershipTag::OwnedByClient>>,
 
@@ -34,24 +34,24 @@ using Plugin = cppcapi::PluginDefinition<
 	cppcapi::client::HandleMap<
 		// String.
 		cppcapi::client::HandleTraits<
-			fpdemo_String_h,
-			fpdemo_String_s,
+			cppcapidemo_String_h,
+			cppcapidemo_String_s,
 			cppcapidemoplugin::client::String,
-			&fpdemo_String_suite>,
+			&cppcapidemo_String_suite>,
 
 		// StringView.
 		cppcapi::client::HandleTraits<
-			fpdemo_StringView_h,
-			fpdemo_StringView_s,
+			cppcapidemo_StringView_h,
+			cppcapidemo_StringView_s,
 			cppcapidemoplugin::client::StringView,
-			&fpdemo_StringView_suite>,
+			&cppcapidemo_StringView_suite>,
 
 		// StringDict
 		cppcapi::client::HandleTraits<
-			fpdemo_StringDict_h,
-			fpdemo_StringDict_s,
+			cppcapidemo_StringDict_h,
+			cppcapidemo_StringDict_s,
 			cppcapidemoplugin::client::StringDict,
-			&fpdemo_StringDict_suite>>,
+			&cppcapidemo_StringDict_suite>>,
 
 	// Errors
 	cppcapi::ErrorMap<

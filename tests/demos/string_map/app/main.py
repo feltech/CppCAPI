@@ -15,7 +15,7 @@ lib_path = os.path.join(lib_path, "libcppcapi-demo-string_map-host.so")
 host = None
 
 
-class fp_ErrorMessage(ctypes.Structure):
+class cppcapi_ErrorMessage(ctypes.Structure):
     _fields_ = [
         ("capacity", ctypes.c_size_t),
         ("size", ctypes.c_size_t),
@@ -23,27 +23,27 @@ class fp_ErrorMessage(ctypes.Structure):
     ]
 
 
-fp_ErrorMessage_p = ctypes.POINTER(fp_ErrorMessage)
+cppcapi_ErrorMessage_p = ctypes.POINTER(cppcapi_ErrorMessage)
 
 
-class fpdemo_String_s(ctypes.Structure):
+class cppcapidemo_String_s(ctypes.Structure):
     _fields_ = [
-        ("create", CFUNCTYPE(c_int, fp_ErrorMessage_p, c_void_p)),
+        ("create", CFUNCTYPE(c_int, cppcapi_ErrorMessage_p, c_void_p)),
         ("release", CFUNCTYPE(None, c_void_p)),
-        ("assign_cstr", CFUNCTYPE(c_int, fp_ErrorMessage_p, c_void_p, c_char_p)),
-        ("assign_StringView", CFUNCTYPE(c_int, fp_ErrorMessage_p, c_void_p, c_void_p)),
-        ("c_str", CFUNCTYPE(fp_ErrorMessage_p, c_void_p)),
-        ("at", CFUNCTYPE(c_int, fp_ErrorMessage_p, c_char_p, c_void_p, c_int)),
+        ("assign_cstr", CFUNCTYPE(c_int, cppcapi_ErrorMessage_p, c_void_p, c_char_p)),
+        ("assign_StringView", CFUNCTYPE(c_int, cppcapi_ErrorMessage_p, c_void_p, c_void_p)),
+        ("c_str", CFUNCTYPE(cppcapi_ErrorMessage_p, c_void_p)),
+        ("at", CFUNCTYPE(c_int, cppcapi_ErrorMessage_p, c_char_p, c_void_p, c_int)),
     ]
 
 
 class CString:
     def __init__(self, s: str):
         self.__chandle = c_void_p()
-        self.__csuite = host.fpdemo_String_suite()
+        self.__csuite = host.cppcapidemo_String_suite()
 
         self.__cerr_buffer = ctypes.create_string_buffer(500)
-        self.__cerr = fp_ErrorMessage(
+        self.__cerr = cppcapi_ErrorMessage(
             len(self.__cerr_buffer), 0, ctypes.addressof(self.__cerr_buffer))
 
         code = self.__csuite.create(ctypes.byref(self.__cerr), ctypes.byref(self.__chandle))
@@ -71,7 +71,7 @@ class CString:
 
 if __name__ == "__main__":
     host = ctypes.CDLL(lib_path)
-    host.fpdemo_String_suite.restype = fpdemo_String_s
+    host.cppcapidemo_String_suite.restype = cppcapidemo_String_s
 
     cstr = CString("some data")
 

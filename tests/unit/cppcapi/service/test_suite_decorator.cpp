@@ -120,10 +120,10 @@ struct MockAPISuite
 		bool,
 		StubSharedHandle);
 
-	fp_ErrorCode (*no_return_with_error_no_out_no_args)(fp_ErrorMessage *, Handle);
+	cppcapi_ErrorCode (*no_return_with_error_no_out_no_args)(cppcapi_ErrorMessage *, Handle);
 
-	fp_ErrorCode (*no_return_with_error_no_out_with_args)(
-		fp_ErrorMessage *,
+	cppcapi_ErrorCode (*no_return_with_error_no_out_with_args)(
+		cppcapi_ErrorMessage *,
 		Handle,
 		int,
 		StubOwnedByServiceHandle,
@@ -132,8 +132,8 @@ struct MockAPISuite
 		bool,
 		StubSharedHandle);
 
-	fp_ErrorCode (*no_return_with_error_with_out_with_args)(
-		fp_ErrorMessage *,
+	cppcapi_ErrorCode (*no_return_with_error_with_out_with_args)(
+		cppcapi_ErrorMessage *,
 		StubOwnedByClientHandle *,
 		Handle,
 		int,
@@ -365,12 +365,12 @@ TEMPLATE_PRODUCT_TEST_CASE(
 			WHEN("the corresponding suite function is called")
 			{
 				std::string storage(500, '\0');
-				fp_ErrorMessage err{storage.size(), 0, storage.data()};
-				fp_ErrorCode code = suite.no_return_with_error_no_out_no_args(&err, handle);
+				cppcapi_ErrorMessage err{storage.size(), 0, storage.data()};
+				cppcapi_ErrorCode code = suite.no_return_with_error_no_out_no_args(&err, handle);
 
 				THEN("error is OK")
 				{
-					CHECK(code == fp_ok);
+					CHECK(code == cppcapi_ok);
 					CHECK(std::string_view{err.data, err.size}.empty());
 				}
 			}
@@ -384,12 +384,12 @@ TEMPLATE_PRODUCT_TEST_CASE(
 			WHEN("the corresponding suite function is called")
 			{
 				std::string storage(500, '\0');
-				fp_ErrorMessage err{storage.size(), 0, storage.data()};
-				fp_ErrorCode code = suite.no_return_with_error_no_out_no_args(&err, handle);
+				cppcapi_ErrorMessage err{storage.size(), 0, storage.data()};
+				cppcapi_ErrorCode code = suite.no_return_with_error_no_out_no_args(&err, handle);
 
 				THEN("error is reported")
 				{
-					CHECK(code == fp_error);
+					CHECK(code == cppcapi_error);
 					CHECK(std::string_view{err.data, err.size} == "Mock domain_error");
 				}
 			}
@@ -505,9 +505,9 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				WHEN("the corresponding suite function is called")
 				{
 					std::string storage(500, '\0');
-					fp_ErrorMessage err{storage.size(), 0, storage.data()};
+					cppcapi_ErrorMessage err{storage.size(), 0, storage.data()};
 
-					fp_ErrorCode code = suite.no_return_with_error_no_out_with_args(
+					cppcapi_ErrorCode code = suite.no_return_with_error_no_out_with_args(
 						&err,
 						handle,
 						123,
@@ -519,7 +519,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 					THEN("error is OK")
 					{
-						CHECK(code == fp_ok);
+						CHECK(code == cppcapi_ok);
 						CHECK(std::string_view{err.data, err.size}.empty());
 					}
 				}
@@ -537,9 +537,9 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				WHEN("the corresponding suite function is called")
 				{
 					std::string storage(500, '\0');
-					fp_ErrorMessage err{storage.size(), 0, storage.data()};
+					cppcapi_ErrorMessage err{storage.size(), 0, storage.data()};
 
-					fp_ErrorCode code = suite.no_return_with_error_no_out_with_args(
+					cppcapi_ErrorCode code = suite.no_return_with_error_no_out_with_args(
 						&err,
 						handle,
 						123,
@@ -552,7 +552,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					THEN("error is reported")
 					{
 						// No error.
-						CHECK(code == fp_error);
+						CHECK(code == cppcapi_error);
 						CHECK(std::string_view{err.data, err.size} == "Mock domain_error");
 					}
 				}
@@ -573,10 +573,10 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				WHEN("the corresponding suite function is called")
 				{
 					std::string storage(500, '\0');
-					fp_ErrorMessage err{storage.size(), 0, storage.data()};
+					cppcapi_ErrorMessage err{storage.size(), 0, storage.data()};
 					StubOwnedByClientHandle actual_return_value;
 
-					fp_ErrorCode code = suite.no_return_with_error_with_out_with_args(
+					cppcapi_ErrorCode code = suite.no_return_with_error_with_out_with_args(
 						&err,
 						&actual_return_value,
 						handle,
@@ -590,7 +590,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					THEN("suite function returns expected value")
 					{
 						// No error.
-						CHECK(code == fp_ok);
+						CHECK(code == cppcapi_ok);
 						CHECK(std::string_view{err.data, err.size}.empty());
 						// Return value.
 						Stub const & actual_unpacked_return_value =
@@ -620,10 +620,10 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				WHEN("the corresponding suite function is called")
 				{
 					std::string storage(500, '\0');
-					fp_ErrorMessage err{storage.size(), 0, storage.data()};
+					cppcapi_ErrorMessage err{storage.size(), 0, storage.data()};
 					StubOwnedByClientHandle actual_return_value;
 
-					fp_ErrorCode code = suite.no_return_with_error_with_out_with_args(
+					cppcapi_ErrorCode code = suite.no_return_with_error_with_out_with_args(
 						&err,
 						&actual_return_value,
 						handle,
@@ -637,7 +637,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					THEN("suite function returns expected value")
 					{
 						// No error.
-						CHECK(code == fp_error);
+						CHECK(code == cppcapi_error);
 						CHECK(std::string_view{err.data, err.size} == "Mock domain_error");
 					}
 				}

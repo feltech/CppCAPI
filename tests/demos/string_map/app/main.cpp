@@ -31,7 +31,7 @@ void execute()
 
 	// Instantiate the Worker in the plugin and wrap it in a Worker wrapper here on the host.
 	auto worker =
-		loader.load_adapter<cppcapidemohost::client::Worker>("fpdemo_Worker_suite", dict);
+		loader.load_adapter<cppcapidemohost::client::Worker>("cppcapidemo_Worker_suite", dict);
 
 	// Do some work with the worker.
 
