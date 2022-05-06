@@ -126,6 +126,9 @@ public:
 		static_assert(
 			ptr_type_tag != HandleOwnershipTag::OwnedByService,
 			"Cannot make a handle to a new instance for non-shared non-transferred types");
+		static_assert(
+			!is_client_handle(),
+			"Cannot make a handle to a new instance from the client.");
 
 		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{
@@ -138,9 +141,6 @@ public:
 		// Native type.
 		else if constexpr (ptr_type_tag == HandleOwnershipTag::Unrecognized)
 		{
-			static_assert(
-				std::is_same_v<Adapter, std::false_type>,
-				"Reconstructing a handle when it should be wrapped.");
 			return Class{std::forward<Args>(args)...};
 		}
 	}
