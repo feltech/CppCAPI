@@ -55,13 +55,12 @@ private:
 		TServiceHandleMap::template ownersihp_tag_from_handle<Handle>();
 
 public:
-
-	static constexpr bool is_managed()
+	static constexpr bool is_service_handle()
 	{
 		return ptr_type_tag != HandleOwnershipTag::Unrecognized;
 	}
 
-	static constexpr bool is_client()
+	static constexpr bool is_client_handle()
 	{
 		return !std::is_same_v<Adapter, std::false_type>;
 	}
@@ -83,28 +82,29 @@ public:
 	template <class Handle>
 	static decltype(auto) convert(Handle && handle)
 	{
-		if constexpr (
-			ptr_type_tag == HandleOwnershipTag::OwnedByClient ||
-			ptr_type_tag == HandleOwnershipTag::OwnedByService)
+		if constexpr (is_service_handle())
 		{
-			return *reinterpret_cast<Class *>(handle);
-		}
-		else if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
-		{
-			return **reinterpret_cast<SharedPtr<Class> *>(handle);
-		}
-		else if constexpr (ptr_type_tag == HandleOwnershipTag::Unrecognized)
-		{
-			if constexpr (is_client())
+			if constexpr (
+				ptr_type_tag == HandleOwnershipTag::OwnedByClient ||
+				ptr_type_tag == HandleOwnershipTag::OwnedByService)
 			{
-				// Client handle type.
-				return Adapter{handle};
+				return *reinterpret_cast<Class *>(handle);
 			}
-			else
+			else if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 			{
-				// Native C type.
-				return std::forward<Handle>(handle);
+				return **reinterpret_cast<SharedPtr<Class> *>(handle);
 			}
+			throw std::logic_error("Unhandled handle ownership");
+		}
+		else if constexpr (is_client_handle())
+		{
+			// Client handle type.
+			return Adapter{handle};
+		}
+		else
+		{
+			// Native C type.
+			return std::forward<Handle>(handle);
 		}
 	}
 

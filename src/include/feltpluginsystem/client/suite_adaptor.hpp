@@ -297,17 +297,17 @@ private:
 		using From = std::decay_t<FromRef>;
 		using To = std::decay_t<ToRef>;
 
-		if constexpr (std::is_constructible_v<To, From> && HandleManager<To>::is_client())
+		if constexpr (std::is_constructible_v<To, From> && HandleManager<To>::is_client_handle())
 		{
 			// Adapter class with (explicit) conversion operator back to handle that it wraps.
 			return static_cast<To>(obj);
 		}
-		else if constexpr (HandleManager<From>::is_managed())
+		else if constexpr (HandleManager<From>::is_service_handle())
 		{
 			// Is already a handle.
 			return obj;
 		}
-		else if constexpr (HandleManager<To>::is_managed())
+		else if constexpr (HandleManager<To>::is_service_handle())
 		{
 			// Is not a handle, but can be.
 			return HandleManager<To>::create(std::forward<FromRef>(obj));
