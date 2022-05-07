@@ -80,7 +80,7 @@ public:
 	 * opaque handle.
 	 */
 	template <class Handle>
-	static decltype(auto) convert(Handle && handle)
+	static decltype(auto) to_instance(Handle && handle)
 	{
 		if constexpr (is_service_handle())
 		{
@@ -121,17 +121,17 @@ public:
 	 * @return Newly minted opaque handle.
 	 */
 	template <typename... Args>
-	static Handle make_handle(Args &&... args)
+	static Handle make_to_handle(Args &&... args)
 	{
 		static_assert(
 			ptr_type_tag != HandleOwnershipTag::OwnedByService,
 			"Cannot make a handle to a new instance for non-shared non-transferred types");
 		static_assert(
-			!is_client_handle(), "Cannot make a handle to a new instance from the client.");
+			!is_client_handle(), "Cannot create a handle to a new instance from the client.");
 
 		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{
-			return create(cppcapi::make_shared<Class>(std::forward<Args>(args)...));
+			return to_handle(cppcapi::make_shared<Class>(std::forward<Args>(args)...));
 		}
 		else if constexpr (ptr_type_tag == HandleOwnershipTag::OwnedByClient)
 		{
@@ -152,7 +152,7 @@ public:
 	 * @param obj Object to reference.
 	 * @return Newly minted opaque handle.
 	 */
-	static Handle create(Class & obj)
+	static Handle to_handle(Class & obj)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
@@ -172,7 +172,7 @@ public:
 	 * @param ptr Pointer to wrap.
 	 * @return Newly minted opaque handle.
 	 */
-	static Handle create(SharedPtr<Class> const & ptr)
+	static Handle to_handle(SharedPtr<Class> const & ptr)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
@@ -192,7 +192,7 @@ public:
 	 * @param ptr Pointer to wrap.
 	 * @return Newly minted opaque handle.
 	 */
-	static Handle create(SharedPtr<Class> && ptr)
+	static Handle to_handle(SharedPtr<Class> && ptr)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
@@ -205,9 +205,9 @@ public:
 	 * Construct a new instance of our Class type and associate it with a Handle.
 	 *
 	 * The signature of this function matches the convention that function pointer suites should
-	 * adhere to, allowing it to be used directly without wrapping, e.g. when defining the `create`
-	 * member during construction of a function pointer suite we can simply do
-	 * `.create = &Converter::make_handle,`.
+	 * adhere to, allowing it to be used directly without wrapping, e.g. when defining the
+	 * `create` member during construction of a function pointer suite we can simply do
+	 * `.create = &Converter::create,`.
 	 *
 	 * @tparam Args Argument types to pass to the constructor.
 	 * @param[out] err Storage for exception message, if one occurs during construction.
@@ -216,10 +216,12 @@ public:
 	 * @return Error code.
 	 */
 	template <typename... Args>
-	static cppcapi_ErrorCode make(cppcapi_ErrorMessage * err, Handle * out, Args... args)
+	static cppcapi_ErrorCode create(cppcapi_ErrorMessage * err, Handle * out, Args... args)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
-		return TErrorMap::wrap_exception(*err, [&out, &args...] { *out = make_handle(args...); });
+		return TErrorMap::wrap_exception(
+			*err,
+			[&out, &args...] { *out = make_to_handle(std::forward<decltype(args)>(args)...); });
 	}
 
 	/**

@@ -311,7 +311,7 @@ private:
 		else if constexpr (HandleManager<To>::is_service_handle())
 		{
 			// Is not a handle, but can be.
-			return HandleManager<To>::create(std::forward<FromRef>(obj));
+			return HandleManager<To>::to_handle(std::forward<FromRef>(obj));
 		}
 		else
 		{

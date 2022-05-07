@@ -53,8 +53,8 @@ private:
 	{
 		using is_callable_invokable_with_converted_args = std::is_invocable<
 			decltype(std::forward<Fn>(fn)),
-			decltype(HandleManager<Handle>::convert(std::forward<Handle>(handle))),
-			decltype(HandleManager<decltype(args)>::convert(
+			decltype(HandleManager<Handle>::to_instance(std::forward<Handle>(handle))),
+			decltype(HandleManager<decltype(args)>::to_instance(
 				std::forward<decltype(args)>(args)))...>;
 
 		static_assert(
@@ -114,8 +114,8 @@ public:
 					// TODO(DF): is there a way around this? One solution would be a (optional)
 					// 	return type template param.
 					return fn(
-						HandleManager<Handle>::convert(handle),
-						HandleManager<decltype(args)>::convert(
+						HandleManager<Handle>::to_instance(handle),
+						HandleManager<decltype(args)>::to_instance(
 							std::forward<decltype(args)>(args))...);
 				}
 				(std::forward<decltype(args)>(args)...);
@@ -131,8 +131,8 @@ public:
 					const auto do_call = [&]
 					{
 						return fn(
-							HandleManager<Handle>::convert(handle),
-							HandleManager<decltype(args)>::convert(
+							HandleManager<Handle>::to_instance(handle),
+							HandleManager<decltype(args)>::to_instance(
 								std::forward<decltype(args)>(args))...);
 					};
 
@@ -156,11 +156,11 @@ public:
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					auto ret =
-						fn(HandleManager<Handle>::convert(handle),
-						   HandleManager<decltype(args)>::convert(
+						fn(HandleManager<Handle>::to_instance(handle),
+						   HandleManager<decltype(args)>::to_instance(
 							   std::forward<decltype(args)>(args))...);
 
-					*out = HandleManager<Out>::make_handle(std::move(ret));
+					*out = HandleManager<Out>::make_to_handle(std::move(ret));
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
@@ -178,11 +178,11 @@ public:
 						[handle, &out, &args...]
 						{
 							auto ret =
-								fn(HandleManager<Handle>::convert(handle),
-								   HandleManager<decltype(args)>::convert(
+								fn(HandleManager<Handle>::to_instance(handle),
+								   HandleManager<decltype(args)>::to_instance(
 									   std::forward<decltype(args)>(args))...);
 
-							*out = HandleManager<Out>::make_handle(std::move(ret));
+							*out = HandleManager<Out>::make_to_handle(std::move(ret));
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -226,8 +226,8 @@ public:
 					const auto do_call = [&]
 					{
 						return std::mem_fn(fn)(
-							HandleManager<Handle>::convert(handle),
-							HandleManager<decltype(args)>::convert(
+							HandleManager<Handle>::to_instance(handle),
+							HandleManager<decltype(args)>::to_instance(
 								std::forward<decltype(args)>(args))...);
 					};
 					using Ret = decltype(do_call());
@@ -240,7 +240,7 @@ public:
 					}
 					else
 					{
-						return HandleManager<Ret>::make_handle(do_call());
+						return HandleManager<Ret>::make_to_handle(do_call());
 					}
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -251,8 +251,8 @@ public:
 					const auto do_call = [&]
 					{
 						return std::mem_fn(fn)(
-							HandleManager<Handle>::convert(handle),
-							HandleManager<decltype(args)>::convert(
+							HandleManager<Handle>::to_instance(handle),
+							HandleManager<decltype(args)>::to_instance(
 								std::forward<decltype(args)>(args))...);
 					};
 					return TErrorMap::wrap_exception(
@@ -269,7 +269,7 @@ public:
 							}
 							else
 							{
-								return HandleManager<Ret>::make_handle(do_call());
+								return HandleManager<Ret>::make_to_handle(do_call());
 							}
 						});
 				}(std::forward<decltype(args)>(args)...);
@@ -281,11 +281,11 @@ public:
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					auto ret = std::mem_fn(fn)(
-						HandleManager<Handle>::convert(handle),
-						HandleManager<decltype(args)>::convert(
+						HandleManager<Handle>::to_instance(handle),
+						HandleManager<decltype(args)>::to_instance(
 							std::forward<decltype(args)>(args))...);
 
-					*out = HandleManager<Out>::make_handle(std::move(ret));
+					*out = HandleManager<Out>::make_to_handle(std::move(ret));
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
@@ -299,11 +299,11 @@ public:
 						[handle, &out, &args...]
 						{
 							auto ret = std::mem_fn(fn)(
-								HandleManager<Handle>::convert(handle),
-								HandleManager<decltype(args)>::convert(
+								HandleManager<Handle>::to_instance(handle),
+								HandleManager<decltype(args)>::to_instance(
 									std::forward<decltype(args)>(args))...);
 
-							*out = HandleManager<Out>::make_handle(std::move(ret));
+							*out = HandleManager<Out>::make_to_handle(std::move(ret));
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}

@@ -254,7 +254,7 @@ struct MockAPIFixture<MockAPIOwnedByServiceHandle, suite_type>
 		typename MockAPISuiteImplFixture<MockAPIOwnedByServiceHandle, suite_type>::Handle;
 
 	MockAPI service_api{};
-	Handle handle = MockAPIPlugin::HandleManager<Handle>::create(service_api);
+	Handle handle = MockAPIPlugin::HandleManager<Handle>::to_handle(service_api);
 };
 
 template <class suite_type>
@@ -263,8 +263,8 @@ struct MockAPIFixture<MockAPIOwnedByClientHandle, suite_type>
 {
 	using Handle = typename MockAPISuiteImplFixture<MockAPIOwnedByClientHandle, suite_type>::Handle;
 
-	Handle handle = MockAPIPlugin::HandleManager<Handle>::make_handle();
-	MockAPI & service_api = MockAPIPlugin::HandleManager<Handle>::convert(handle);
+	Handle handle = MockAPIPlugin::HandleManager<Handle>::make_to_handle();
+	MockAPI & service_api = MockAPIPlugin::HandleManager<Handle>::to_instance(handle);
 
 	~MockAPIFixture()
 	{
@@ -278,8 +278,8 @@ struct MockAPIFixture<MockAPISharedHandle, suite_type>
 {
 	using Handle = typename MockAPISuiteImplFixture<MockAPISharedHandle, suite_type>::Handle;
 
-	Handle handle = MockAPIPlugin::HandleManager<Handle>::make_handle();
-	MockAPI & service_api = MockAPIPlugin::HandleManager<Handle>::convert(handle);
+	Handle handle = MockAPIPlugin::HandleManager<Handle>::make_to_handle();
+	MockAPI & service_api = MockAPIPlugin::HandleManager<Handle>::to_instance(handle);
 
 	~MockAPIFixture()
 	{
@@ -342,7 +342,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				THEN("suite function returns expected value")
 				{
 					Stub const & actual_unpacked_return_value =
-						MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+						MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::to_instance(
 							actual_return_value);
 					CHECK(actual_unpacked_return_value == expected_return_value);
 					// Check copied not just pointed to.
@@ -411,21 +411,22 @@ TEMPLATE_PRODUCT_TEST_CASE(
 			// Stub instance owned by the service.
 			Stub stub_owned_by_service{};
 			StubOwnedByServiceHandle handle_for_stub_owned_by_service =
-				MockAPIPlugin::HandleManager<StubOwnedByServiceHandle>::create(
+				MockAPIPlugin::HandleManager<StubOwnedByServiceHandle>::to_handle(
 					stub_owned_by_service);
 
 			// Stub instance owned by the client.
 			StubOwnedByClientHandle handle_for_stub_owned_by_client =
-				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::make_handle();
+				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::make_to_handle();
 			Stub & stub_owned_by_client =
-				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::to_instance(
 					handle_for_stub_owned_by_client);
 
 			// Stub instance shared between service and client.
 			StubSharedHandle handle_for_stub_owned_by_shared =
-				MockAPIPlugin::HandleManager<StubSharedHandle>::make_handle();
-			Stub & stub_owned_by_shared = MockAPIPlugin::HandleManager<StubSharedHandle>::convert(
-				handle_for_stub_owned_by_shared);
+				MockAPIPlugin::HandleManager<StubSharedHandle>::make_to_handle();
+			Stub & stub_owned_by_shared =
+				MockAPIPlugin::HandleManager<StubSharedHandle>::to_instance(
+					handle_for_stub_owned_by_shared);
 
 			AND_GIVEN("no_return_no_error_no_out_with_args service function expects to be called")
 			{
@@ -476,7 +477,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					THEN("suite function returns expected value")
 					{
 						Stub const & actual_unpacked_return_value =
-							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::to_instance(
 								actual_return_value);
 						CHECK(actual_unpacked_return_value == expected_return_value);
 						// Check copied not just pointed to.
@@ -588,7 +589,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
 						CHECK(std::string_view{err.data, err.size}.empty());
 						// Return value.
 						Stub const & actual_unpacked_return_value =
-							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::convert(
+							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::to_instance(
 								actual_return_value);
 						CHECK(actual_unpacked_return_value == expected_return_value);
 						// Check copied not just pointed to.

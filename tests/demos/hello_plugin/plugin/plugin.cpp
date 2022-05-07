@@ -43,7 +43,7 @@ extern "C"
 		using Decorator = Plugin::SuiteDecorator<cppcapidemo_Worker_h>;
 
 		return {
-			.create = &Plugin::HandleManager<cppcapidemo_Worker_h>::make,
+			.create = &Plugin::HandleManager<cppcapidemo_Worker_h>::create,
 
 			.release = &Plugin::HandleManager<cppcapidemo_Worker_h>::release,
 

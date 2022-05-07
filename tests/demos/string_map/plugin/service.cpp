@@ -56,7 +56,7 @@ extern "C"
 	CPPCAPI_DEMO_PLUGIN_EXPORT cppcapidemo_Worker_s cppcapidemo_Worker_suite()
 	{
 		return {
-			.create = &HandleManager::make,
+			.create = &HandleManager::create,
 
 			.release = &HandleManager::release,
 

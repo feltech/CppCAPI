@@ -27,7 +27,7 @@ extern "C"
 		using HandleManager = Plugin::HandleManager<cppcapidemo_String_h>;
 
 		return {
-			.create = &HandleManager::make,
+			.create = &HandleManager::create,
 
 			.release = &HandleManager::release,
 
@@ -72,12 +72,12 @@ extern "C"
 	CPPCAPI_DEMO_HOST_EXPORT cppcapidemo_StringDict_s cppcapidemo_StringDict_suite()
 	{
 		using Decorator = Plugin::SuiteDecorator<cppcapidemo_StringDict_h>;
-		using Converter = Plugin::HandleManager<cppcapidemo_StringDict_h>;
+		using HandleManager = Plugin::HandleManager<cppcapidemo_StringDict_h>;
 
 		return {
-			.create = &Converter::make,
+			.create = &HandleManager::create,
 
-			.release = &Converter::release,
+			.release = &HandleManager::release,
 
 			.insert =
 				Decorator::decorate([](StringDict & self, String key, String value)
