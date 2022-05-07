@@ -237,7 +237,6 @@ struct MockAPISuiteImplFixture<THandle, member_function_suite_t>
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_no_args>),
 
-		// with_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_with_args>),
 
@@ -254,13 +253,8 @@ struct MockAPIFixture<MockAPIOwnedByServiceHandle, suite_type>
 	using Handle =
 		typename MockAPISuiteImplFixture<MockAPIOwnedByServiceHandle, suite_type>::Handle;
 
-	MockAPI & service_api = *(new MockAPI);
+	MockAPI service_api{};
 	Handle handle = MockAPIPlugin::HandleManager<Handle>::create(service_api);
-
-	~MockAPIFixture()
-	{
-		delete &service_api;
-	}
 };
 
 template <class suite_type>

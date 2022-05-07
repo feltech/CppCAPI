@@ -78,7 +78,7 @@ struct HandleMap
 	 * @tparam HandleToLookup Handle type to look up in traits list.
 	 */
 	template <class HandleToLookup>
-	static constexpr auto ownersihp_tag_from_handle()
+	static constexpr auto ownership_tag_from_handle()
 	{
 		return ownership_tag_from_handle_t<HandleToLookup>::type;
 	};
@@ -140,7 +140,7 @@ public:
 	 * @return Handle ownership tag.
 	 */
 	template <class HandleToLookup>
-	static constexpr auto ownersihp_tag_from_handle()
+	static constexpr auto ownership_tag_from_handle()
 	{
 		return ownership_tag_from_handle_t<HandleToLookup>::type;
 	};
@@ -169,7 +169,7 @@ struct HandleMap<>
 	 * @return Always HandleOwnershipTag::Unrecognized.
 	 **/
 	template <class HandleToLookup>
-	static constexpr auto ownersihp_tag_from_handle()
+	static constexpr auto ownership_tag_from_handle()
 	{
 		return fallback_ownership_tag_t<HandleToLookup>::type;
 	};

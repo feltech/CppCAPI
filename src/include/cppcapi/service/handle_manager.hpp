@@ -52,7 +52,7 @@ private:
 	using Class = typename TServiceHandleMap::template class_from_handle<Handle>;
 	using Adapter = typename TClientHandleMap::template class_from_handle<Handle>;
 	static constexpr HandleOwnershipTag ptr_type_tag =
-		TServiceHandleMap::template ownersihp_tag_from_handle<Handle>();
+		TServiceHandleMap::template ownership_tag_from_handle<Handle>();
 
 public:
 	static constexpr bool is_service_handle()
