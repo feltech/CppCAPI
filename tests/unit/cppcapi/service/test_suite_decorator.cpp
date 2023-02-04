@@ -108,8 +108,7 @@ struct MockAPISuite
 		bool,
 		StubSharedHandle);
 
-	void (*no_return_no_error_with_out_no_args)(StubOwnedByClientHandle *, Handle);
-
+	void (*no_return_no_error_with_out_no_args)(StubSharedHandle *, Handle);
 	void (*no_return_no_error_with_out_with_args)(
 		StubOwnedByClientHandle *,
 		Handle,
@@ -351,20 +350,20 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 			WHEN("the corresponding suite function is called")
 			{
-				StubOwnedByClientHandle actual_return_value;
+				StubSharedHandle actual_return_value;
 				suite.no_return_no_error_with_out_no_args(&actual_return_value, handle);
 
 				THEN("suite function returns expected value")
 				{
 					Stub const & actual_unpacked_return_value =
-						MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::to_instance(
+						MockAPIPlugin::HandleManager<StubSharedHandle>::to_instance(
 							actual_return_value);
 					CHECK(actual_unpacked_return_value == expected_return_value);
 					// Check copied not just pointed to.
 					CHECK(&actual_unpacked_return_value != &expected_return_value);
 				}
 
-				MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(actual_return_value);
+				MockAPIPlugin::HandleManager<StubSharedHandle>::release(actual_return_value);
 			}
 		}
 
