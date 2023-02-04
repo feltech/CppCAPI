@@ -55,14 +55,23 @@ private:
 		TServiceHandleMap::template ownership_tag_from_handle<Handle>();
 
 public:
-	static constexpr bool is_service_handle()
+	static constexpr bool is_for_service()
 	{
 		return ptr_type_tag != HandleOwnershipTag::Unrecognized;
 	}
 
-	static constexpr bool is_client_handle()
+	static constexpr bool is_for_client()
 	{
 		return !std::is_same_v<Adapter, std::false_type>;
+	}
+
+	static_assert(
+		!(is_for_service() && is_for_client()),
+		"A handle can only be associated with either the service or the client, not both.");
+
+	static constexpr bool is_owned_by_service()
+	{
+		return ptr_type_tag == HandleOwnershipTag::OwnedByService;
 	}
 
 	/**
@@ -74,15 +83,19 @@ public:
 	 * handle, or failing that will pass through the handle unconverted (i.e. assume it's a native
 	 * C type).
 	 *
-	 * @tparam Handle Type of handle. Required to enable forwarding references.
+	 * @tparam HandleArg Type of handle. Required to enable forwarding references.
 	 * @param handle Opaque handle to convert.
 	 * @return Dereferenceable object that dereferences to the original object associated with the
 	 * opaque handle.
 	 */
-	template <class Handle>
-	static decltype(auto) to_instance(Handle && handle)
+	template <class HandleArg>
+	static decltype(auto) to_instance(HandleArg && handle)
 	{
-		if constexpr (is_service_handle())
+		static_assert(
+			std::is_same_v<std::decay_t<HandleArg>, Handle>,
+			"HandleManager class vs. argument Handle type mismatch");
+
+		if constexpr (is_for_service())
 		{
 			if constexpr (
 				ptr_type_tag == HandleOwnershipTag::OwnedByClient ||
@@ -96,7 +109,7 @@ public:
 			}
 			throw std::logic_error("Unhandled handle ownership");
 		}
-		else if constexpr (is_client_handle())
+		else if constexpr (is_for_client())
 		{
 			// Client handle type.
 			return Adapter{handle};
@@ -104,7 +117,7 @@ public:
 		else
 		{
 			// Native C type.
-			return std::forward<Handle>(handle);
+			return std::forward<HandleArg>(handle);
 		}
 	}
 
@@ -124,10 +137,10 @@ public:
 	static Handle make_to_handle(Args &&... args)
 	{
 		static_assert(
-			ptr_type_tag != HandleOwnershipTag::OwnedByService,
-			"Cannot make a handle to a new instance for non-shared non-transferred types");
+			!is_for_client(), "Cannot create a handle to a new instance from the client.");
 		static_assert(
-			!is_client_handle(), "Cannot create a handle to a new instance from the client.");
+			!is_owned_by_service(),
+			"Cannot make a handle to a new instance for non-shared non-transferred types");
 
 		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{
@@ -143,17 +156,24 @@ public:
 			return Class{std::forward<Args>(args)...};
 		}
 	}
+
 	/**
 	 * Create a handle associated with a pre-existing instance.
 	 *
 	 * This function is only valid if the HandleOwnershipTag in the HandleTraits is
 	 * `OwnedByService`.
 	 *
+	 * @tparam ClassArg Type of `obj`. Required to enable forwarding references.
 	 * @param obj Object to reference.
 	 * @return Newly minted opaque handle.
 	 */
-	static Handle to_handle(Class & obj)
+	template <typename ClassArg>
+	static Handle to_handle(ClassArg && obj)
 	{
+		static_assert(
+			std::is_same_v<std::decay_t<ClassArg>, Class>,
+			"HandleManager class vs. argument Class type mismatch");
+
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
 			ptr_type_tag == HandleOwnershipTag::OwnedByService,

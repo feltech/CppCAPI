@@ -74,13 +74,17 @@ struct MockAPI
 	MAKE_CONST_MOCK0(no_return_no_error_no_out_no_args, void());
 	MAKE_CONST_MOCK6(
 		no_return_no_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
+	// OwnedByShared return type.
 	MAKE_CONST_MOCK0(no_return_no_error_with_out_no_args, Stub());
+	// OwnedByService return type.
 	MAKE_CONST_MOCK6(
-		no_return_no_error_with_out_with_args, Stub(int, Stub &, float, Stub &, bool, Stub &));
+		no_return_no_error_with_out_with_args, Stub &(int, Stub &, float, Stub &, bool, Stub &));
 	MAKE_CONST_MOCK0(no_return_with_error_no_out_no_args, void());
 	MAKE_CONST_MOCK6(
 		no_return_with_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
+	// OwnedByClient return type.
 	MAKE_CONST_MOCK0(no_return_with_error_with_out_no_args, Stub());
+	// OwnedByClient return type.
 	MAKE_CONST_MOCK6(
 		no_return_with_error_with_out_with_args, Stub(int, Stub &, float, Stub &, bool, Stub &));
 	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
@@ -110,7 +114,7 @@ struct MockAPISuite
 
 	void (*no_return_no_error_with_out_no_args)(StubSharedHandle *, Handle);
 	void (*no_return_no_error_with_out_with_args)(
-		StubOwnedByClientHandle *,
+		StubOwnedByServiceHandle *,
 		Handle,
 		int,
 		StubOwnedByServiceHandle,
@@ -181,6 +185,7 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_t>
 		// no_return_no_error_with_out_with_args
 		SuiteDecorator::decorate(
 			[](MockAPI & api, int i, Stub & s1, float f, Stub & s2, bool b, Stub & s3)
+				-> decltype(auto)
 			{ return api.no_return_no_error_with_out_with_args(i, s1, f, s2, b, s3); }),
 
 		// no_return_with_error_no_out_no_args
@@ -307,7 +312,6 @@ using owned_by_shared_t = MockAPIFixture<MockAPISharedHandle, suite_type>;
  * TODO(DF):
  * 	* Exception cases (possibly split into separate scenario).
  * 	* Exceptions of non std::exception type.
- * 	* Different types / handle ownership as `out` values
  * 	* boost::dll for loading plugins
  */
 // Ignore warning coming from Catch2
@@ -467,17 +471,17 @@ TEMPLATE_PRODUCT_TEST_CASE(
 
 			AND_GIVEN("no_return_no_error_with_out_with_args service function expects to be called")
 			{
-				Stub const expected_return_value{789};
+				Stub expected_return_value{789};
 				REQUIRE_CALL(
 					service_api, no_return_no_error_with_out_with_args(123, _, 0.234f, _, true, _))
 					.LR_WITH(&_2 == &stub_owned_by_service)
 					.LR_WITH(&_4 == &stub_owned_by_client)
 					.LR_WITH(&_6 == &stub_owned_by_shared)
-					.RETURN(expected_return_value);
+					.LR_RETURN(std::ref(expected_return_value));
 
 				WHEN("the corresponding suite function is called")
 				{
-					StubOwnedByClientHandle actual_return_value;
+					StubOwnedByServiceHandle actual_return_value;
 					suite.no_return_no_error_with_out_with_args(
 						&actual_return_value,
 						handle,
@@ -491,15 +495,12 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					THEN("suite function returns expected value")
 					{
 						Stub const & actual_unpacked_return_value =
-							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::to_instance(
+							MockAPIPlugin::HandleManager<StubOwnedByServiceHandle>::to_instance(
 								actual_return_value);
 						CHECK(actual_unpacked_return_value == expected_return_value);
-						// Check copied not just pointed to.
-						CHECK(&actual_unpacked_return_value != &expected_return_value);
+						// Check points to same object.
+						CHECK(&actual_unpacked_return_value == &expected_return_value);
 					}
-
-					MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(
-						actual_return_value);
 				}
 			}
 

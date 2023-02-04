@@ -159,12 +159,22 @@ public:
 						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
 					using Out = std::remove_pointer_t<decltype(out)>;
 
-					auto ret =
+					decltype(auto) ret =
 						fn(HandleManager<Handle>::to_instance(handle),
 						   HandleManager<decltype(rest)>::to_instance(
 							   std::forward<decltype(rest)>(rest))...);
 
-					*out = HandleManager<Out>::make_to_handle(std::move(ret));
+					if constexpr (HandleManager<Out>::is_owned_by_service())
+					{
+						static_assert(
+							std::is_reference_v<decltype(ret)>,
+							"Attempting to return a temporary without transferring ownership");
+						*out = HandleManager<Out>::to_handle(ret);
+					}
+					else
+					{
+						*out = HandleManager<Out>::make_to_handle(std::move(ret));
+					}
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
@@ -181,12 +191,23 @@ public:
 						*err,
 						[handle, &out, &rest...]
 						{
-							auto ret =
+							decltype(auto) ret =
 								fn(HandleManager<Handle>::to_instance(handle),
 								   HandleManager<decltype(rest)>::to_instance(
 									   std::forward<decltype(rest)>(rest))...);
 
-							*out = HandleManager<Out>::make_to_handle(std::move(ret));
+							if constexpr (HandleManager<Out>::is_owned_by_service())
+							{
+								static_assert(
+									std::is_reference_v<decltype(ret)>,
+									"Attempting to return a temporary without transferring "
+									"ownership");
+								*out = HandleManager<Out>::to_handle(ret);
+							}
+							else
+							{
+								*out = HandleManager<Out>::make_to_handle(std::move(ret));
+							}
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -284,12 +305,22 @@ public:
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
-					auto ret = std::mem_fn(fn)(
+					decltype(auto) ret = std::mem_fn(fn)(
 						HandleManager<Handle>::to_instance(handle),
 						HandleManager<decltype(rest)>::to_instance(
 							std::forward<decltype(rest)>(rest))...);
 
-					*out = HandleManager<Out>::make_to_handle(std::move(ret));
+					if constexpr (HandleManager<Out>::is_owned_by_service())
+					{
+						static_assert(
+							std::is_reference_v<decltype(ret)>,
+							"Attempting to return a temporary without transferring ownership");
+						*out = HandleManager<Out>::to_handle(ret);
+					}
+					else
+					{
+						*out = HandleManager<Out>::make_to_handle(std::move(ret));
+					}
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
@@ -302,12 +333,23 @@ public:
 						*err,
 						[handle, &out, &rest...]
 						{
-							auto ret = std::mem_fn(fn)(
+							decltype(auto) ret = std::mem_fn(fn)(
 								HandleManager<Handle>::to_instance(handle),
 								HandleManager<decltype(rest)>::to_instance(
 									std::forward<decltype(rest)>(rest))...);
 
-							*out = HandleManager<Out>::make_to_handle(std::move(ret));
+							if constexpr (HandleManager<Out>::is_owned_by_service())
+							{
+								static_assert(
+									std::is_reference_v<decltype(ret)>,
+									"Attempting to return a temporary without transferring "
+									"ownership");
+								*out = HandleManager<Out>::to_handle(ret);
+							}
+							else
+							{
+								*out = HandleManager<Out>::make_to_handle(std::move(ret));
+							}
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}

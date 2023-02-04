@@ -7,7 +7,7 @@ CPMAddPackage("gh:catchorg/Catch2@2.13.10")
 include(${Catch2_SOURCE_DIR}/contrib/Catch.cmake)
 
 # Install Trompeloeil mocking library
-CPMAddPackage("gh:rollbear/trompeloeil@42")
+CPMAddPackage("gh:rollbear/trompeloeil@43")
 
 
 #------------------------------------------------------------
