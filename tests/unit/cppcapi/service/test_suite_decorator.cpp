@@ -80,7 +80,7 @@ struct MockAPI
 	MAKE_CONST_MOCK0(no_return_with_error_no_out_no_args, void());
 	MAKE_CONST_MOCK6(
 		no_return_with_error_no_out_with_args, void(int, Stub &, float, Stub &, bool, Stub &));
-	// no_return_with_error_with_out_no_args
+	MAKE_CONST_MOCK0(no_return_with_error_with_out_no_args, Stub());
 	MAKE_CONST_MOCK6(
 		no_return_with_error_with_out_with_args, Stub(int, Stub &, float, Stub &, bool, Stub &));
 	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
@@ -131,6 +131,9 @@ struct MockAPISuite
 		StubOwnedByClientHandle,
 		bool,
 		StubSharedHandle);
+
+	cppcapi_ErrorCode (*no_return_with_error_with_out_no_args)(
+		cppcapi_ErrorMessage *, StubOwnedByClientHandle *, Handle);
 
 	cppcapi_ErrorCode (*no_return_with_error_with_out_with_args)(
 		cppcapi_ErrorMessage *,
@@ -189,6 +192,10 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_t>
 			[](MockAPI & api, int i, Stub & s1, float f, Stub & s2, bool b, Stub & s3)
 			{ api.no_return_with_error_no_out_with_args(i, s1, f, s2, b, s3); }),
 
+		// no_return_with_error_with_out_no_args
+		SuiteDecorator::decorate([](MockAPI & api)
+								 { return api.no_return_with_error_with_out_no_args(); }),
+
 		// no_return_with_error_with_out_with_args
 		SuiteDecorator::decorate(
 			[](MockAPI & api, int i, Stub & s1, float f, Stub & s2, bool b, Stub & s3)
@@ -230,6 +237,9 @@ struct MockAPISuiteImplFixture<THandle, member_function_suite_t>
 
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_no_out_with_args>),
+
+		SuiteDecorator::decorate(
+			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_with_out_no_args>),
 
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::no_return_with_error_with_out_with_args>),
@@ -301,7 +311,7 @@ using owned_by_shared_t = MockAPIFixture<MockAPISharedHandle, suite_type>;
  * 	* Different types / handle ownership as `out` values
  * 	* boost::dll for loading plugins
  */
- // Ignore warning coming from Catch2
+// Ignore warning coming from Catch2
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 
@@ -311,7 +321,6 @@ TEMPLATE_PRODUCT_TEST_CASE(
 	(owned_by_service_t, owned_by_client_t, owned_by_shared_t),
 	(lambda_suite_t, member_function_suite_t))
 {
-
 #pragma GCC diagnostic pop
 	GIVEN("A C++ service type its C client handle and function suite")
 	{
@@ -551,6 +560,63 @@ TEMPLATE_PRODUCT_TEST_CASE(
 						handle_for_stub_owned_by_shared);
 
 					THEN("error is reported")
+					{
+						// No error.
+						CHECK(code == cppcapi_error);
+						CHECK(std::string_view{err.data, err.size} == "Mock domain_error");
+					}
+				}
+			}
+
+			AND_GIVEN("no_return_with_error_with_out_no_args service function expects to be called")
+			{
+				Stub const expected_return_value{789};
+				REQUIRE_CALL(service_api, no_return_with_error_with_out_no_args())
+					.RETURN(expected_return_value);
+
+				WHEN("the corresponding suite function is called")
+				{
+					std::string storage(500, '\0');
+					cppcapi_ErrorMessage err{storage.size(), 0, storage.data()};
+					StubOwnedByClientHandle actual_return_value;
+
+					cppcapi_ErrorCode code = suite.no_return_with_error_with_out_no_args(
+						&err, &actual_return_value, handle);
+
+					THEN("suite function returns expected value")
+					{
+						// No error.
+						CHECK(code == cppcapi_ok);
+						CHECK(std::string_view{err.data, err.size}.empty());
+						// Return value.
+						Stub const & actual_unpacked_return_value =
+							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::to_instance(
+								actual_return_value);
+						CHECK(actual_unpacked_return_value == expected_return_value);
+						// Check copied not just pointed to.
+						CHECK(&actual_unpacked_return_value != &expected_return_value);
+					}
+
+					MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(
+						actual_return_value);
+				}
+			}
+
+			AND_GIVEN("no_return_with_error_with_out_no_args service function throws an exception")
+			{
+				REQUIRE_CALL(service_api, no_return_with_error_with_out_no_args())
+					.THROW(std::domain_error{"Mock domain_error"});
+
+				WHEN("the corresponding suite function is called")
+				{
+					std::string storage(500, '\0');
+					cppcapi_ErrorMessage err{storage.size(), 0, storage.data()};
+					StubOwnedByClientHandle actual_return_value;
+
+					cppcapi_ErrorCode code = suite.no_return_with_error_with_out_no_args(
+						&err, &actual_return_value, handle);
+
+					THEN("suite function returns expected value")
 					{
 						// No error.
 						CHECK(code == cppcapi_error);
