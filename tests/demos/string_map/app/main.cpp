@@ -45,7 +45,8 @@ void execute()
 				  << std::endl;
 	}
 
-	for (auto [k, v] : *dict) std::cout << k << " = " << v << std::endl;
+	std::cout << "Dict contents:" << std::endl;
+	for (auto [k, v] : *dict) std::cout << "  " << k << " = " << v << std::endl;
 
 	std::cout << "Try again:" << std::endl;
 
@@ -53,7 +54,8 @@ void execute()
 
 	worker.update_dict("second key from host");
 
-	for (auto [k, v] : *dict) std::cout << k << " = " << v << std::endl;
+	std::cout << "Dict contents:" << std::endl;
+	for (auto [k, v] : *dict) std::cout << "  " << k << " = " << v << std::endl;
 }
 }  // namespace cppcapidemohost
 

@@ -301,12 +301,18 @@ using owned_by_shared_t = MockAPIFixture<MockAPISharedHandle, suite_type>;
  * 	* Different types / handle ownership as `out` values
  * 	* boost::dll for loading plugins
  */
+ // Ignore warning coming from Catch2
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
 TEMPLATE_PRODUCT_TEST_CASE(
 	"Decorating C++ functions for a C function pointer suite",
 	"",
 	(owned_by_service_t, owned_by_client_t, owned_by_shared_t),
 	(lambda_suite_t, member_function_suite_t))
 {
+
+#pragma GCC diagnostic pop
 	GIVEN("A C++ service type its C client handle and function suite")
 	{
 		TestType fixture;

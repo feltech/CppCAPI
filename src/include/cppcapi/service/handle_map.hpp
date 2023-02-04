@@ -81,7 +81,7 @@ struct HandleMap
 	static constexpr auto ownership_tag_from_handle()
 	{
 		return ownership_tag_from_handle_t<HandleToLookup>::type;
-	};
+	}
 
 	/**
 	 * Find the native class associated with the given handle type.
@@ -143,7 +143,7 @@ public:
 	static constexpr auto ownership_tag_from_handle()
 	{
 		return ownership_tag_from_handle_t<HandleToLookup>::type;
-	};
+	}
 	/**
 	 * Get the native class associated with our Handle if HandleToLookup matches, otherwise
 	 * pass-through the HandleToLookup.
@@ -172,7 +172,7 @@ struct HandleMap<>
 	static constexpr auto ownership_tag_from_handle()
 	{
 		return fallback_ownership_tag_t<HandleToLookup>::type;
-	};
+	}
 
 	/**
 	 * Always pass-through HandleToLookup.

@@ -90,7 +90,12 @@ public:
 			std::is_empty_v<Lambda>,
 			"Stateful callables (e.g. capturing lambdas) are not supported");
 
-		static const Lambda fn = std::forward<Lambda>(lambda);
+		// Save off the lambda as a static. Will only happen once per lambda, since lambda type is
+		// unique. Ideally we could use the fact that (non-capturing) lambdas are already global,
+		// but the compiler isn't clever enough to notice that here.
+		// TODO(DF): Obviously gnu::used is GCC-specific, so check Clang and VS don't have the same
+		//  linkage issue requiring a similar workaround. This workaround is requied for GCC 9.4.
+		static const Lambda fn [[gnu::used]] = std::forward<Lambda>(lambda);
 
 		return [](auto... args)
 		{
@@ -99,10 +104,10 @@ public:
 
 			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
 			{
-				return [](Handle handle, auto... args) -> auto
+				return [](Handle handle, auto... rest) -> auto
 				{
 					assert_is_invokable(
-						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
+						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
 
 					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
 					// function that cannot error is free to use its return value for something
@@ -115,25 +120,24 @@ public:
 					// 	return type template param.
 					return fn(
 						HandleManager<Handle>::to_instance(handle),
-						HandleManager<decltype(args)>::to_instance(
-							std::forward<decltype(args)>(args))...);
-				}
-				(std::forward<decltype(args)>(args)...);
+						HandleManager<decltype(rest)>::to_instance(
+							std::forward<decltype(rest)>(rest))...);
+				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
 				return
-					[](cppcapi_ErrorMessage * err, Handle handle, auto... args) -> cppcapi_ErrorCode
+					[](cppcapi_ErrorMessage * err, Handle handle, auto... rest) -> cppcapi_ErrorCode
 				{
 					assert_is_invokable(
-						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
+						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
 
 					const auto do_call = [&]
 					{
 						return fn(
 							HandleManager<Handle>::to_instance(handle),
-							HandleManager<decltype(args)>::to_instance(
-								std::forward<decltype(args)>(args))...);
+							HandleManager<decltype(rest)>::to_instance(
+								std::forward<decltype(rest)>(rest))...);
 					};
 
 					// C suite function supporting error cases must use the return value for an
@@ -149,38 +153,38 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
 			{
-				return [](auto * out, Handle handle, auto... args) -> void
+				return [](auto * out, Handle handle, auto... rest) -> void
 				{
 					assert_is_invokable(
-						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
+						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					auto ret =
 						fn(HandleManager<Handle>::to_instance(handle),
-						   HandleManager<decltype(args)>::to_instance(
-							   std::forward<decltype(args)>(args))...);
+						   HandleManager<decltype(rest)>::to_instance(
+							   std::forward<decltype(rest)>(rest))...);
 
 					*out = HandleManager<Out>::make_to_handle(std::move(ret));
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
-				return [](cppcapi_ErrorMessage * err, auto * out, Handle handle, auto... args)
+				return [](cppcapi_ErrorMessage * err, auto * out, Handle handle, auto... rest)
 						   -> cppcapi_ErrorCode
 				{
 					assert_is_invokable(
-						fn, std::forward<Handle>(handle), std::forward<decltype(args)>(args)...);
+						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
 
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					return TErrorMap::wrap_exception(
 						*err,
-						[handle, &out, &args...]
+						[handle, &out, &rest...]
 						{
 							auto ret =
 								fn(HandleManager<Handle>::to_instance(handle),
-								   HandleManager<decltype(args)>::to_instance(
-									   std::forward<decltype(args)>(args))...);
+								   HandleManager<decltype(rest)>::to_instance(
+									   std::forward<decltype(rest)>(rest))...);
 
 							*out = HandleManager<Out>::make_to_handle(std::move(ret));
 						});
@@ -221,14 +225,14 @@ public:
 
 			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
 			{
-				return [](Handle handle, auto... args)
+				return [](Handle handle, auto... rest)
 				{
 					const auto do_call = [&]
 					{
 						return std::mem_fn(fn)(
 							HandleManager<Handle>::to_instance(handle),
-							HandleManager<decltype(args)>::to_instance(
-								std::forward<decltype(args)>(args))...);
+							HandleManager<decltype(rest)>::to_instance(
+								std::forward<decltype(rest)>(rest))...);
 					};
 					using Ret = decltype(do_call());
 
@@ -246,14 +250,14 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
-				return [](cppcapi_ErrorMessage * err, Handle handle, auto... args)
+				return [](cppcapi_ErrorMessage * err, Handle handle, auto... rest)
 				{
 					const auto do_call = [&]
 					{
 						return std::mem_fn(fn)(
 							HandleManager<Handle>::to_instance(handle),
-							HandleManager<decltype(args)>::to_instance(
-								std::forward<decltype(args)>(args))...);
+							HandleManager<decltype(rest)>::to_instance(
+								std::forward<decltype(rest)>(rest))...);
 					};
 					return TErrorMap::wrap_exception(
 						*err,
@@ -261,7 +265,7 @@ public:
 						{
 							using Ret = decltype(do_call());
 
-							// Although `cannot_return_can_error`, this refers to out-parameter,
+							// Although `cannot_output_can_error`, this refers to out-parameter,
 							// the function may still return a value, so we must handle both cases.
 							if constexpr (std::is_void_v<Ret>)
 							{
@@ -276,32 +280,32 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
 			{
-				return [](auto * out, Handle handle, auto... args)
+				return [](auto * out, Handle handle, auto... rest)
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					auto ret = std::mem_fn(fn)(
 						HandleManager<Handle>::to_instance(handle),
-						HandleManager<decltype(args)>::to_instance(
-							std::forward<decltype(args)>(args))...);
+						HandleManager<decltype(rest)>::to_instance(
+							std::forward<decltype(rest)>(rest))...);
 
 					*out = HandleManager<Out>::make_to_handle(std::move(ret));
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
-				return [](cppcapi_ErrorMessage * err, auto out, Handle handle, auto... args)
+				return [](cppcapi_ErrorMessage * err, auto out, Handle handle, auto... rest)
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					return TErrorMap::wrap_exception(
 						*err,
-						[handle, &out, &args...]
+						[handle, &out, &rest...]
 						{
 							auto ret = std::mem_fn(fn)(
 								HandleManager<Handle>::to_instance(handle),
-								HandleManager<decltype(args)>::to_instance(
-									std::forward<decltype(args)>(args))...);
+								HandleManager<decltype(rest)>::to_instance(
+									std::forward<decltype(rest)>(rest))...);
 
 							*out = HandleManager<Out>::make_to_handle(std::move(ret));
 						});
@@ -352,9 +356,13 @@ private:
 
 	enum class out_param_sig
 	{
+		/// fn(handle, args...) -> T
 		cannot_output_cannot_error,
+		/// fn(err, handle, args...) -> code
 		cannot_output_can_error,
+		/// fn(out, handle, args...) -> void
 		can_output_cannot_error,
+		/// fn(err, out, handle, args...) -> code
 		can_output_can_error,
 		unrecognised
 	};

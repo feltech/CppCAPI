@@ -4,7 +4,7 @@ add_library(cppcapi INTERFACE)
 target_include_directories(
 	cppcapi
 	INTERFACE
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/include>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_link_libraries(

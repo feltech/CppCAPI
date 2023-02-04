@@ -12,7 +12,6 @@
 
 namespace cppcapidemoplugin::service
 {
-
 Worker::Worker(client::StringDict service_dict) : service_dict_{std::move(service_dict)} {}
 
 /**
@@ -39,17 +38,11 @@ void Worker::update_dict(client::String const & key)
 		throw std::invalid_argument{"Couldn't find key plugin expects to exist"};
 	}
 }
-}  // namespace cppcapidemoplugin::service
 
 extern "C"
 {
-	using cppcapidemoplugin::Plugin;
 	using HandleManager = Plugin::HandleManager<cppcapidemo_Worker_h>;
 	using SuiteDecorator = Plugin::SuiteDecorator<cppcapidemo_Worker_h>;
-
-	using cppcapidemoplugin::client::String;
-	using cppcapidemoplugin::client::StringView;
-	using cppcapidemoplugin::service::Worker;
 
 	// Plugin
 
@@ -60,7 +53,9 @@ extern "C"
 
 			.release = &HandleManager::release,
 
-			.update_dict = SuiteDecorator::decorate([](Worker & self, StringView const & key)
-													{ self.update_dict(String{key}); })};
+			.update_dict =
+				SuiteDecorator::decorate([](Worker & self, client::StringView const & key)
+										 { self.update_dict(client::String{key}); })};
 	}
 }
+}  // namespace cppcapidemoplugin::service

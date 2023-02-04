@@ -34,7 +34,7 @@ constexpr void assert_is_valid_handle_type()
 		!(std::is_same_v<Handle, Class> && std::is_same_v<Adapter, std::false_type>),
 		"Attempting to wrap a handle that is unrecognized. Are you missing an entry in your "
 		"HandleMap lists?");
-};
+}
 
 /**
  * Utility class for creating and converting opaque handles.

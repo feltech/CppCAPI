@@ -3,7 +3,7 @@
 # Install testing libraries
 
 # Install Catch2 testing library
-CPMAddPackage("gh:catchorg/Catch2@2.13.8")
+CPMAddPackage("gh:catchorg/Catch2@2.13.10")
 include(${Catch2_SOURCE_DIR}/contrib/Catch.cmake)
 
 # Install Trompeloeil mocking library

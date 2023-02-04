@@ -92,7 +92,7 @@ struct HandleMap
 	static constexpr auto suite_factory_from_handle()
 	{
 		return suite_factory_from_handle_t<HandleToLookup>::type;
-	};
+	}
 };
 
 /**
@@ -178,7 +178,7 @@ public:
 	static constexpr auto suite_factory_from_handle()
 	{
 		return suite_factory_from_handle_t<HandleToLookup>::type;
-	};
+	}
 };
 
 /**
@@ -214,6 +214,6 @@ struct HandleMap<>
 	static constexpr auto suite_factory_from_handle()
 	{
 		return fallback_suite_factory_t::type;
-	};
+	}
 };
 }  // namespace cppcapi::client

@@ -6,21 +6,12 @@
 
 #include "host_export.h"
 #include "plugin_definition.hpp"
-
-namespace
+namespace cppcapidemohost::service
 {
-using String = cppcapidemohost::service::String;
-using StringView = cppcapidemohost::service::StringView;
-using StringDict = cppcapidemohost::service::StringDict;
-}  // namespace
-
 extern "C"
 {
-	using Plugin = cppcapidemohost::Plugin;
-
 	// String
 
-	using cppcapidemohost::service::String;
 	CPPCAPI_DEMO_HOST_EXPORT cppcapidemo_String_s cppcapidemo_String_suite()
 	{
 		using SuiteDecorator = Plugin::SuiteDecorator<cppcapidemo_String_h>;
@@ -56,8 +47,6 @@ extern "C"
 
 	// StringView
 
-	using cppcapidemohost::service::StringView;
-
 	CPPCAPI_DEMO_HOST_EXPORT cppcapidemo_StringView_s cppcapidemo_StringView_suite()
 	{
 		using Decorator = Plugin::SuiteDecorator<cppcapidemo_StringView_h>;
@@ -89,3 +78,4 @@ extern "C"
 		};
 	}
 }
+}  // namespace cppcapidemohost::service
