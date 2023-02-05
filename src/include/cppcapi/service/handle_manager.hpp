@@ -218,7 +218,7 @@ public:
 		static_assert(
 			ptr_type_tag == HandleOwnershipTag::Shared,
 			"Cannot create a shared handle for a non-shared type");
-		return reinterpret_cast<Handle>(new SharedPtr<Class>{ptr});
+		return reinterpret_cast<Handle>(new SharedPtr<Class>{std::move(ptr)});
 	}
 
 	/**
