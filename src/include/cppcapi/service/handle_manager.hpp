@@ -74,6 +74,11 @@ public:
 		return ptr_type_tag == HandleOwnershipTag::OwnedByService;
 	}
 
+	static constexpr bool is_shared_ownership()
+	{
+		return ptr_type_tag == HandleOwnershipTag::Shared;
+	}
+
 	/**
 	 * Convert an opaque handle to a concrete instance.
 	 *
@@ -119,6 +124,20 @@ public:
 			// Native C type.
 			return std::forward<HandleArg>(handle);
 		}
+	}
+
+	/**
+	 * Get the SharedPtr holding an instance with HandleOwnershipTag::Shared ownership.
+	 *
+	 * @param handle Handle to convert.
+	 * @return Holder SharedPtr to instance.
+	 */
+	static SharedPtr<Class> to_ptr(Handle handle)
+	{
+		static_assert(
+			is_shared_ownership(), "Can only convert to Shared ownership handles to shared_ptr");
+
+		return *reinterpret_cast<SharedPtr<Class> *>(handle);
 	}
 
 	/**

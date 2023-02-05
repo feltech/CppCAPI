@@ -446,6 +446,13 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				MockAPIPlugin::HandleManager<StubSharedHandle>::to_instance(
 					handle_for_stub_owned_by_shared);
 
+			THEN("shared handle can be converted back to shared_ptr")
+			{
+				std::shared_ptr<Stub> ptr = MockAPIPlugin::HandleManager<StubSharedHandle>::to_ptr(
+					handle_for_stub_owned_by_shared);
+				CHECK(ptr.get() == &stub_owned_by_shared);
+			}
+
 			AND_GIVEN("no_return_no_error_no_out_with_args service function expects to be called")
 			{
 				REQUIRE_CALL(
