@@ -3,8 +3,8 @@
 /**
  * Contains some common C types and values to be used by C interfaces.
  */
-#ifndef cppcapi_handles_h
-#define cppcapi_handles_h
+#ifndef cppcapi_interface_h
+#define cppcapi_interface_h
 
 #include <stddef.h>	 // NOLINT(modernize-deprecated-headers)
 
