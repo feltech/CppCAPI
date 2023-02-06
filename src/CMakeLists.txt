@@ -1,6 +1,7 @@
 # Copyright 2022 David Feltell
 # SPDX-License-Identifier: MIT
 add_library(cppcapi INTERFACE)
+add_library(${PROJECT_NAME}::cppcapi ALIAS cppcapi)
 target_include_directories(
 	cppcapi
 	INTERFACE
