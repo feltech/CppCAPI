@@ -238,7 +238,16 @@ struct ErrorMap
 				{
 					try
 					{
-						wrapped();
+						if constexpr (std::is_void_v<decltype(wrapped())>)
+						{
+							// Leaf ErrorTraits case.
+							wrapped();
+						}
+						else
+						{
+							// Recursive ErrorTraits case.
+							return wrapped();
+						}
 					}
 					catch (typename Traits::Exception const & ex)
 					{
