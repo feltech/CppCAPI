@@ -190,8 +190,11 @@ public:
 	static Handle to_handle(ClassArg && obj)
 	{
 		static_assert(
-			std::is_same_v<std::decay_t<ClassArg>, Class>,
+			std::is_same_v<std::decay_t<ClassArg>, std::decay_t<Class>>,
 			"HandleManager class vs. argument Class type mismatch");
+    static_assert(
+        std::is_const_v<Class> || !std::is_const_v<ClassArg>,
+        "HandleManager handle class is non-const but attempting to convert const argument");
 
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
