@@ -132,7 +132,7 @@ public:
 	 * @param handle Handle to convert.
 	 * @return Holder SharedPtr to instance.
 	 */
-	static SharedPtr<Class> to_ptr(Handle handle)
+	static SharedPtr<Class> & to_ptr(Handle handle)
 	{
 		static_assert(
 			is_shared_ownership(), "Can only convert to Shared ownership handles to shared_ptr");
