@@ -75,7 +75,23 @@ template <class Traits>
 void throw_if_matches(cppcapi_ErrorMessage const & err, cppcapi_ErrorCode const code)
 {
 	if (code == Traits::code)
-		throw typename Traits::Exception{{err.data, err.size}};
+	{
+		using Exception = typename Traits::Exception;
+
+		static_assert(
+			std::is_constructible_v<Exception, std::string> || std::is_constructible_v<Exception>,
+			"Exception type must be either default constructible or constructible from a "
+			"std::string");
+
+		if constexpr (std::is_constructible_v<Exception, std::string>)
+		{
+			throw Exception{{err.data, err.size}};
+		}
+		else if constexpr (std::is_constructible_v<Exception>)
+		{
+			throw Exception{};
+		}
+	}
 }
 
 template <class Outer, class Inner>
