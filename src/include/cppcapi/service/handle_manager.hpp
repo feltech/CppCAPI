@@ -54,6 +54,10 @@ private:
 	static constexpr HandleOwnershipTag ptr_type_tag =
 		TServiceHandleMap::template ownership_tag_from_handle<Handle>();
 
+	template <typename Handle>
+	using OtherHandleManager =
+		HandleManager<Handle, TServiceHandleMap, TClientHandleMap, TErrorMap>;
+
 public:
 	static constexpr bool is_for_service()
 	{
@@ -192,9 +196,9 @@ public:
 		static_assert(
 			std::is_same_v<std::decay_t<ClassArg>, std::decay_t<Class>>,
 			"HandleManager class vs. argument Class type mismatch");
-    static_assert(
-        std::is_const_v<Class> || !std::is_const_v<ClassArg>,
-        "HandleManager handle class is non-const but attempting to convert const argument");
+		static_assert(
+			std::is_const_v<Class> || !std::is_const_v<ClassArg>,
+			"HandleManager handle class is non-const but attempting to convert const argument");
 
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		static_assert(
@@ -263,7 +267,19 @@ public:
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 		return TErrorMap::wrap_exception(
 			*err,
-			[&out, &args...] { *out = make_to_handle(std::forward<decltype(args)>(args)...); });
+			[&out, &args...]
+			{
+				*out = make_to_handle(OtherHandleManager<std::decay_t<decltype(args)>>::to_instance(
+					std::forward<decltype(args)>(args))...);
+			});
+	}
+
+	template <typename... Args>
+	static void create(Handle * out, Args... args)
+	{
+		assert_is_valid_handle_type<Handle, Class, Adapter>();
+		*out = make_to_handle(OtherHandleManager<std::decay_t<decltype(args)>>::to_instance(
+			std::forward<decltype(args)>(args))...);
 	}
 
 	/**
