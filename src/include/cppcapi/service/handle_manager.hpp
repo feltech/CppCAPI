@@ -197,8 +197,9 @@ public:
 	/**
 	 * Create a handle associated with a pre-existing instance.
 	 *
-	 * This function is only valid if the HandleOwnershipTag in the HandleTraits is
-	 * `OwnedByService`.
+	 * If handle is shared ownership, i.e. obj is a shared_ptr, then the given shared pointer's
+	 * reference count will be incremented and not decremented again until `release` is called.
+	 *
 	 *
 	 * @tparam ClassArg Type of `obj`. Required to enable forwarding references.
 	 * @param obj Object to reference.
@@ -207,58 +208,27 @@ public:
 	template <typename ClassArg>
 	static Handle to_handle(ClassArg && obj)
 	{
-		static_assert(
-			std::is_same_v<std::decay_t<ClassArg>, std::decay_t<Class>>,
-			"HandleManager class vs. argument Class type mismatch");
-		static_assert(
-			std::is_const_v<Class> || !std::is_const_v<ClassArg>,
-			"HandleManager handle class is non-const but attempting to convert const argument");
-
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
-		static_assert(
-			ptr_type_tag == HandleOwnershipTag::OwnedByService,
-			"Cannot create a non-shared non-transferred handle for shared / transferred types");
-		return reinterpret_cast<Handle>(&obj);
-	}
 
-	/**
-	 * Create a handle associated with a pre-existing shared smart pointer to an instance.
-	 *
-	 * This function is only valid if the `ptr_type_tag` in the HandleTraits is `Shared`.
-	 *
-	 * The given shared pointer's reference count will be incremented and not decremented again
-	 * until `release` is called.
-	 *
-	 * @param ptr Pointer to wrap.
-	 * @return Newly minted opaque handle.
-	 */
-	static Handle to_handle(SharedPtr<Class> const & ptr)
-	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>();
-		static_assert(
-			ptr_type_tag == HandleOwnershipTag::Shared,
-			"Cannot create a shared handle for a non-shared type");
-		return reinterpret_cast<Handle>(new SharedPtr<Class>{ptr});
-	}
-
-	/**
-	 * Create a handle associated with a pre-existing shared smart pointer to an instance.
-	 *
-	 * This function is only valid if the `ptr_type_tag` in the HandleTraits is `Shared`.
-	 *
-	 * The given shared pointer's reference count will be incremented and not decremented again
-	 * until `release` is called.
-	 *
-	 * @param ptr Pointer to wrap.
-	 * @return Newly minted opaque handle.
-	 */
-	static Handle to_handle(SharedPtr<Class> && ptr)
-	{
-		assert_is_valid_handle_type<Handle, Class, Adapter>();
-		static_assert(
-			ptr_type_tag == HandleOwnershipTag::Shared,
-			"Cannot create a shared handle for a non-shared type");
-		return reinterpret_cast<Handle>(new SharedPtr<Class>{std::move(ptr)});
+		if constexpr (
+			is_shared_ownership() &&
+			std::is_same_v<std::decay_t<ClassArg>, SharedPtr<std::remove_const_t<Class>>>)
+		{
+			return reinterpret_cast<Handle>(new SharedPtr<Class>{std::forward<ClassArg>(obj)});
+		}
+		else
+		{
+			static_assert(
+				std::is_same_v<std::decay_t<ClassArg>, std::decay_t<Class>>,
+				"HandleManager class vs. argument Class type mismatch");
+			static_assert(
+				ptr_type_tag == HandleOwnershipTag::OwnedByService,
+				"Cannot create a non-shared non-transferred handle for shared / transferred types");
+			static_assert(
+				std::is_const_v<Class> || !std::is_const_v<ClassArg>,
+				"HandleManager handle class is non-const but attempting to convert const argument");
+			return reinterpret_cast<Handle>(&obj);
+		}
 	}
 
 	/**
