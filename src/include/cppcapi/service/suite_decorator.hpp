@@ -78,24 +78,28 @@ public:
 	 * reference to) an instance of the (C++) type associated with the handle type that is
 	 * provided as a template argument to this `SuiteDecorator`.
 	 *
-	 * @tparam Lambda Stateless callable type to decorate.
+	 * @tparam CallableRef Stateless callable type to decorate.
 	 * @param lambda Stateless callable to decorate.
 	 * @return Non-capturing lambda satisfying C function signature.
 	 */
-	template <typename Lambda>
-	static auto decorate(Lambda && lambda)
+	template <typename CallableRef>
+	static auto decorate(CallableRef && lambda)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
+
+		using CallableType = std::remove_pointer_t<std::decay_t<CallableRef>>;
 		static_assert(
-			std::is_empty_v<Lambda>,
+			std::is_empty_v<CallableType> || std::is_function_v<CallableType>,
 			"Stateful callables (e.g. capturing lambdas) are not supported");
+
+		using CallableTypeOrPtr = std::decay_t<CallableRef>;
 
 		// Save off the lambda as a static. Will only happen once per lambda, since lambda type is
 		// unique. Ideally we could use the fact that (non-capturing) lambdas are already global,
 		// but the compiler isn't clever enough to notice that here.
 		// TODO(DF): Obviously gnu::used is GCC-specific, so check Clang and VS don't have the same
 		//  linkage issue requiring a similar workaround. This workaround is requied for GCC 9.4.
-		static const Lambda fn [[gnu::used]] = std::forward<Lambda>(lambda);
+		static const CallableTypeOrPtr fn [[gnu::used]] = std::forward<CallableRef>(lambda);
 
 		return [](auto... args)
 		{
