@@ -48,20 +48,6 @@ private:
 			"mem_fn_ptr must only be used with member function pointers");
 	};
 
-	template <typename Fn, typename... Args>
-	static constexpr void assert_is_invokable(Fn fn, Handle handle, Args... args)
-	{
-		using is_callable_invokable_with_converted_args = std::is_invocable<
-			decltype(std::forward<Fn>(fn)),
-			decltype(HandleManager<Handle>::to_instance(std::forward<Handle>(handle))),
-			decltype(HandleManager<decltype(args)>::to_instance(
-				std::forward<decltype(args)>(args)))...>;
-
-		static_assert(
-			is_callable_invokable_with_converted_args::value,
-			"Callable cannot be invoked with resolved suite function args");
-	}
-
 public:
 	template <auto fn>
 	static constexpr mem_fn_ptr_t<fn> mem_fn_ptr{};
@@ -110,9 +96,6 @@ public:
 			{
 				return [](Handle handle, auto... rest) -> auto
 				{
-					assert_is_invokable(
-						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
-
 					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
 					// function that cannot error is free to use its return value for something
 					// other than an error code.
@@ -121,11 +104,8 @@ public:
 					// expected return handle type (the same C++ return type could be associated
 					// with multiple C handle types).
 					// TODO(DF): is there a way around this? One solution would be a (optional)
-					// 	return type template param.
-					return fn(
-						HandleManager<Handle>::to_instance(handle),
-						HandleManager<decltype(rest)>::to_instance(
-							std::forward<decltype(rest)>(rest))...);
+
+					return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
@@ -133,16 +113,8 @@ public:
 				return
 					[](cppcapi_ErrorMessage * err, Handle handle, auto... rest) -> cppcapi_ErrorCode
 				{
-					assert_is_invokable(
-						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
-
 					const auto do_call = [&]
-					{
-						return fn(
-							HandleManager<Handle>::to_instance(handle),
-							HandleManager<decltype(rest)>::to_instance(
-								std::forward<decltype(rest)>(rest))...);
-					};
+					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
 
 					// C suite function supporting error cases must use the return value for an
 					// error code. In this `cannot_return_can_error` case there is no out-parameter
@@ -159,14 +131,10 @@ public:
 			{
 				return [](auto * out, Handle handle, auto... rest) -> void
 				{
-					assert_is_invokable(
-						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					decltype(auto) ret =
-						fn(HandleManager<Handle>::to_instance(handle),
-						   HandleManager<decltype(rest)>::to_instance(
-							   std::forward<decltype(rest)>(rest))...);
+						convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
 
 					if constexpr (HandleManager<Out>::is_owned_by_service())
 					{
@@ -186,9 +154,6 @@ public:
 				return [](cppcapi_ErrorMessage * err, auto * out, Handle handle, auto... rest)
 						   -> cppcapi_ErrorCode
 				{
-					assert_is_invokable(
-						fn, std::forward<Handle>(handle), std::forward<decltype(rest)>(rest)...);
-
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					return TErrorMap::wrap_exception(
@@ -196,9 +161,7 @@ public:
 						[handle, &out, &rest...]
 						{
 							decltype(auto) ret =
-								fn(HandleManager<Handle>::to_instance(handle),
-								   HandleManager<decltype(rest)>::to_instance(
-									   std::forward<decltype(rest)>(rest))...);
+								convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
 
 							if constexpr (HandleManager<Out>::is_owned_by_service())
 							{
@@ -253,12 +216,7 @@ public:
 				return [](Handle handle, auto... rest)
 				{
 					const auto do_call = [&]
-					{
-						return std::mem_fn(fn)(
-							HandleManager<Handle>::to_instance(handle),
-							HandleManager<decltype(rest)>::to_instance(
-								std::forward<decltype(rest)>(rest))...);
-					};
+					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
 					using Ret = decltype(do_call());
 
 					// Although `cannot_return_cannot_error`, this refers to out-parameter, the
@@ -278,12 +236,7 @@ public:
 				return [](cppcapi_ErrorMessage * err, Handle handle, auto... rest)
 				{
 					const auto do_call = [&]
-					{
-						return std::mem_fn(fn)(
-							HandleManager<Handle>::to_instance(handle),
-							HandleManager<decltype(rest)>::to_instance(
-								std::forward<decltype(rest)>(rest))...);
-					};
+					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
 					return TErrorMap::wrap_exception(
 						*err,
 						[&do_call]
@@ -309,10 +262,8 @@ public:
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
-					decltype(auto) ret = std::mem_fn(fn)(
-						HandleManager<Handle>::to_instance(handle),
-						HandleManager<decltype(rest)>::to_instance(
-							std::forward<decltype(rest)>(rest))...);
+					decltype(auto) ret =
+						convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
 
 					if constexpr (HandleManager<Out>::is_owned_by_service())
 					{
@@ -337,10 +288,8 @@ public:
 						*err,
 						[handle, &out, &rest...]
 						{
-							decltype(auto) ret = std::mem_fn(fn)(
-								HandleManager<Handle>::to_instance(handle),
-								HandleManager<decltype(rest)>::to_instance(
-									std::forward<decltype(rest)>(rest))...);
+							decltype(auto) ret =
+								convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
 
 							if constexpr (HandleManager<Out>::is_owned_by_service())
 							{
@@ -438,6 +387,72 @@ private:
 		}
 		return out_param_sig::unrecognised;
 	}
+
+	/// Call a C++ function after converting C handles to their C++ types.
+	template <typename Fn, typename... CArg>
+	static decltype(auto) convert_and_call(Fn && fn, CArg &&... arg)
+	{
+		if constexpr (std::is_member_function_pointer_v<Fn>)
+		{
+			return convert_and_call_helper_t<Fn>::call(
+				std::forward<Fn>(fn), std::forward<CArg>(arg)...);
+		}
+		else
+		{
+			return convert_and_call_helper_t<decltype(std::function{fn})>::call(
+				std::forward<Fn>(fn), std::forward<CArg>(arg)...);
+		}
+	}
+
+	template <typename>
+	struct convert_and_call_helper_t;
+
+	/// Helper for non-member functions (abuses std::function to get args).
+	template <typename Ret, typename... CppArg>
+	struct convert_and_call_helper_t<std::function<Ret(CppArg...)>>
+	{
+		template <typename Fn, typename... CArg>
+		static decltype(auto) call(Fn && fn, CArg &&... arg)
+		{
+			return fn(HandleManager<std::decay_t<CArg>>::template to_instance_or_ptr<CppArg>(
+				std::forward<CArg>(arg))...);
+		}
+	};
+
+	/// Helper for member function.
+	template <typename Ret, typename Class, typename... CppArg>
+	struct convert_and_call_helper_t<Ret (Class::*)(CppArg...)>
+	{
+		template <typename Fn, typename Handle, typename... CArg>
+		static decltype(auto) call(Fn && fn, Handle handle, CArg &&... arg)
+		{
+			return std::mem_fn(fn)(
+				HandleManager<Handle>::template to_instance(std::forward<Handle>(handle)),
+				HandleManager<std::decay_t<CArg>>::template to_instance_or_ptr<CppArg>(
+					std::forward<CArg>(arg))...);
+		}
+	};
+
+	/// Helper for const member function.
+	template <typename Ret, typename Class, typename... CppArg>
+	struct convert_and_call_helper_t<Ret (Class::*)(CppArg...) const>
+		: convert_and_call_helper_t<Ret (Class::*)(CppArg...)>
+	{
+	};
+
+	/// Helper for noexcept member function.
+	template <typename Ret, typename Class, typename... CppArg>
+	struct convert_and_call_helper_t<Ret (Class::*)(CppArg...) noexcept>
+		: convert_and_call_helper_t<Ret (Class::*)(CppArg...)>
+	{
+	};
+
+	/// Helper for const noexcept member function.
+	template <typename Ret, typename Class, typename... CppArg>
+	struct convert_and_call_helper_t<Ret (Class::*)(CppArg...) const noexcept>
+		: convert_and_call_helper_t<Ret (Class::*)(CppArg...)>
+	{
+	};
 };
 
 }  // namespace cppcapi::service

@@ -83,6 +83,20 @@ public:
 		return ptr_type_tag == HandleOwnershipTag::Shared;
 	}
 
+	template <typename CppType, typename CType>
+	static decltype(auto) to_instance_or_ptr(CType && arg)
+	{
+		if constexpr (
+			is_shared_ownership() && std::is_same_v<std::decay_t<CppType>, SharedPtr<Class>>)
+		{
+			return to_ptr(arg);
+		}
+		else
+		{
+			return to_instance(std::forward<CType>(arg));
+		}
+	}
+
 	/**
 	 * Convert an opaque handle to a concrete instance.
 	 *
