@@ -94,7 +94,7 @@ public:
 
 			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
 			{
-				return [](Handle handle, auto... rest) -> auto
+				return [](Handle handle, auto &&... rest) -> auto
 				{
 					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
 					// function that cannot error is free to use its return value for something
@@ -110,8 +110,9 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
-				return
-					[](cppcapi_ErrorMessage * err, Handle handle, auto... rest) -> cppcapi_ErrorCode
+				return [](cppcapi_ErrorMessage * err,
+						  Handle handle,
+						  auto &&... rest) -> cppcapi_ErrorCode
 				{
 					const auto do_call = [&]
 					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
@@ -129,7 +130,7 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
 			{
-				return [](auto * out, Handle handle, auto... rest) -> void
+				return [](auto * out, Handle handle, auto &&... rest) -> void
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
@@ -151,7 +152,7 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
-				return [](cppcapi_ErrorMessage * err, auto * out, Handle handle, auto... rest)
+				return [](cppcapi_ErrorMessage * err, auto * out, Handle handle, auto &&... rest)
 						   -> cppcapi_ErrorCode
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
@@ -213,7 +214,7 @@ public:
 
 			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
 			{
-				return [](Handle handle, auto... rest)
+				return [](Handle handle, auto &&... rest)
 				{
 					const auto do_call = [&]
 					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
@@ -233,7 +234,7 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
-				return [](cppcapi_ErrorMessage * err, Handle handle, auto... rest)
+				return [](cppcapi_ErrorMessage * err, Handle handle, auto &&... rest)
 				{
 					const auto do_call = [&]
 					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
@@ -258,7 +259,7 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
 			{
-				return [](auto * out, Handle handle, auto... rest)
+				return [](auto * out, Handle handle, auto &&... rest)
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
@@ -280,7 +281,7 @@ public:
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
-				return [](cppcapi_ErrorMessage * err, auto out, Handle handle, auto... rest)
+				return [](cppcapi_ErrorMessage * err, auto out, Handle handle, auto &&... rest)
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
