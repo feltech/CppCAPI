@@ -28,10 +28,13 @@ extern "C"
 		char * data;
 	} cppcapi_ErrorMessage;
 
+#define CPPCAPI_ErrorCode_OK 0
+#define CPPCAPI_ErrorCode_ERROR 1
+
 	/// Error code signaling no error occurred.
-	static const cppcapi_ErrorCode cppcapi_ok = 0;
+	static const cppcapi_ErrorCode cppcapi_ok = CPPCAPI_ErrorCode_OK;
 	/// Default error code signalling some error occurred. Expected to be extended by ErrorMap.
-	static const cppcapi_ErrorCode cppcapi_error = 1;
+	static const cppcapi_ErrorCode cppcapi_error = CPPCAPI_ErrorCode_ERROR;
 #ifdef __cplusplus
 }
 #endif
