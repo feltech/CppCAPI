@@ -220,10 +220,10 @@ public:
 		{
 			static_assert(
 				std::is_same_v<std::decay_t<ClassArg>, std::decay_t<Class>>,
-				"HandleManager class vs. argument Class type mismatch");
+				"Attempting to convert a C++ type to a handle for a different C++ type");
 			static_assert(
 				ptr_type_tag == HandleOwnershipTag::OwnedByService,
-				"Cannot create a non-shared non-transferred handle for shared / transferred types");
+				"Client handles must be created by the client, not the service");
 			static_assert(
 				std::is_const_v<Class> || !std::is_const_v<ClassArg>,
 				"HandleManager handle class is non-const but attempting to convert const argument");
