@@ -18,12 +18,11 @@ extern "C"
 	CPPCAPI_DEMO_HOST_EXPORT cppcapidemo_String_s cppcapidemo_String_suite()
 	{
 		using SuiteDecorator = Plugin::SuiteDecorator<cppcapidemo_String_h>;
-		using HandleManager = Plugin::HandleManager<cppcapidemo_String_h>;
 
 		return {
-			.create = &HandleManager::create,
+			.create = &SuiteDecorator::create,
 
-			.release = &HandleManager::release,
+			.release = &SuiteDecorator::release,
 
 			.assign_cstr =
 				SuiteDecorator::decorate(assign),
@@ -64,12 +63,11 @@ extern "C"
 	CPPCAPI_DEMO_HOST_EXPORT cppcapidemo_StringDict_s cppcapidemo_StringDict_suite()
 	{
 		using Decorator = Plugin::SuiteDecorator<cppcapidemo_StringDict_h>;
-		using HandleManager = Plugin::HandleManager<cppcapidemo_StringDict_h>;
 
 		return {
-			.create = &HandleManager::create,
+			.create = &Decorator::create,
 
-			.release = &HandleManager::release,
+			.release = &Decorator::release,
 
 			.insert =
 				Decorator::decorate([](StringDict & self, String key, String value)

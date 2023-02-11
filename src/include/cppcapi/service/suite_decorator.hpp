@@ -53,6 +53,38 @@ public:
 	static constexpr mem_fn_ptr_t<fn> mem_fn_ptr{};
 
 	/**
+	 * Create a new instance, where the constructor can throw, storing associated handle in
+	 * out-parameter.
+	 */
+	template <typename... Args>
+	static cppcapi_ErrorCode create(cppcapi_ErrorMessage * err, Handle * out, Args... args)
+	{
+		return HandleManager<Handle>::create(err, out, std::forward<Args>(args)...);
+	}
+
+	/// Create a new instance, storing associated handle in out-parameter.
+	template <typename... Args>
+	static void create(Handle * out, Args... args)
+	{
+		HandleManager<Handle>::create(out, std::forward<Args>(args)...);
+	}
+
+	/// Create a new instance, returning associated handle.
+	template <typename... Args>
+	static Handle create(Args... args)
+	{
+		Handle out;
+		HandleManager<Handle>::create(&out, std::forward<Args>(args)...);
+		return out;
+	}
+
+	/// Release the handle to an instance, potentially destroying the instance.
+	static void release(Handle handle)
+	{
+		HandleManager<Handle>::release(handle);
+	}
+
+	/**
 	 * Adapt a suite function to have a more C++-like interface, automatically converting
 	 * handles.
 	 *

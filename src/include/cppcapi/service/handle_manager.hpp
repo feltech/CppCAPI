@@ -188,7 +188,8 @@ public:
 			!is_for_client(), "Cannot create a handle to a new instance from the client.");
 		static_assert(
 			!is_owned_by_service(),
-			"Cannot make a handle to a new instance for non-shared non-transferred types");
+			"Cannot make a new instance for service-owned types. Service-owned types should be "
+			"pre-existing instances.");
 
 		if constexpr (ptr_type_tag == HandleOwnershipTag::Shared)
 		{

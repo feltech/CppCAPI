@@ -41,7 +41,6 @@ void Worker::update_dict(client::String const & key)
 
 extern "C"
 {
-	using HandleManager = Plugin::HandleManager<cppcapidemo_Worker_h>;
 	using SuiteDecorator = Plugin::SuiteDecorator<cppcapidemo_Worker_h>;
 
 	// Plugin
@@ -49,9 +48,9 @@ extern "C"
 	CPPCAPI_DEMO_PLUGIN_EXPORT cppcapidemo_Worker_s cppcapidemo_Worker_suite()
 	{
 		return {
-			.create = &HandleManager::create,
+			.create = &SuiteDecorator::create,
 
-			.release = &HandleManager::release,
+			.release = &SuiteDecorator::release,
 
 			.update_dict =
 				SuiteDecorator::decorate([](Worker & self, client::StringView const & key)

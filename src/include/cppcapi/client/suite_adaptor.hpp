@@ -329,5 +329,11 @@ private:
 		code = fn(&err, &handle_, as_handle<Args>(std::forward<Rest>(args))...);
 		throw_on_error(code, err);
 	}
+
+	template <class... Args, class... Rest>
+	void call(Handle (*fn)(Args...), Rest &&... args)
+	{
+		handle_ = fn(as_handle<Args>(std::forward<Rest>(args))...);
+	}
 };
 }  // namespace cppcapi::client

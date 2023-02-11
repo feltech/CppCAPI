@@ -31,7 +31,7 @@ extern "C"
 
 	typedef struct
 	{
-		cppcapi_ErrorCode (*create)(cppcapi_ErrorMessage *, cppcapidemo_String_h *);
+		cppcapidemo_String_h (*create)();
 		void (*release)(cppcapidemo_String_h);
 		cppcapi_ErrorCode (*assign_cstr)(
 			cppcapi_ErrorMessage *, cppcapidemo_String_h, char const *);
