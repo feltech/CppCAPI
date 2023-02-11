@@ -73,6 +73,11 @@ public:
 		!(is_for_service() && is_for_client()),
 		"A handle can only be associated with either the service or the client, not both.");
 
+	static constexpr bool is_owned_by_client()
+	{
+		return ptr_type_tag == HandleOwnershipTag::OwnedByClient;
+	}
+
 	static constexpr bool is_owned_by_service()
 	{
 		return ptr_type_tag == HandleOwnershipTag::OwnedByService;
@@ -81,6 +86,12 @@ public:
 	static constexpr bool is_shared_ownership()
 	{
 		return ptr_type_tag == HandleOwnershipTag::Shared;
+	}
+
+	template <typename ClassArg>
+	static constexpr bool is_shared_ptr()
+	{
+		return std::is_same_v<std::decay_t<ClassArg>, SharedPtr<std::remove_const_t<Class>>>;
 	}
 
 	template <typename CppType, typename CType>
@@ -210,10 +221,13 @@ public:
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 
-		if constexpr (
-			is_shared_ownership() &&
-			std::is_same_v<std::decay_t<ClassArg>, SharedPtr<std::remove_const_t<Class>>>)
+		if constexpr (is_shared_ownership())
 		{
+			static_assert(
+				is_shared_ptr<ClassArg>(),
+				"Attempting to create a shared handle from an invalid object (either non-shared_ptr"
+				" or bad const-correctness)");
+
 			return reinterpret_cast<Handle>(new SharedPtr<Class>{std::forward<ClassArg>(obj)});
 		}
 		else
@@ -226,7 +240,7 @@ public:
 				"Client handles must be created by the client, not the service");
 			static_assert(
 				std::is_const_v<Class> || !std::is_const_v<ClassArg>,
-				"HandleManager handle class is non-const but attempting to convert const argument");
+				"Attempting to convert a const C++ type to a handle to non-const");
 			return reinterpret_cast<Handle>(&obj);
 		}
 	}

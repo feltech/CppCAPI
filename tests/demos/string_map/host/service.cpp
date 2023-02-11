@@ -8,6 +8,9 @@
 #include "plugin_definition.hpp"
 namespace cppcapidemohost::service
 {
+
+void assign(String & self, char const * str) { self = str; }
+
 extern "C"
 {
 	// String
@@ -23,7 +26,7 @@ extern "C"
 			.release = &HandleManager::release,
 
 			.assign_cstr =
-				SuiteDecorator::decorate([](String & self, char const * str) { self = str; }),
+				SuiteDecorator::decorate(assign),
 
 			.assign_StringView =
 				SuiteDecorator::decorate([](String & self, StringView const & str) { self = str; }),

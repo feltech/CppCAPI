@@ -64,11 +64,13 @@ public:
 	 * reference to) an instance of the (C++) type associated with the handle type that is
 	 * provided as a template argument to this `SuiteDecorator`.
 	 *
+	 * @tparam ReturnHandle Type of handle of return value, void (default) for non-handle return
+	 * type.
 	 * @tparam CallableRef Stateless callable type to decorate.
 	 * @param lambda Stateless callable to decorate.
 	 * @return Non-capturing lambda satisfying C function signature.
 	 */
-	template <typename CallableRef>
+	template <typename ReturnHandle = void, typename CallableRef = void>
 	static auto decorate(CallableRef && lambda)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
@@ -99,13 +101,8 @@ public:
 					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
 					// function that cannot error is free to use its return value for something
 					// other than an error code.
-					// Note that class types will not be auto-converted to return values (see
-					// can_return_* signatures for that), since we cannot know for certain the
-					// expected return handle type (the same C++ return type could be associated
-					// with multiple C handle types).
-					// TODO(DF): is there a way around this? One solution would be a (optional)
-
-					return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
+					return convert_and_call<ReturnHandle>(
+						fn, handle, std::forward<decltype(rest)>(rest)...);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
@@ -114,18 +111,10 @@ public:
 						  Handle handle,
 						  auto &&... rest) -> cppcapi_ErrorCode
 				{
-					const auto do_call = [&]
-					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
-
-					// C suite function supporting error cases must use the return value for an
-					// error code. In this `cannot_return_can_error` case there is no out-parameter
-					// for returning a value through. So the wrapped C++ function should in turn not
-					// return any value.
-					static_assert(
-						std::is_void_v<decltype(do_call())>,
-						"Suite function signature does not support a return value");
-
-					return TErrorMap::wrap_exception(*err, do_call);
+					return TErrorMap::wrap_exception(
+						*err,
+						[&]
+						{ convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); });
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
@@ -134,20 +123,7 @@ public:
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
-					decltype(auto) ret =
-						convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
-
-					if constexpr (HandleManager<Out>::is_owned_by_service())
-					{
-						static_assert(
-							std::is_reference_v<decltype(ret)>,
-							"Attempting to return a temporary without transferring ownership");
-						*out = HandleManager<Out>::to_handle(ret);
-					}
-					else
-					{
-						*out = HandleManager<Out>::make_to_handle(std::move(ret));
-					}
+					*out = convert_and_call<Out>(fn, handle, std::forward<decltype(rest)>(rest)...);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
@@ -159,23 +135,9 @@ public:
 
 					return TErrorMap::wrap_exception(
 						*err,
-						[handle, &out, &rest...]
-						{
-							decltype(auto) ret =
-								convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
-
-							if constexpr (HandleManager<Out>::is_owned_by_service())
-							{
-								static_assert(
-									std::is_reference_v<decltype(ret)>,
-									"Attempting to return a temporary without transferring "
-									"ownership");
-								*out = HandleManager<Out>::to_handle(ret);
-							}
-							else
-							{
-								*out = HandleManager<Out>::make_to_handle(std::move(ret));
-							}
+						[&] {
+							*out = convert_and_call<Out>(
+								fn, handle, std::forward<decltype(rest)>(rest)...);
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -197,12 +159,14 @@ public:
 	 * this function, e.g. `decorate(mem_fn_ptr_t<&MyClass::my_method>)`, in order for compile-time
 	 * template deduction to work.
 	 *
+	 * @tparam ReturnHandle Type of handle of return value, void (default) for non-handle return
+	 * type.
 	 * @tparam fn Member function pointer, deduced from `mem_fn_ptr_const` function parameter.
 	 * @param mem_fn_ptr_const Not used directly, used instead to deduce the `fn` template
 	 * parameter.
 	 * @return Non-capturing lambda satisfying C function signature.
 	 */
-	template <auto fn>
+	template <typename ReturnHandle = void, auto fn = nullptr>
 	static auto decorate([[maybe_unused]] mem_fn_ptr_t<fn> mem_fn_ptr_const)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
@@ -216,45 +180,20 @@ public:
 			{
 				return [](Handle handle, auto &&... rest)
 				{
-					const auto do_call = [&]
-					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
-					using Ret = decltype(do_call());
-
-					// Although `cannot_return_cannot_error`, this refers to out-parameter, the
-					// function may still return a value, so we must handle both cases.
-					if constexpr (std::is_void_v<Ret>)
-					{
-						do_call();
-					}
-					else
-					{
-						return HandleManager<Ret>::make_to_handle(do_call());
-					}
+					// Although `cannot_output_cannot_error`, this refers to out-parameter, the
+					// function may still return a value.
+					return convert_and_call<ReturnHandle>(
+						fn, handle, std::forward<decltype(rest)>(rest)...);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
 			{
 				return [](cppcapi_ErrorMessage * err, Handle handle, auto &&... rest)
 				{
-					const auto do_call = [&]
-					{ return convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); };
 					return TErrorMap::wrap_exception(
 						*err,
-						[&do_call]
-						{
-							using Ret = decltype(do_call());
-
-							// Although `cannot_output_can_error`, this refers to out-parameter,
-							// the function may still return a value, so we must handle both cases.
-							if constexpr (std::is_void_v<Ret>)
-							{
-								do_call();
-							}
-							else
-							{
-								return HandleManager<Ret>::make_to_handle(do_call());
-							}
-						});
+						[&handle, &rest...]
+						{ convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); });
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
@@ -263,47 +202,20 @@ public:
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
-					decltype(auto) ret =
-						convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
-
-					if constexpr (HandleManager<Out>::is_owned_by_service())
-					{
-						static_assert(
-							std::is_reference_v<decltype(ret)>,
-							"Attempting to return a temporary without transferring ownership");
-						*out = HandleManager<Out>::to_handle(ret);
-					}
-					else
-					{
-						*out = HandleManager<Out>::make_to_handle(std::move(ret));
-					}
+					*out = convert_and_call<Out>(fn, handle, std::forward<decltype(rest)>(rest)...);
 				}(std::forward<decltype(args)>(args)...);
 			}
 			else if constexpr (sig_type == out_param_sig::can_output_can_error)
 			{
-				return [](cppcapi_ErrorMessage * err, auto out, Handle handle, auto &&... rest)
+				return [](cppcapi_ErrorMessage * err, auto * out, Handle handle, auto &&... rest)
 				{
 					using Out = std::remove_pointer_t<decltype(out)>;
 
 					return TErrorMap::wrap_exception(
 						*err,
-						[handle, &out, &rest...]
-						{
-							decltype(auto) ret =
-								convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...);
-
-							if constexpr (HandleManager<Out>::is_owned_by_service())
-							{
-								static_assert(
-									std::is_reference_v<decltype(ret)>,
-									"Attempting to return a temporary without transferring "
-									"ownership");
-								*out = HandleManager<Out>::to_handle(ret);
-							}
-							else
-							{
-								*out = HandleManager<Out>::make_to_handle(std::move(ret));
-							}
+						[&] {
+							*out = convert_and_call<Out>(
+								fn, handle, std::forward<decltype(rest)>(rest)...);
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -390,18 +302,61 @@ private:
 	}
 
 	/// Call a C++ function after converting C handles to their C++ types.
-	template <typename Fn, typename... CArg>
+	template <typename ReturnHandle = void, typename Fn = void, typename... CArg>
 	static decltype(auto) convert_and_call(Fn && fn, CArg &&... arg)
 	{
-		if constexpr (std::is_member_function_pointer_v<Fn>)
+		auto const call = [&]() -> decltype(auto)
 		{
-			return convert_and_call_helper_t<Fn>::call(
-				std::forward<Fn>(fn), std::forward<CArg>(arg)...);
+			if constexpr (std::is_member_function_pointer_v<Fn>)
+			{
+				return convert_and_call_helper_t<Fn>::call(
+					std::forward<Fn>(fn), std::forward<CArg>(arg)...);
+			}
+			else
+			{
+				return convert_and_call_helper_t<decltype(std::function{fn})>::call(
+					std::forward<Fn>(fn), std::forward<CArg>(arg)...);
+			}
+		};
+
+		if constexpr (std::is_void_v<ReturnHandle>)
+		{
+			return call();
 		}
 		else
 		{
-			return convert_and_call_helper_t<decltype(std::function{fn})>::call(
-				std::forward<Fn>(fn), std::forward<CArg>(arg)...);
+			// Return handle type specified in optional template param, so convert.
+
+			using ReturnType = decltype(call());
+
+			if constexpr (HandleManager<ReturnHandle>::is_owned_by_client())
+			{
+				return HandleManager<ReturnHandle>::make_to_handle(call());
+			}
+			else if constexpr (HandleManager<ReturnHandle>::is_owned_by_service())
+			{
+				static_assert(
+					std::is_reference_v<ReturnType>,
+					"Attempting to return a handle to a temporary");
+
+				return HandleManager<ReturnHandle>::to_handle(call());
+			}
+			else if constexpr (HandleManager<ReturnHandle>::is_shared_ownership())
+			{
+				if constexpr (HandleManager<ReturnHandle>::template is_shared_ptr<ReturnType>())
+				{
+					return HandleManager<ReturnHandle>::to_handle(call());
+				}
+				else
+				{
+					return HandleManager<ReturnHandle>::make_to_handle(call());
+				}
+			}
+			else
+			{
+				// ReturnHandle given but for unrecognized type, so assume C-native return type.
+				return call();
+			}
 		}
 	}
 

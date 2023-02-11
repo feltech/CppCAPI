@@ -5,6 +5,7 @@
 
 #include <cppcapi/interface.h>
 #include <cppcapi/plugin_definition.hpp>
+#include <cppcapi/pointers.hpp>
 #include <cppcapi/service/handle_map.hpp>
 
 using trompeloeil::_;  // NOLINT(bugprone-reserved-identifier)
@@ -88,8 +89,13 @@ struct MockAPI
 	MAKE_CONST_MOCK6(
 		no_return_with_error_with_out_with_args, Stub(int, Stub &, float, Stub &, bool, Stub &));
 	MAKE_CONST_MOCK0(with_return_no_error_no_out_no_args, int());
+	MAKE_CONST_MOCK0(with_sharedhandle_return_no_error_no_out_no_args, cppcapi::SharedPtr<Stub>());
+	MAKE_CONST_MOCK0(with_servicehandle_return_no_error_no_out_no_args, Stub&());
 	MAKE_CONST_MOCK6(
 		with_return_no_error_no_out_with_args, int(int, Stub &, float, Stub &, bool, Stub &));
+	MAKE_CONST_MOCK1(
+		with_clienthandle_return_no_error_no_out_with_sharedptr_args,
+		Stub(cppcapi::SharedPtr<Stub>));
 	// with_return_no_error_with_out_no_args - N/A mutually exclusive: return/out
 	// with_return_no_error_with_out_with_args - N/A mutually exclusive: return/out
 	// with_return_with_error_no_out_no_args - N/A mutually exclusive: return/error
@@ -151,6 +157,10 @@ struct MockAPISuite
 
 	int (*with_return_no_error_no_out_no_args)(Handle);
 
+	StubSharedHandle (*with_sharedhandle_return_no_error_no_out_no_args)(Handle);
+
+	StubOwnedByServiceHandle (*with_servicehandle_return_no_error_no_out_no_args)(Handle);
+
 	int (*with_return_no_error_no_out_with_args)(
 		Handle,
 		int,
@@ -159,6 +169,9 @@ struct MockAPISuite
 		StubOwnedByClientHandle,
 		bool,
 		StubSharedHandle);
+
+	StubOwnedByClientHandle (*with_clienthandle_return_no_error_no_out_with_sharedptr_args)(
+		Handle, StubSharedHandle);
 };
 
 template <class THandle>
@@ -209,10 +222,26 @@ struct MockAPISuiteImplFixture<THandle, lambda_suite_t>
 		SuiteDecorator::decorate([](MockAPI & api)
 								 { return api.with_return_no_error_no_out_no_args(); }),
 
+		// with_sharedhandle_return_no_error_no_out_no_args
+		SuiteDecorator::template decorate<StubSharedHandle>(
+			[](MockAPI & api) { return api.with_sharedhandle_return_no_error_no_out_no_args(); }),
+
+		// with_servicehandle_return_no_error_no_out_no_args
+		SuiteDecorator::template decorate<StubOwnedByServiceHandle>(
+			[](MockAPI & api) -> decltype(auto)
+			{ return api.with_servicehandle_return_no_error_no_out_no_args(); }),
+
 		// with_return_no_error_no_out_with_args
 		SuiteDecorator::decorate(
 			[](MockAPI & api, int i, Stub & s1, float f, Stub & s2, bool b, Stub & s3)
-			{ return api.with_return_no_error_no_out_with_args(i, s1, f, s2, b, s3); })};
+			{ return api.with_return_no_error_no_out_with_args(i, s1, f, s2, b, s3); }),
+
+		// with_clienthandle_return_no_error_no_out_with_sharedptr_args
+		SuiteDecorator::template decorate<StubOwnedByClientHandle>(
+			[](MockAPI & api, const cppcapi::SharedPtr<Stub> & ptr)
+			{ return api.with_clienthandle_return_no_error_no_out_with_sharedptr_args(ptr); }),
+
+	};
 };
 
 template <class THandle>
@@ -251,8 +280,20 @@ struct MockAPISuiteImplFixture<THandle, member_function_suite_t>
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_no_args>),
 
+		SuiteDecorator::template decorate<StubSharedHandle>(
+			SuiteDecorator::template mem_fn_ptr<
+				&MockAPI::with_sharedhandle_return_no_error_no_out_no_args>),
+
+		SuiteDecorator::template decorate<StubOwnedByServiceHandle>(
+			SuiteDecorator::template mem_fn_ptr<
+				&MockAPI::with_servicehandle_return_no_error_no_out_no_args>),
+
 		SuiteDecorator::decorate(
 			SuiteDecorator::template mem_fn_ptr<&MockAPI::with_return_no_error_no_out_with_args>),
+
+		SuiteDecorator::template decorate<StubOwnedByClientHandle>(
+			SuiteDecorator::template mem_fn_ptr<
+				&MockAPI::with_clienthandle_return_no_error_no_out_with_sharedptr_args>),
 
 	};
 };
@@ -420,6 +461,57 @@ TEMPLATE_PRODUCT_TEST_CASE(
 				THEN("suite function returns expected value")
 				{
 					CHECK(actual_return_value == expected_return_value);
+				}
+			}
+		}
+
+		AND_GIVEN(
+			"with_sharedhandle_return_no_error_no_out_no_args service function expects to be "
+			"called")
+		{
+			cppcapi::SharedPtr<Stub> expected_return_value = cppcapi::make_shared<Stub>();
+			REQUIRE_CALL(service_api, with_sharedhandle_return_no_error_no_out_no_args())
+				.RETURN(expected_return_value);
+
+			WHEN("the corresponding suite function is called")
+			{
+				StubSharedHandle actual_return_handle =
+					suite.with_sharedhandle_return_no_error_no_out_no_args(handle);
+
+				THEN("suite function returns expected pointer")
+				{
+					const cppcapi::SharedPtr<Stub> & actual_return_value =
+						MockAPIPlugin::HandleManager<StubSharedHandle>::to_ptr(
+							actual_return_handle);
+
+					CHECK(actual_return_value.get() == expected_return_value.get());
+				}
+
+				MockAPIPlugin::HandleManager<StubSharedHandle>::release(actual_return_handle);
+			}
+		}
+
+		AND_GIVEN(
+			"with_servicehandle_return_no_error_no_out_no_args service function expects to be "
+			"called")
+		{
+			Stub expected_return_value;
+
+			REQUIRE_CALL(service_api, with_servicehandle_return_no_error_no_out_no_args())
+				.LR_RETURN(std::ref(expected_return_value));
+
+			WHEN("the corresponding suite function is called")
+			{
+				StubOwnedByServiceHandle actual_return_handle =
+					suite.with_servicehandle_return_no_error_no_out_no_args(handle);
+
+				THEN("suite function returns expected pointer")
+				{
+					const Stub & actual_return_value =
+						MockAPIPlugin::HandleManager<StubOwnedByServiceHandle>::to_instance(
+							actual_return_handle);
+
+					CHECK(&actual_return_value == &expected_return_value);
 				}
 			}
 		}
@@ -743,6 +835,39 @@ TEMPLATE_PRODUCT_TEST_CASE(
 					{
 						CHECK(actual_return_value == expected_return_value);
 					}
+				}
+			}
+
+			AND_GIVEN(
+				"with_clienthandle_return_no_error_no_out_with_sharedptr_args service function "
+				"expects to be called")
+			{
+				auto ptr_to_stub_owned_by_shared =
+					MockAPIPlugin::HandleManager<StubSharedHandle>::to_ptr(
+						handle_for_stub_owned_by_shared);
+
+				Stub expected_return_value{123};
+				REQUIRE_CALL(
+					service_api, with_clienthandle_return_no_error_no_out_with_sharedptr_args(_))
+					.LR_WITH(_1.get() == ptr_to_stub_owned_by_shared.get())
+					.RETURN(expected_return_value);
+
+				WHEN("the corresponding suite function is called")
+				{
+					StubOwnedByClientHandle actual_return_handle =
+						suite.with_clienthandle_return_no_error_no_out_with_sharedptr_args(
+							handle, handle_for_stub_owned_by_shared);
+
+					THEN("suite function returns expected value")
+					{
+						Stub const & actual_return_value =
+							MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::to_instance(
+								actual_return_handle);
+						CHECK(actual_return_value == expected_return_value);
+					}
+
+					MockAPIPlugin::HandleManager<StubOwnedByClientHandle>::release(
+						actual_return_handle);
 				}
 			}
 
