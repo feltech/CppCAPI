@@ -42,12 +42,12 @@ String::operator std::string() const
 
 char const * StringView::data() const
 {
-	return suite_.data(handle_);
+	return call(suite_.data);
 }
 
 size_t StringView::size() const
 {
-	return suite_.size(handle_);
+	return call(suite_.size);
 }
 
 StringView::operator std::string_view() const

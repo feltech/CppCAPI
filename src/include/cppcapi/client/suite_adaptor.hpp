@@ -213,7 +213,7 @@ protected:
 	}
 
 	/**
-	 * Call a suite function that has no return value and cannot error.
+	 * Call a suite function that has no return via out-param, and cannot error.
 	 *
 	 * The handle is injected, allowing the caller to just provide any
 	 * additional arguments specific to the given function.
@@ -223,10 +223,10 @@ protected:
 	 * @param fn Suite function to call.
 	 * @param args Additional arguments given to the suite function.
 	 */
-	template <class... Args, class... Rest>
-	void call(void (*fn)(Handle, Args...), Rest &&... args) const
+	template <class Ret, class... Args, class... Rest>
+	Ret call(Ret (*fn)(Handle, Args...), Rest &&... args) const
 	{
-		fn(handle_, as_handle<Args>(std::forward<Rest>(args))...);
+		return fn(handle_, as_handle<Args>(std::forward<Rest>(args))...);
 	}
 
 	/**
