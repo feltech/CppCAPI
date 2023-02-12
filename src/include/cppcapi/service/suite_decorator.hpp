@@ -48,9 +48,21 @@ private:
 			"mem_fn_ptr must only be used with member function pointers");
 	};
 
+	template <auto fn>
+	struct free_fn_ptr_t : std::integral_constant<decltype(fn), fn>
+	{
+		static_assert(
+			std::is_pointer_v<decltype(fn)> &&
+				std::is_function_v<std::remove_pointer_t<decltype(fn)>>,
+			"free_fn_ptr must only be used with free function pointers");
+	};
+
 public:
 	template <auto fn>
 	static constexpr mem_fn_ptr_t<fn> mem_fn_ptr{};
+
+	template <auto fn>
+	static constexpr free_fn_ptr_t<fn> free_fn_ptr{};
 
 	/**
 	 * Create a new instance, where the constructor can throw, storing associated handle in
@@ -91,6 +103,33 @@ public:
 	 * The arguments will be converted from handles to objects and the return value converted from
 	 * an object to a handle, as appropriate.
 	 *
+	 * This specialisation decorates a free function provided as a template argument to this
+	 * `SuiteDecorator`.
+	 *
+	 * The function to decorate must be wrapped in a `free_fn_ptr` before being passed to
+	 * this function, e.g. `decorate(free_fn_ptr<&my_func>)`, in order for compile-time
+	 * template deduction to work.
+	 *
+	 * @tparam ReturnHandle Type of handle of return value, void (default) for non-handle return
+	 * type.
+	 * @tparam fn Member function pointer, deduced from `mem_fn_ptr_const` function parameter.
+	 * @param free_fn_ptr_const Not used directly, used instead to deduce the `fn` template
+	 * parameter.
+	 * @return Non-capturing lambda satisfying C function signature.
+	 */
+	template <typename ReturnHandle = void, auto fn = nullptr>
+	static auto decorate([[maybe_unused]] free_fn_ptr_t<fn> free_fn_ptr_const)
+	{
+		return decorate_impl<ReturnHandle, fn>();
+	}
+
+	/**
+	 * Adapt a suite function to have a more C++-like interface, automatically converting
+	 * handles.
+	 *
+	 * The arguments will be converted from handles to objects and the return value converted from
+	 * an object to a handle, as appropriate.
+	 *
 	 * This specialisation decorates a non-capturing lambda function (or other stateless callable),
 	 * converting its arguments and return value. The first parameter of the lambda must be (a
 	 * reference to) an instance of the (C++) type associated with the handle type that is
@@ -98,86 +137,25 @@ public:
 	 *
 	 * @tparam ReturnHandle Type of handle of return value, void (default) for non-handle return
 	 * type.
-	 * @tparam CallableRef Stateless callable type to decorate.
+	 * @tparam Callable Stateless callable type to decorate.
 	 * @param lambda Stateless callable to decorate.
 	 * @return Non-capturing lambda satisfying C function signature.
 	 */
-	template <typename ReturnHandle = void, typename CallableRef = void>
-	static auto decorate(CallableRef && lambda)
+	template <typename ReturnHandle = void, typename Callable = void>
+	static auto decorate([[maybe_unused]] Callable && lambda)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 
-		using CallableType = std::remove_pointer_t<std::decay_t<CallableRef>>;
 		static_assert(
-			std::is_empty_v<CallableType> || std::is_function_v<CallableType>,
-			"Stateful callables (e.g. capturing lambdas) are not supported");
+			std::is_empty_v<Callable>,
+			"Only stateless callable objects (i.e. non-capturing lambdas) can be passed directly");
 
-		using CallableTypeOrPtr = std::decay_t<CallableRef>;
-
-		// Save off the lambda as a static. Will only happen once per lambda, since lambda type is
-		// unique. Ideally we could use the fact that (non-capturing) lambdas are already global,
-		// but the compiler isn't clever enough to notice that here.
-		// TODO(DF): Obviously gnu::used is GCC-specific, so check Clang and VS don't have the same
-		//  linkage issue requiring a similar workaround. This workaround is requied for GCC 9.4.
-		static const CallableTypeOrPtr fn [[gnu::used]] = std::forward<CallableRef>(lambda);
-
-		return [](auto... args)
-		{
-			static constexpr out_param_sig sig_type = suite_func_sig_type<decltype(args)...>();
-			static_assert(sig_type != out_param_sig::unrecognised, "Ill-formed C suite function");
-
-			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
-			{
-				return [](Handle handle, auto &&... rest) -> auto
-				{
-					// The `cannot_return_cannot_error` suite type refers to out-parameters. A suite
-					// function that cannot error is free to use its return value for something
-					// other than an error code.
-					return convert_and_call<ReturnHandle>(
-						fn, handle, std::forward<decltype(rest)>(rest)...);
-				}(std::forward<decltype(args)>(args)...);
-			}
-			else if constexpr (sig_type == out_param_sig::cannot_output_can_error)
-			{
-				return [](cppcapi_ErrorMessage * err,
-						  Handle handle,
-						  auto &&... rest) -> cppcapi_ErrorCode
-				{
-					return TErrorMap::wrap_exception(
-						*err,
-						[&]
-						{ convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); });
-				}(std::forward<decltype(args)>(args)...);
-			}
-			else if constexpr (sig_type == out_param_sig::can_output_cannot_error)
-			{
-				return [](auto * out, Handle handle, auto &&... rest) -> void
-				{
-					using Out = std::remove_pointer_t<decltype(out)>;
-
-					*out = convert_and_call<Out>(fn, handle, std::forward<decltype(rest)>(rest)...);
-				}(std::forward<decltype(args)>(args)...);
-			}
-			else if constexpr (sig_type == out_param_sig::can_output_can_error)
-			{
-				return [](cppcapi_ErrorMessage * err, auto * out, Handle handle, auto &&... rest)
-						   -> cppcapi_ErrorCode
-				{
-					using Out = std::remove_pointer_t<decltype(out)>;
-
-					return TErrorMap::wrap_exception(
-						*err,
-						[&] {
-							*out = convert_and_call<Out>(
-								fn, handle, std::forward<decltype(rest)>(rest)...);
-						});
-				}(std::forward<decltype(args)>(args)...);
-			}
-		};
+		return decorate_impl<
+			ReturnHandle,
+			lambda_wrapper_t<Callable, decltype(std::function{lambda})>::call>();
 	}
 
 	/**
-	 *
 	 * Adapt a suite function to have a more C++-like interface, automatically converting
 	 * handles.
 	 *
@@ -200,6 +178,13 @@ public:
 	 */
 	template <typename ReturnHandle = void, auto fn = nullptr>
 	static auto decorate([[maybe_unused]] mem_fn_ptr_t<fn> mem_fn_ptr_const)
+	{
+		return decorate_impl<ReturnHandle, fn>();
+	}
+
+private:
+	template <typename ReturnHandle, auto fn>
+	static auto decorate_impl()
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
 
@@ -224,7 +209,7 @@ public:
 				{
 					return TErrorMap::wrap_exception(
 						*err,
-						[&handle, &rest...]
+						[&]
 						{ convert_and_call(fn, handle, std::forward<decltype(rest)>(rest)...); });
 				}(std::forward<decltype(args)>(args)...);
 			}
@@ -254,7 +239,6 @@ public:
 		};
 	}
 
-private:
 	template <std::size_t N, std::size_t CurrN, typename... Args>
 	struct is_nth_arg_handle_impl;
 
@@ -440,6 +424,34 @@ private:
 	struct convert_and_call_helper_t<Ret (Class::*)(CppArg...) const noexcept>
 		: convert_and_call_helper_t<Ret (Class::*)(CppArg...)>
 	{
+	};
+
+	template <class Lambda, class Sig>
+	struct lambda_wrapper_t;
+
+	/**
+	 * Compile-time lambda helper.
+	 *
+	 * This class's `call` static member function is suitable for use in an `auto` template
+	 * parameter (i.e. as a function pointer). This works around the limitation that the
+	 * address of a lambda object is not a compile-time constant.
+	 *
+	 * To allow deduction down the line to work, we must know the args of the lambda ahead of time,
+	 * hence we abuse std::function's compile-time deduction guides to inform us.
+	 *
+	 * The lambda type _must_ be non-capturing for this to work, so it is safe to cast to.
+	 */
+	template <class Lambda, typename Ret, typename... Args>
+	struct lambda_wrapper_t<Lambda, std::function<Ret(Args...)>>
+	{
+		using Self = lambda_wrapper_t<Lambda, std::function<Ret(Args...)>>;
+		static_assert(std::is_empty_v<Lambda>, "Cannot wrap a stateful (i.e. capturing) lambda");
+
+		static Ret call(Args... args)
+		{
+			const Self self;
+			return reinterpret_cast<const Lambda &>(self)(std::forward<Args>(args)...);
+		}
 	};
 };
 

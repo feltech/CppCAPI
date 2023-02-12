@@ -25,7 +25,7 @@ extern "C"
 			.release = &SuiteDecorator::release,
 
 			.assign_cstr =
-				SuiteDecorator::decorate(assign),
+				SuiteDecorator::decorate(SuiteDecorator::free_fn_ptr<&assign>),
 
 			.assign_StringView =
 				SuiteDecorator::decorate([](String & self, StringView const & str) { self = str; }),
