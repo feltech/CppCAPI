@@ -39,6 +39,11 @@ void Worker::update_dict(client::String const & key)
 	}
 }
 
+void update_dict(Worker & self, client::StringView const & key)
+{
+	self.update_dict(client::String{key});
+}
+
 extern "C"
 {
 	using SuiteDecorator = Plugin::SuiteDecorator<cppcapidemo_Worker_h>;
@@ -52,9 +57,7 @@ extern "C"
 
 			.release = &SuiteDecorator::release,
 
-			.update_dict =
-				SuiteDecorator::decorate([](Worker & self, client::StringView const & key)
-										 { self.update_dict(client::String{key}); })};
+			.update_dict = SuiteDecorator::decorate<&update_dict>()};
 	}
 }
 }  // namespace cppcapidemoplugin::service

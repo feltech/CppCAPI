@@ -30,7 +30,7 @@ extern "C"
 			.assign_StringView =
 				SuiteDecorator::decorate([](String & self, StringView const & str) { self = str; }),
 
-			.c_str = SuiteDecorator::decorate(SuiteDecorator::mem_fn_ptr<&String::c_str>),
+			.c_str = SuiteDecorator::decorate<&String::c_str>(),
 			// clang-format off
 /*
 			// Overloaded method requires a static_cast. However:

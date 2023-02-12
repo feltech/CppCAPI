@@ -120,7 +120,7 @@ public:
 	template <typename ReturnHandle = void, auto fn = nullptr>
 	static auto decorate([[maybe_unused]] free_fn_ptr_t<fn> free_fn_ptr_const)
 	{
-		return decorate_impl<ReturnHandle, fn>();
+		return decorate<fn, ReturnHandle>();
 	}
 
 	/**
@@ -150,9 +150,9 @@ public:
 			std::is_empty_v<Callable>,
 			"Only stateless callable objects (i.e. non-capturing lambdas) can be passed directly");
 
-		return decorate_impl<
-			ReturnHandle,
-			lambda_wrapper_t<Callable, decltype(std::function{lambda})>::call>();
+		return decorate<
+			lambda_wrapper_t<Callable, decltype(std::function{lambda})>::call,
+			ReturnHandle>();
 	}
 
 	/**
@@ -179,14 +179,18 @@ public:
 	template <typename ReturnHandle = void, auto fn = nullptr>
 	static auto decorate([[maybe_unused]] mem_fn_ptr_t<fn> mem_fn_ptr_const)
 	{
-		return decorate_impl<ReturnHandle, fn>();
+		return decorate<fn, ReturnHandle>();
 	}
 
-private:
-	template <typename ReturnHandle, auto fn>
-	static auto decorate_impl()
+	template <auto fn, typename ReturnHandle = void>
+	static auto decorate()
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
+		static_assert(
+			std::is_member_function_pointer_v<decltype(fn)> ||
+				(std::is_pointer_v<decltype(fn)> &&
+				 std::is_function_v<std::remove_pointer_t<decltype(fn)>>),
+			"Can only decorate function pointers");
 
 		return [](auto... args)
 		{
@@ -239,6 +243,7 @@ private:
 		};
 	}
 
+private:
 	template <std::size_t N, std::size_t CurrN, typename... Args>
 	struct is_nth_arg_handle_impl;
 
