@@ -89,6 +89,12 @@ public:
 	}
 
 	template <typename ClassArg>
+	static constexpr bool is_same_class()
+	{
+		return std::is_same_v<std::decay_t<ClassArg>, Class>;
+	}
+
+	template <typename ClassArg>
 	static constexpr bool is_shared_ptr()
 	{
 		return std::is_same_v<std::decay_t<ClassArg>, SharedPtr<std::remove_const_t<Class>>>;
@@ -237,12 +243,59 @@ public:
 				std::is_same_v<std::decay_t<ClassArg>, std::decay_t<Class>>,
 				"Attempting to convert a C++ type to a handle for a different C++ type");
 			static_assert(
-				ptr_type_tag == HandleOwnershipTag::OwnedByService,
+				is_owned_by_service(),
 				"Client handles must be created by the client, not the service");
 			static_assert(
 				std::is_const_v<Class> || !std::is_const_v<ClassArg>,
 				"Attempting to convert a const C++ type to a handle to non-const");
 			return reinterpret_cast<Handle>(&obj);
+		}
+	}
+
+	/**
+	 * Decay a Shared or Client handle to a Service handle.
+	 *
+	 * Service handles are essentially pointers to pre-existing objects. This function allows a
+	 * pre-existing object referenced by a Shared or Client handle to be "converted" to a lightweight
+	 * Service handle.
+	 *
+	 * Will throw a `std::out_of_range` error for Shared handles where the underlying shared_ptr is
+	 * uninitialized.
+	 *
+	 * @tparam OtherHandle Handle type to convert from.
+	 * @param handle Handle to decay
+	 * @return Service handle pointing to same underlying object as `handle`.
+	 */
+	template <typename OtherHandle>
+	static Handle decay(OtherHandle handle)
+	{
+		if constexpr (std::is_same_v<Handle, OtherHandle>)
+		{
+			//  Trivial pass-through.
+			return handle;
+		}
+		else
+		{
+			using Other = OtherHandleManager<OtherHandle>;
+			static_assert(
+				is_owned_by_service(), "Attempting to decay a handle to a non-service handle");
+			static_assert(
+				!Other::is_owned_by_service(),
+				"Attempting to decay a service handle to service handle of a different type");
+			static_assert(
+				Other::template is_same_class<Class>(),
+				"Attempting to decay a client/shared handle to a service handle of a different "
+				"type");
+
+			if constexpr (Other::is_shared_ownership())
+			{
+				if (!Other::to_ptr(handle))
+				{
+					throw std::out_of_range("Uninitialized shared object");
+				}
+			}
+
+			return to_handle(Other::to_instance(handle));
 		}
 	}
 

@@ -243,6 +243,32 @@ public:
 		};
 	}
 
+	/**
+	 * Suite function wrapper to decay a Client or Shared handle to a Service handle.
+	 *
+	 * Service handles are essentially pointers to pre-existing objects. This function allows a
+	 * pre-existing object referenced by a Shared or Client handle to be "converted" to a lightweight
+	 * Service handle.
+	 *
+	 * This is particularly useful for converting Shared/Client handles to be compatible with
+	 * functions that take Service handles to the same underlying type, e.g. function pointer suites.
+	 *
+	 * Will flag an `std::out_of_range` error for Shared handles where the underlying shared_ptr is
+	 * uninitialized.
+	 *
+	 * @tparam ServiceHandle Service handle type to convert to.
+	 * @param err Storage for error message.
+	 * @param out Storage for converted handle.
+	 * @param handle Input handle to convert
+	 * @return Error code representing `std::out_of_range`.
+	 */
+	template <typename ServiceHandle>
+	static cppcapi_ErrorCode decay(cppcapi_ErrorMessage * err, ServiceHandle * out, Handle handle)
+	{
+		return TErrorMap::wrap_exception(
+			*err, [&] { *out = HandleManager<ServiceHandle>::decay(handle); });
+	}
+
 private:
 	template <std::size_t N, std::size_t CurrN, typename... Args>
 	struct is_nth_arg_handle_impl;
