@@ -94,10 +94,16 @@ public:
 		return std::is_same_v<std::decay_t<ClassArg>, Class>;
 	}
 
-	template <typename ClassArg>
+	template <typename PtrIn>
 	static constexpr bool is_shared_ptr()
 	{
-		return std::is_same_v<std::decay_t<ClassArg>, SharedPtr<std::remove_const_t<Class>>>;
+		using PtrInType = std::remove_const_t<std::decay_t<PtrIn>>;
+		// Class is const && PtrIn is SharedPtr<Class> == OK
+		// Class is const && PtrIn is SharedPtr<const Class> == OK
+		// Class is non-const && PtrIn is SharedPtr<Class> == OK
+		// Class is non-const && PtrIn is SharedPtr<const Class> == Fail
+		return std::is_same_v<PtrInType, SharedPtr<Class>> ||
+			std::is_same_v<PtrInType, SharedPtr<std::remove_const_t<Class>>>;
 	}
 
 	template <typename CppType, typename CType>
@@ -227,11 +233,12 @@ public:
 	static Handle to_handle(ClassArg && obj)
 	{
 		assert_is_valid_handle_type<Handle, Class, Adapter>();
+		using ClassArgType = std::decay_t<ClassArg>;
 
 		if constexpr (is_shared_ownership())
 		{
 			static_assert(
-				is_shared_ptr<ClassArg>(),
+				is_shared_ptr<ClassArgType>(),
 				"Attempting to create a shared handle from an invalid object (either non-shared_ptr"
 				" or bad const-correctness)");
 
@@ -240,15 +247,24 @@ public:
 		else
 		{
 			static_assert(
-				std::is_same_v<std::decay_t<ClassArg>, std::decay_t<Class>>,
-				"Attempting to convert a C++ type to a handle for a different C++ type");
-			static_assert(
 				is_owned_by_service(),
 				"Client handles must be created by the client, not the service");
-			static_assert(
-				std::is_const_v<Class> || !std::is_const_v<ClassArg>,
-				"Attempting to convert a const C++ type to a handle to non-const");
-			return reinterpret_cast<Handle>(&obj);
+
+			if constexpr (is_shared_ptr<ClassArgType>())
+			{
+				// Unpack shared_ptr and recurse.
+				return to_handle(*obj);
+			}
+			else
+			{
+				static_assert(
+					std::is_const_v<Class> || !std::is_const_v<ClassArgType>,
+					"Attempting to convert a const C++ type to a handle to non-const");
+				static_assert(
+					std::is_same_v<std::remove_const_t<ClassArgType>, std::remove_const_t<Class>>,
+					"Attempting to convert a C++ type to a handle for a different C++ type");
+				return reinterpret_cast<Handle>(&obj);
+			}
 		}
 	}
 
@@ -256,8 +272,8 @@ public:
 	 * Decay a Shared or Client handle to a Service handle.
 	 *
 	 * Service handles are essentially pointers to pre-existing objects. This function allows a
-	 * pre-existing object referenced by a Shared or Client handle to be "converted" to a lightweight
-	 * Service handle.
+	 * pre-existing object referenced by a Shared or Client handle to be "converted" to a
+	 * lightweight Service handle.
 	 *
 	 * Will throw a `std::out_of_range` error for Shared handles where the underlying shared_ptr is
 	 * uninitialized.
