@@ -194,7 +194,8 @@ public:
 
 		return [](auto... args)
 		{
-			static constexpr out_param_sig sig_type = suite_func_sig_type<decltype(args)...>();
+			static constexpr out_param_sig sig_type =
+				suite_func_sig_type<ReturnHandle, decltype(args)...>();
 			static_assert(sig_type != out_param_sig::unrecognised, "Ill-formed C suite function");
 
 			if constexpr (sig_type == out_param_sig::cannot_output_cannot_error)
@@ -240,6 +241,30 @@ public:
 						});
 				}(std::forward<decltype(args)>(args)...);
 			}
+			else if constexpr (sig_type == out_param_sig::factory_cannot_output_cannot_error)
+			{
+				return [](auto &&... rest) {
+					return convert_and_call<Handle>(fn, std::forward<decltype(rest)>(rest)...);
+				}(std::forward<decltype(args)>(args)...);
+			}
+			else if constexpr (sig_type == out_param_sig::factory_can_output_cannot_error)
+			{
+				return [](Handle * out, auto &&... rest) {
+					*out = convert_and_call<Handle>(fn, std::forward<decltype(rest)>(rest)...);
+				}(std::forward<decltype(args)>(args)...);
+			}
+			else if constexpr (sig_type == out_param_sig::factory_can_output_can_error)
+			{
+				return [](cppcapi_ErrorMessage * err, Handle * out, auto &&... rest)
+				{
+					return TErrorMap::wrap_exception(
+						*err,
+						[&] {
+							*out =
+								convert_and_call<Handle>(fn, std::forward<decltype(rest)>(rest)...);
+						});
+				}(std::forward<decltype(args)>(args)...);
+			}
 		};
 	}
 
@@ -247,11 +272,12 @@ public:
 	 * Suite function wrapper to decay a Client or Shared handle to a Service handle.
 	 *
 	 * Service handles are essentially pointers to pre-existing objects. This function allows a
-	 * pre-existing object referenced by a Shared or Client handle to be "converted" to a lightweight
-	 * Service handle.
+	 * pre-existing object referenced by a Shared or Client handle to be "converted" to a
+	 * lightweight Service handle.
 	 *
 	 * This is particularly useful for converting Shared/Client handles to be compatible with
-	 * functions that take Service handles to the same underlying type, e.g. function pointer suites.
+	 * functions that take Service handles to the same underlying type, e.g. function pointer
+	 * suites.
 	 *
 	 * Will flag an `std::out_of_range` error for Shared handles where the underlying shared_ptr is
 	 * uninitialized.
@@ -270,31 +296,34 @@ public:
 	}
 
 private:
-	template <std::size_t N, std::size_t CurrN, typename... Args>
-	struct is_nth_arg_handle_impl;
+	template <typename T, std::size_t N, std::size_t CurrN, typename... Args>
+	struct is_nth_arg_T_impl;
 
-	template <std::size_t N, std::size_t CurrN, typename Arg, typename... Args>
-	struct is_nth_arg_handle_impl<N, CurrN, Arg, Args...>
+	template <typename T, std::size_t N, std::size_t CurrN, typename Arg, typename... Args>
+	struct is_nth_arg_T_impl<T, N, CurrN, Arg, Args...>
 		: std::conditional_t<
 			  N == CurrN,
-			  std::is_same<Arg, Handle>,
-			  is_nth_arg_handle_impl<N, CurrN + 1, Args...>>
+			  std::is_same<Arg, T>,
+			  is_nth_arg_T_impl<T, N, CurrN + 1, Args...>>
 	{
 	};
 
-	template <std::size_t N, std::size_t CurrN, typename Arg>
-	struct is_nth_arg_handle_impl<N, CurrN, Arg>
-		: std::conditional_t<N == CurrN, std::is_same<Arg, Handle>, std::false_type>
+	template <typename T, std::size_t N, std::size_t CurrN, typename Arg>
+	struct is_nth_arg_T_impl<T, N, CurrN, Arg>
+		: std::conditional_t<N == CurrN, std::is_same<Arg, T>, std::false_type>
+	{
+	};
+
+	template <typename T, std::size_t N, typename... Args>
+	struct is_nth_arg_T : is_nth_arg_T_impl<T, N, 0, Args...>
 	{
 	};
 
 	template <std::size_t N, typename... Args>
-	struct is_nth_arg_handle : is_nth_arg_handle_impl<N, 0, Args...>
-	{
-	};
+	static constexpr bool is_nth_arg_handle_v = is_nth_arg_T<Handle, N, Args...>::value;
 
 	template <std::size_t N, typename... Args>
-	static constexpr bool is_nth_arg_handle_v = is_nth_arg_handle<N, Args...>::value;
+	static constexpr bool is_nth_arg_handle_ptr_v = is_nth_arg_T<Handle *, N, Args...>::value;
 
 	template <typename... Args>
 	struct is_0th_arg_error : std::false_type
@@ -319,10 +348,16 @@ private:
 		can_output_cannot_error,
 		/// fn(err, out, handle, args...) -> code
 		can_output_can_error,
+		/// fn(args...) -> handle
+		factory_cannot_output_cannot_error,
+		/// fn(handle*, args...) -> void
+		factory_can_output_cannot_error,
+		/// fn(err, handle*, args...) -> code
+		factory_can_output_can_error,
 		unrecognised
 	};
 
-	template <typename... Args>
+	template <typename Ret, typename... Args>
 	static constexpr out_param_sig suite_func_sig_type()
 	{
 		if constexpr (is_nth_arg_handle_v<0, Args...>)
@@ -344,6 +379,21 @@ private:
 		{
 			// fn(err, out, handle, args...) -> code
 			return out_param_sig::can_output_can_error;
+		}
+		else if constexpr (std::is_same_v<Ret, Handle>)
+		{
+			/// fn(args...) -> handle
+			return out_param_sig::factory_cannot_output_cannot_error;
+		}
+		else if constexpr (is_nth_arg_handle_ptr_v<0, Args...>)
+		{
+			// fn(handle*, args...) -> void
+			return out_param_sig::factory_can_output_cannot_error;
+		}
+		else if constexpr (is_0th_arg_error_v<Args...> && is_nth_arg_handle_ptr_v<1, Args...>)
+		{
+			// fn(err, handle*, args...) -> code
+			return out_param_sig::factory_can_output_can_error;
 		}
 		return out_param_sig::unrecognised;
 	}
