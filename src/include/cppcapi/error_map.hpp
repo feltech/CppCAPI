@@ -71,12 +71,12 @@ inline void non_exception_message(cppcapi_ErrorMessage & err) noexcept
 	extract_message(err, "Unknown non-exception error caught");
 }
 
-template <class Traits>
+template <class ExceptionAndCode>
 void throw_if_matches(cppcapi_ErrorMessage const & err, cppcapi_ErrorCode const code)
 {
-	if (code == Traits::code)
+	if (code == ExceptionAndCode::code)
 	{
-		using Exception = typename Traits::Exception;
+		using Exception = typename ExceptionAndCode::Exception;
 
 		static_assert(
 			std::is_constructible_v<Exception, std::string> || std::is_constructible_v<Exception>,
@@ -165,16 +165,16 @@ struct ErrorMap<>
  *
  * This is a single-element error map.
  *
- * @tparam Traits ErrorTraits of exception to be matched.
+ * @tparam ExceptionAndCode Traits of exception to be matched.
  */
-template <class Traits>
-struct ErrorMap<Traits>
+template <class ExceptionAndCode>
+struct ErrorMap<ExceptionAndCode>
 {
 	/**
 	 * Execute a callable, converting any thrown exception to an error code and message.
 	 *
-	 * If thrown exception matches Traits::Exception then returns Traits::code, otherwise returns
-	 * cppcapi_error.
+	 * If thrown exception matches ExceptiionAndCode::Exception then returns
+	 * ExceptiionAndCode::code, otherwise returns cppcapi_error.
 	 *
 	 * @tparam Fn Callable type to execute.
 	 * @param err Storage for error message.
@@ -188,10 +188,10 @@ struct ErrorMap<Traits>
 		{
 			fn();
 		}
-		catch (typename Traits::Exception const & ex)
+		catch (typename ExceptionAndCode::Exception const & ex)
 		{
 			detail::extract_exception_message(err, ex);
-			return Traits::code;
+			return ExceptionAndCode::code;
 		}
 		catch (std::exception const & ex)
 		{
@@ -217,7 +217,7 @@ struct ErrorMap<Traits>
 	static constexpr void throw_exception(
 		cppcapi_ErrorMessage const & err, cppcapi_ErrorCode const code)
 	{
-		detail::throw_if_matches<Traits>(err, code);
+		detail::throw_if_matches<ExceptionAndCode>(err, code);
 		ErrorMap<>::throw_exception(err, code);
 	};
 };
@@ -225,19 +225,20 @@ struct ErrorMap<Traits>
 /**
  * Utility to extract the type/code of an exception.
  *
- * This is a multi-element error map, where multiple ErrorTraits are given for matching against
+ * This is a multi-element error map, where multiple ExceptionAndCode are given for matching against
  * thrown exceptions.
  *
- * @tparam Traits List of ErrorTraits
+ * @tparam ExceptionsAndCodes List of ErrorTraits.
  */
-template <class... Traits>
+template <class... ExceptionsAndCodes>
 struct ErrorMap
 {
 	/**
-	 * Execute a callable, converting any thrown exception to an error code and message.
+	 * Execute a callable and return cppcapi_ok, converting any thrown exception to an error code
+	 * and message.
 	 *
 	 * Recursively decorates the callable with an exception handler for each of the provided
-	 * ErrorTraits.
+	 * ExceptionsAndCodes.
 	 *
 	 * @tparam Fn Callable type to execute.
 	 * @param err Storage for error message.
@@ -254,27 +255,21 @@ struct ErrorMap
 				{
 					try
 					{
-						if constexpr (std::is_void_v<decltype(wrapped())>)
-						{
-							// Leaf ErrorTraits case.
-							wrapped();
-						}
-						else
-						{
-							// Recursive ErrorTraits case.
-							return wrapped();
-						}
+						return wrapped();
 					}
-					catch (typename Traits::Exception const & ex)
+					catch (typename ExceptionsAndCodes::Exception const & ex)
 					{
 						detail::extract_exception_message(err, ex);
-						return Traits::code;
+						return ExceptionsAndCodes::code;
 					}
-					return cppcapi_ok;
 				}...,
-				fn)();
+				[&fn]
+				{
+					fn();
+					return cppcapi_ok;
+				})();
 		}
-		// Fallthrough catch-all if no ErrorMap matches.
+		// Fallthrough catch-all if no ExceptionsAndCodes matches.
 		catch (std::exception const & ex)
 		{
 			detail::extract_exception_message(err, ex);
@@ -302,7 +297,9 @@ struct ErrorMap
 		if (code == cppcapi_ok)
 			return;
 
-		(detail::throw_if_matches<Traits>(err, code), ..., ErrorMap<>::throw_exception(err, code));
+		(detail::throw_if_matches<ExceptionsAndCodes>(err, code),
+		 ...,
+		 ErrorMap<>::throw_exception(err, code));
 	};
 };
 }  // namespace cppcapi
