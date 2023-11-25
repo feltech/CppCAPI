@@ -106,6 +106,22 @@ public:
 			std::is_same_v<PtrInType, SharedPtr<std::remove_const_t<Class>>>;
 	}
 
+	/**
+	 * Attempt to convert a C object to a C++ object.
+	 *
+	 * If given an opaque C handle to a C++ object, then attempt to match the underlying C++ object
+	 * to the requested C++ type.
+	 *
+	 * If the handle is Shared ownership and the requested C++ type is a shared_ptr to the
+	 * underlying C++ object, a shared_ptr will be returned, rather than the underlying C++ object.
+	 *
+	 * If not given a handle, then the C and C++ types must be the same (or convertible).
+	 *
+	 * @tparam CppType
+	 * @tparam CType
+	 * @param arg
+	 * @return
+	 */
 	template <typename CppType, typename CType>
 	static decltype(auto) to_instance_or_ptr(CType && arg)
 	{
@@ -116,6 +132,9 @@ public:
 		}
 		else
 		{
+			static_assert(
+				std::is_convertible_v<decltype(to_instance(std::forward<CType>(arg))), CppType>,
+				"Attempting to convert to an incompatible C++ object");
 			return to_instance(std::forward<CType>(arg));
 		}
 	}
@@ -131,8 +150,7 @@ public:
 	 *
 	 * @tparam HandleArg Type of handle. Required to enable forwarding references.
 	 * @param handle Opaque handle to convert.
-	 * @return Dereferenceable object that dereferences to the original object associated with the
-	 * opaque handle.
+	 * @return Object associated with or wrapping the opaque handle.
 	 */
 	template <class HandleArg>
 	static decltype(auto) to_instance(HandleArg && handle)
@@ -176,7 +194,7 @@ public:
 	static SharedPtr<Class> & to_ptr(Handle handle)
 	{
 		static_assert(
-			is_shared_ownership(), "Can only convert to Shared ownership handles to shared_ptr");
+			is_shared_ownership(), "Can only convert Shared ownership handles to shared_ptr");
 
 		return *reinterpret_cast<SharedPtr<Class> *>(handle);
 	}
